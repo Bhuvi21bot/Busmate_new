@@ -1,0 +1,54 @@
+/* Updated: 2025-11-16T15:36:30.261Z */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-background: oklch(0.05 0 0);
+  --color-foreground: oklch(0.98 0 0 / 80%);
+  --color-card: oklch(0.08 0 0);
+  --color-card-foreground: oklch(0.98 0 0);
+  --color-popover: oklch(0.12 0 0);
+  --color-popover-foreground: oklch(0.98 0 0);
+  --color-primary: oklch(0.55 0.15 170);
+  --color-primary-foreground: oklch(0.98 0 0);
+  --color-secondary: oklch(0.15 0 0);
+  --color-secondary-foreground: oklch(0.98 0 0);
+  --color-muted: oklch(0.15 0 0);
+  --color-muted-foreground: oklch(0.65 0 0);
+  --color-accent: oklch(0.15 0 0);
+  --color-accent-foreground: oklch(0.98 0 0);
+  --color-destructive: oklch(0.58 0.24 27);
+  --color-border: oklch(0.98 0 0 / 10%);
+  --color-input: oklch(0.98 0 0 / 15%);
+  --color-ring: oklch(0.55 0.15 170);
+  --color-surface: oklch(0.12 0 0);
+  --color-heading: oklch(1 0 0);
+  --radius-lg: 0.75rem;
+  --radius-md: 0.625rem;
+  --radius-sm: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Roboto', 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-heading font-bold;
+    font-family: 'Montserrat', 'Inter', system-ui, sans-serif;
+  }
+}
+
+/* Hide Next.js error overlay portal */
+nextjs-portal {
+  display: none !important;
+}
