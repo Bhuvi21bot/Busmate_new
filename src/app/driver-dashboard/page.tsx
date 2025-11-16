@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { UserPlus, Wallet, User, Route, Upload } from "lucide-react"
+import { UserPlus, Wallet, User, Route, Upload, Loader2 } from "lucide-react"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { Button } from "@/components/ui/button"
@@ -14,8 +14,126 @@ import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
 
+interface DriverProfile {
+  id: number
+  name: string
+  contact: string
+  address: string
+  city: string
+  district: string
+  license: string
+  vehicle: string
+  bloodGroup: string
+  email: string | null
+  status: string
+  applicationNumber: string
+  appliedDate: string
+  approvedDate: string | null
+}
+
+interface DriverWallet {
+  id: number
+  driverId: number
+  totalEarnings: number
+  pendingPayouts: number
+  lastPayoutAmount: number | null
+  lastPayoutDate: string | null
+  status: string
+}
+
+interface DriverRide {
+  id: number
+  driverId: number
+  rideNumber: string
+  date: string
+  route: string
+  fare: number
+  passengerCount: number
+  status: string
+}
+
 export default function DriverDashboard() {
   const [isLoading, setIsLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState("apply")
+  const [licenseNumber, setLicenseNumber] = useState("")
+  
+  // State for profile, wallet, and rides
+  const [profile, setProfile] = useState<DriverProfile | null>(null)
+  const [wallet, setWallet] = useState<DriverWallet | null>(null)
+  const [rides, setRides] = useState<DriverRide[]>([])
+  const [loadingProfile, setLoadingProfile] = useState(false)
+  const [loadingWallet, setLoadingWallet] = useState(false)
+  const [loadingRides, setLoadingRides] = useState(false)
+
+  // Fetch profile data
+  const fetchProfile = async (license: string) => {
+    if (!license) return
+    
+    setLoadingProfile(true)
+    try {
+      const response = await fetch(`/api/drivers/profile?license=${encodeURIComponent(license)}`)
+      const data = await response.json()
+      
+      if (response.ok) {
+        setProfile(data)
+        // If profile found, fetch wallet and rides
+        if (data.id) {
+          fetchWallet(data.id)
+          fetchRides(data.id)
+        }
+      } else {
+        toast.error(data.error || "Profile not found")
+        setProfile(null)
+      }
+    } catch (error) {
+      toast.error("Failed to fetch profile")
+      setProfile(null)
+    } finally {
+      setLoadingProfile(false)
+    }
+  }
+
+  // Fetch wallet data
+  const fetchWallet = async (driverId: number) => {
+    setLoadingWallet(true)
+    try {
+      const response = await fetch(`/api/drivers/wallet?driverId=${driverId}`)
+      const data = await response.json()
+      
+      if (response.ok) {
+        setWallet(data)
+      } else {
+        toast.error(data.error || "Wallet not found")
+        setWallet(null)
+      }
+    } catch (error) {
+      toast.error("Failed to fetch wallet data")
+      setWallet(null)
+    } finally {
+      setLoadingWallet(false)
+    }
+  }
+
+  // Fetch rides data
+  const fetchRides = async (driverId: number) => {
+    setLoadingRides(true)
+    try {
+      const response = await fetch(`/api/drivers/rides?driverId=${driverId}&limit=20`)
+      const data = await response.json()
+      
+      if (response.ok) {
+        setRides(data)
+      } else {
+        toast.error(data.error || "Failed to fetch rides")
+        setRides([])
+      }
+    } catch (error) {
+      toast.error("Failed to fetch ride history")
+      setRides([])
+    } finally {
+      setLoadingRides(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -33,6 +151,7 @@ export default function DriverDashboard() {
       
       if (response.ok) {
         toast.success("Application submitted successfully! We'll review it within 24-48 hours.")
+        toast.info(`Your application number is: ${data.application.applicationNumber}`)
         e.currentTarget.reset()
       } else {
         toast.error(data.error || "Failed to submit application")
@@ -42,6 +161,43 @@ export default function DriverDashboard() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleLicenseSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (licenseNumber.trim()) {
+      fetchProfile(licenseNumber.trim())
+    } else {
+      toast.error("Please enter a license number")
+    }
+  }
+
+  const formatCurrency = (amount: number) => {
+    return `₹${amount.toFixed(2)}`
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  }
+
+  const getStatusBadge = (status: string) => {
+    const colors = {
+      pending: "bg-yellow-500/20 text-yellow-500",
+      approved: "bg-green-500/20 text-green-500",
+      rejected: "bg-red-500/20 text-red-500",
+      active: "bg-green-500/20 text-green-500",
+      completed: "bg-green-500/20 text-green-500",
+      cancelled: "bg-red-500/20 text-red-500"
+    }
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${colors[status as keyof typeof colors] || "bg-muted"}`}>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
+    )
   }
 
   return (
@@ -63,10 +219,10 @@ export default function DriverDashboard() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             {[
-              { icon: UserPlus, title: "Join as Driver", desc: "Apply to become verified" },
-              { icon: Wallet, title: "My Wallet", desc: "Check earnings" },
-              { icon: User, title: "My Profile", desc: "View driver details" },
-              { icon: Route, title: "My Rides", desc: "Review ride history" },
+              { icon: UserPlus, title: "Join as Driver", desc: "Apply to become verified", tab: "apply" },
+              { icon: Wallet, title: "My Wallet", desc: "Check earnings", tab: "wallet" },
+              { icon: User, title: "My Profile", desc: "View driver details", tab: "profile" },
+              { icon: Route, title: "My Rides", desc: "Review ride history", tab: "rides" },
             ].map((item, index) => (
               <motion.div
                 key={item.title}
@@ -74,6 +230,7 @@ export default function DriverDashboard() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.1 }}
                 whileHover={{ scale: 1.05 }}
+                onClick={() => setActiveTab(item.tab)}
               >
                 <Card className="bg-gradient-to-br from-card to-card/50 border-border/50 hover:border-primary/50 transition-all duration-300 cursor-pointer">
                   <CardContent className="p-6 text-center">
@@ -86,7 +243,7 @@ export default function DriverDashboard() {
             ))}
           </div>
 
-          <Tabs defaultValue="apply" className="max-w-4xl mx-auto">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-4xl mx-auto">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="apply">Apply</TabsTrigger>
               <TabsTrigger value="wallet">Wallet</TabsTrigger>
@@ -182,19 +339,62 @@ export default function DriverDashboard() {
                   <CardTitle>My Wallet</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {[
-                      { label: "Total Earnings", value: "₹1,250.00" },
-                      { label: "Pending Payouts", value: "₹300.00" },
-                      { label: "Last Payout", value: "₹200.00 on 2024-06-15" },
-                      { label: "Status", value: "Active" },
-                    ].map((item) => (
-                      <div key={item.label} className="bg-muted/50 rounded-lg p-4">
-                        <p className="text-sm text-muted-foreground mb-1">{item.label}</p>
-                        <p className="text-lg font-bold">{item.value}</p>
+                  {!profile && (
+                    <form onSubmit={handleLicenseSearch} className="mb-6">
+                      <Label htmlFor="walletLicense">Enter License Number to View Wallet</Label>
+                      <div className="flex gap-2 mt-2">
+                        <Input
+                          id="walletLicense"
+                          value={licenseNumber}
+                          onChange={(e) => setLicenseNumber(e.target.value)}
+                          placeholder="e.g., DL1420180012345"
+                        />
+                        <Button type="submit" disabled={loadingProfile}>
+                          {loadingProfile ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
+                        </Button>
                       </div>
-                    ))}
-                  </div>
+                    </form>
+                  )}
+
+                  {loadingWallet ? (
+                    <div className="flex justify-center items-center py-12">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  ) : wallet ? (
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="bg-muted/50 rounded-lg p-4">
+                        <p className="text-sm text-muted-foreground mb-1">Total Earnings</p>
+                        <p className="text-lg font-bold">{formatCurrency(wallet.totalEarnings)}</p>
+                      </div>
+                      <div className="bg-muted/50 rounded-lg p-4">
+                        <p className="text-sm text-muted-foreground mb-1">Pending Payouts</p>
+                        <p className="text-lg font-bold">{formatCurrency(wallet.pendingPayouts)}</p>
+                      </div>
+                      <div className="bg-muted/50 rounded-lg p-4">
+                        <p className="text-sm text-muted-foreground mb-1">Last Payout</p>
+                        <p className="text-lg font-bold">
+                          {wallet.lastPayoutAmount ? formatCurrency(wallet.lastPayoutAmount) : "N/A"}
+                          {wallet.lastPayoutDate && (
+                            <span className="text-sm font-normal text-muted-foreground block">
+                              on {formatDate(wallet.lastPayoutDate)}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <div className="bg-muted/50 rounded-lg p-4">
+                        <p className="text-sm text-muted-foreground mb-1">Status</p>
+                        <p className="text-lg font-bold">{getStatusBadge(wallet.status)}</p>
+                      </div>
+                    </div>
+                  ) : profile ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      No wallet found for this driver. Wallet will be created after first approved ride.
+                    </p>
+                  ) : (
+                    <p className="text-center text-muted-foreground py-8">
+                      Enter your license number to view wallet information
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -205,21 +405,92 @@ export default function DriverDashboard() {
                   <CardTitle>My Profile</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {[
-                      { label: "Name", value: "Ramesh Kumar" },
-                      { label: "License Number", value: "UP16XX5566" },
-                      { label: "Vehicle Type", value: "Bus" },
-                      { label: "Contact", value: "+91XXXXXXXXXX" },
-                      { label: "Blood Group", value: "B+" },
-                      { label: "Status", value: "Verified" },
-                    ].map((item) => (
-                      <div key={item.label} className="bg-muted/50 rounded-lg p-4">
-                        <p className="text-sm text-muted-foreground mb-1">{item.label}</p>
-                        <p className="font-semibold">{item.value}</p>
+                  {!profile && (
+                    <form onSubmit={handleLicenseSearch} className="mb-6">
+                      <Label htmlFor="profileLicense">Enter License Number to View Profile</Label>
+                      <div className="flex gap-2 mt-2">
+                        <Input
+                          id="profileLicense"
+                          value={licenseNumber}
+                          onChange={(e) => setLicenseNumber(e.target.value)}
+                          placeholder="e.g., DL1420180012345"
+                        />
+                        <Button type="submit" disabled={loadingProfile}>
+                          {loadingProfile ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
+                        </Button>
                       </div>
-                    ))}
-                  </div>
+                    </form>
+                  )}
+
+                  {loadingProfile ? (
+                    <div className="flex justify-center items-center py-12">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  ) : profile ? (
+                    <div className="space-y-6">
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="bg-muted/50 rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground mb-1">Name</p>
+                          <p className="font-semibold">{profile.name}</p>
+                        </div>
+                        <div className="bg-muted/50 rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground mb-1">License Number</p>
+                          <p className="font-semibold">{profile.license}</p>
+                        </div>
+                        <div className="bg-muted/50 rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground mb-1">Vehicle Type</p>
+                          <p className="font-semibold capitalize">{profile.vehicle}</p>
+                        </div>
+                        <div className="bg-muted/50 rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground mb-1">Contact</p>
+                          <p className="font-semibold">{profile.contact}</p>
+                        </div>
+                        <div className="bg-muted/50 rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground mb-1">Blood Group</p>
+                          <p className="font-semibold">{profile.bloodGroup}</p>
+                        </div>
+                        <div className="bg-muted/50 rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground mb-1">Status</p>
+                          <p className="font-semibold">{getStatusBadge(profile.status)}</p>
+                        </div>
+                        <div className="bg-muted/50 rounded-lg p-4 md:col-span-2">
+                          <p className="text-sm text-muted-foreground mb-1">Address</p>
+                          <p className="font-semibold">{profile.address}, {profile.city}, {profile.district}</p>
+                        </div>
+                        {profile.email && (
+                          <div className="bg-muted/50 rounded-lg p-4 md:col-span-2">
+                            <p className="text-sm text-muted-foreground mb-1">Email</p>
+                            <p className="font-semibold">{profile.email}</p>
+                          </div>
+                        )}
+                        <div className="bg-muted/50 rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground mb-1">Application Number</p>
+                          <p className="font-semibold">{profile.applicationNumber}</p>
+                        </div>
+                        <div className="bg-muted/50 rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground mb-1">Applied Date</p>
+                          <p className="font-semibold">{formatDate(profile.appliedDate)}</p>
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        onClick={() => {
+                          setProfile(null)
+                          setWallet(null)
+                          setRides([])
+                          setLicenseNumber("")
+                        }}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        Search Another Driver
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-center text-muted-foreground py-8">
+                      Enter your license number to view your profile
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -230,25 +501,61 @@ export default function DriverDashboard() {
                   <CardTitle>My Rides</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      { id: "001", date: "2024-06-10", route: "A to B", fare: "₹15.00" },
-                      { id: "002", date: "2024-06-12", route: "C to D", fare: "₹20.00" },
-                      { id: "003", date: "2024-06-14", route: "E to F", fare: "₹25.00" },
-                    ].map((ride) => (
-                      <div key={ride.id} className="bg-muted/50 rounded-lg p-4">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-semibold">Ride #{ride.id}</p>
-                            <p className="text-sm text-muted-foreground">
-                              Date: {ride.date} | Route: {ride.route}
-                            </p>
-                          </div>
-                          <p className="font-bold text-primary">{ride.fare}</p>
-                        </div>
+                  {!profile && (
+                    <form onSubmit={handleLicenseSearch} className="mb-6">
+                      <Label htmlFor="ridesLicense">Enter License Number to View Rides</Label>
+                      <div className="flex gap-2 mt-2">
+                        <Input
+                          id="ridesLicense"
+                          value={licenseNumber}
+                          onChange={(e) => setLicenseNumber(e.target.value)}
+                          placeholder="e.g., DL1420180012345"
+                        />
+                        <Button type="submit" disabled={loadingProfile}>
+                          {loadingProfile ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
+                        </Button>
                       </div>
-                    ))}
-                  </div>
+                    </form>
+                  )}
+
+                  {loadingRides ? (
+                    <div className="flex justify-center items-center py-12">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  ) : rides.length > 0 ? (
+                    <div className="space-y-4">
+                      {rides.map((ride) => (
+                        <div key={ride.id} className="bg-muted/50 rounded-lg p-4">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <p className="font-semibold">Ride #{ride.rideNumber}</p>
+                                {getStatusBadge(ride.status)}
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-1">
+                                <strong>Date:</strong> {formatDate(ride.date)}
+                              </p>
+                              <p className="text-sm text-muted-foreground mb-1">
+                                <strong>Route:</strong> {ride.route}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                <strong>Passengers:</strong> {ride.passengerCount}
+                              </p>
+                            </div>
+                            <p className="font-bold text-primary text-lg">{formatCurrency(ride.fare)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : profile ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      No rides found. Start driving to see your ride history here!
+                    </p>
+                  ) : (
+                    <p className="text-center text-muted-foreground py-8">
+                      Enter your license number to view your ride history
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

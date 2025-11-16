@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
+import { db } from '@/db';
+import { drivers } from '@/db/schema';
 
 export async function POST(request: NextRequest) {
   try {
@@ -50,9 +52,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create driver application
-    const application = {
-      id: `DRV${Date.now()}`,
+    // Create application number
+    const applicationNumber = Math.random().toString(36).substring(2, 12).toUpperCase()
+    const now = new Date().toISOString()
+
+    // Insert into database
+    const newDriver = await db.insert(drivers).values({
       name,
       contact,
       address,
@@ -63,32 +68,24 @@ export async function POST(request: NextRequest) {
       bloodGroup,
       email: email || null,
       fileName: idUpload.name,
-      fileSize: idUpload.size,
       fileType: idUpload.type,
       status: "pending",
-      appliedDate: new Date().toISOString(),
-      applicationNumber: Math.random().toString(36).substring(2, 12).toUpperCase(),
-    }
-
-    // In a real app, you would:
-    // 1. Upload the file to cloud storage (S3, Cloudinary, etc.)
-    // 2. Store application in database
-    // 3. Send confirmation email/SMS
-    // 4. Trigger verification workflow
-    // 5. Notify admin team
-
-    // Simulate processing delay
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+      applicationNumber,
+      appliedDate: now,
+      approvedDate: null,
+      createdAt: now,
+      updatedAt: now,
+    }).returning()
 
     return NextResponse.json({
       success: true,
-      application,
+      application: newDriver[0],
       message: "Application submitted successfully! You'll receive a confirmation within 24-48 hours.",
     })
   } catch (error) {
     console.error("Driver registration error:", error)
     return NextResponse.json(
-      { error: "Failed to submit application" },
+      { error: "Failed to submit application: " + error },
       { status: 500 }
     )
   }
