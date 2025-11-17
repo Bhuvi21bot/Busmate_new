@@ -1,12 +1,44 @@
 "use client"
 
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
+import { MapPin, Bus } from "lucide-react"
+import { useSession } from "@/lib/auth-client"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import BusTracker from "@/components/BusTracker"
-import { MapPin } from "lucide-react"
 
 export default function TrackingPage() {
+  const router = useRouter()
+  const { data: session, isPending } = useSession()
+
+  // Protect route - redirect to login if not authenticated
+  useEffect(() => {
+    if (!isPending && !session?.user) {
+      router.push("/login?redirect=/tracking")
+    }
+  }, [session, isPending, router])
+
+  // Show loading while checking auth
+  if (isPending) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        >
+          <Bus className="h-8 w-8 text-primary" />
+        </motion.div>
+      </div>
+    )
+  }
+
+  // Don't render if not authenticated
+  if (!session?.user) {
+    return null
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />

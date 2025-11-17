@@ -1,8 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { UserPlus, Wallet, User, Route, Upload, Loader2 } from "lucide-react"
+import { UserPlus, Wallet, User, Route, Upload, Loader2, Bus } from "lucide-react"
+import { useSession } from "@/lib/auth-client"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { Button } from "@/components/ui/button"
@@ -53,6 +55,8 @@ interface DriverRide {
 }
 
 export default function DriverDashboard() {
+  const router = useRouter()
+  const { data: session, isPending } = useSession()
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("apply")
   const [licenseNumber, setLicenseNumber] = useState("")
@@ -64,6 +68,32 @@ export default function DriverDashboard() {
   const [loadingProfile, setLoadingProfile] = useState(false)
   const [loadingWallet, setLoadingWallet] = useState(false)
   const [loadingRides, setLoadingRides] = useState(false)
+
+  // Protect route - redirect to login if not authenticated
+  useEffect(() => {
+    if (!isPending && !session?.user) {
+      router.push("/login?redirect=/driver-dashboard")
+    }
+  }, [session, isPending, router])
+
+  // Show loading while checking auth
+  if (isPending) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        >
+          <Bus className="h-8 w-8 text-primary" />
+        </motion.div>
+      </div>
+    )
+  }
+
+  // Don't render if not authenticated
+  if (!session?.user) {
+    return null
+  }
 
   // Fetch profile data
   const fetchProfile = async (license: string) => {

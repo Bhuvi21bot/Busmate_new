@@ -3,7 +3,9 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
-import { Menu, X, User, Wallet, Settings, MapPin } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Menu, X, User, Wallet, Settings, MapPin, LogOut, LogIn, UserPlus } from "lucide-react"
+import { authClient, useSession } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -13,9 +15,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { toast } from "sonner"
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { data: session, isPending, refetch } = useSession()
+  const router = useRouter()
 
   const navItems = [
     { label: "Home", href: "/" },
@@ -24,6 +29,27 @@ export default function Header() {
     { label: "Live Tracking", href: "/tracking" },
     { label: "Contact", href: "/#contact" },
   ]
+
+  const handleSignOut = async () => {
+    const token = localStorage.getItem("bearer_token")
+
+    const { error } = await authClient.signOut({
+      fetchOptions: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    })
+
+    if (error?.code) {
+      toast.error("Failed to sign out. Please try again.")
+    } else {
+      localStorage.removeItem("bearer_token")
+      refetch()
+      toast.success("Signed out successfully")
+      router.push("/")
+    }
+  }
 
   return (
     <motion.header
@@ -64,35 +90,66 @@ export default function Header() {
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center space-x-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Settings className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Wallet className="mr-2 h-4 w-4" />
-                My Wallet
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                Personal Details
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/driver-dashboard">Driver Dashboard</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {isPending ? (
+            <div className="h-9 w-24 bg-muted/50 animate-pulse rounded-md" />
+          ) : session?.user ? (
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium">{session.user.name}</p>
+                      <p className="text-xs text-muted-foreground">{session.user.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/driver-dashboard" className="cursor-pointer">
+                      <Wallet className="mr-2 h-4 w-4" />
+                      Driver Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/tracking" className="cursor-pointer">
+                      <MapPin className="mr-2 h-4 w-4" />
+                      Track My Ride
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-          <Link href="/booking">
-            <Button className="bg-primary hover:bg-primary/90">
-              Book Now
-            </Button>
-          </Link>
+              <Link href="/booking">
+                <Button className="bg-primary hover:bg-primary/90">
+                  Book Now
+                </Button>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/login">
+                <Button variant="ghost" size="sm">
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Login
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button className="bg-primary hover:bg-primary/90" size="sm">
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Sign Up
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -124,14 +181,53 @@ export default function Header() {
                   {item.label}
                 </Link>
               ))}
-              <Link href="/driver-dashboard" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="outline" className="w-full">
-                  Driver Dashboard
-                </Button>
-              </Link>
-              <Link href="/booking" onClick={() => setMobileMenuOpen(false)}>
-                <Button className="w-full bg-primary">Book Now</Button>
-              </Link>
+              
+              {isPending ? (
+                <div className="h-9 w-full bg-muted/50 animate-pulse rounded-md" />
+              ) : session?.user ? (
+                <>
+                  <div className="pt-2 border-t border-border/40">
+                    <p className="text-xs text-muted-foreground mb-1">Signed in as</p>
+                    <p className="text-sm font-medium">{session.user.name}</p>
+                    <p className="text-xs text-muted-foreground">{session.user.email}</p>
+                  </div>
+                  <Link href="/driver-dashboard" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full">
+                      <Wallet className="mr-2 h-4 w-4" />
+                      Driver Dashboard
+                    </Button>
+                  </Link>
+                  <Link href="/booking" onClick={() => setMobileMenuOpen(false)}>
+                    <Button className="w-full bg-primary">Book Now</Button>
+                  </Link>
+                  <Button 
+                    variant="destructive" 
+                    className="w-full"
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      handleSignOut()
+                    }}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full">
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Login
+                    </Button>
+                  </Link>
+                  <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
+                    <Button className="w-full bg-primary">
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      Sign Up
+                    </Button>
+                  </Link>
+                </>
+              )}
             </nav>
           </motion.div>
         )}

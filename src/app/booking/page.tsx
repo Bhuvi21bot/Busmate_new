@@ -1,8 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { MapPin, Calendar, Bus, Users, DollarSign, CheckCircle } from "lucide-react"
+import { useSession } from "@/lib/auth-client"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { Button } from "@/components/ui/button"
@@ -13,6 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner"
 
 export default function BookingPage() {
+  const router = useRouter()
+  const { data: session, isPending } = useSession()
   const [formData, setFormData] = useState({
     pickup: "",
     dropoff: "",
@@ -24,6 +28,32 @@ export default function BookingPage() {
   const [selectedSeats, setSelectedSeats] = useState<string[]>([])
   const [showSeatSelection, setShowSeatSelection] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
+  // Protect route - redirect to login if not authenticated
+  useEffect(() => {
+    if (!isPending && !session?.user) {
+      router.push("/login?redirect=/booking")
+    }
+  }, [session, isPending, router])
+
+  // Show loading while checking auth
+  if (isPending) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        >
+          <Bus className="h-8 w-8 text-primary" />
+        </motion.div>
+      </div>
+    )
+  }
+
+  // Don't render if not authenticated
+  if (!session?.user) {
+    return null
+  }
 
   const handleEstimateFare = async () => {
     if (!formData.pickup || !formData.dropoff || !formData.vehicleType) {
