@@ -98,9 +98,9 @@ export default function Home() {
                   Start Your Journey
                 </Button>
               </Link>
-              <Link href="/driver-dashboard">
+              <Link href="/pricing">
                 <Button size="lg" variant="outline" className="text-lg px-8">
-                  Join as Driver
+                  View Pricing
                 </Button>
               </Link>
             </motion.div>
@@ -214,11 +214,18 @@ export default function Home() {
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
               Book your ride now and experience seamless, affordable, and eco-friendly travel.
             </p>
-            <Link href="/booking">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg px-12">
-                Book Your Ride Now
-              </Button>
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/booking">
+                <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg px-12">
+                  Book Your Ride Now
+                </Button>
+              </Link>
+              <Link href="/pricing">
+                <Button size="lg" variant="outline" className="text-lg px-12">
+                  View Plans & Pricing
+                </Button>
+              </Link>
+            </div>
           </motion.div>
         </div>
       </section>

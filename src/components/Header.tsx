@@ -4,8 +4,9 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Menu, X, User, Wallet, Settings, MapPin, LogOut, LogIn, UserPlus } from "lucide-react"
+import { Menu, X, User, Wallet, Settings, MapPin, LogOut, LogIn, UserPlus, CreditCard, Zap } from "lucide-react"
 import { authClient, useSession } from "@/lib/auth-client"
+import { useCustomer } from "autumn-js/react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -20,6 +21,7 @@ import { toast } from "sonner"
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { data: session, isPending, refetch } = useSession()
+  const { customer, isLoading: isLoadingCustomer } = useCustomer()
   const router = useRouter()
 
   const navItems = [
@@ -27,6 +29,7 @@ export default function Header() {
     { label: "Vehicles", href: "/vehicles" },
     { label: "Book Ride", href: "/booking" },
     { label: "Live Tracking", href: "/tracking" },
+    { label: "Pricing", href: "/pricing" },
     { label: "Contact", href: "/#contact" },
   ]
 
@@ -50,6 +53,10 @@ export default function Header() {
       router.push("/")
     }
   }
+
+  // Get current plan for badge
+  const currentPlan = customer?.products?.at(-1)
+  const planName = currentPlan?.name || "Free"
 
   return (
     <motion.header
@@ -94,6 +101,19 @@ export default function Header() {
             <div className="h-9 w-24 bg-muted/50 animate-pulse rounded-md" />
           ) : session?.user ? (
             <>
+              {/* Plan Badge - Always Visible */}
+              {!isLoadingCustomer && (
+                <Link href="/pricing">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors cursor-pointer"
+                  >
+                    <Zap className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-xs font-medium text-primary">{planName}</span>
+                  </motion.div>
+                </Link>
+              )}
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon">
@@ -108,6 +128,12 @@ export default function Header() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/pricing" className="cursor-pointer">
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      Manage Plan
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/driver-dashboard" className="cursor-pointer">
                       <Wallet className="mr-2 h-4 w-4" />
@@ -190,7 +216,19 @@ export default function Header() {
                     <p className="text-xs text-muted-foreground mb-1">Signed in as</p>
                     <p className="text-sm font-medium">{session.user.name}</p>
                     <p className="text-xs text-muted-foreground">{session.user.email}</p>
+                    {!isLoadingCustomer && (
+                      <div className="mt-2 flex items-center gap-1.5">
+                        <Zap className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-sm font-medium text-primary">{planName} Plan</span>
+                      </div>
+                    )}
                   </div>
+                  <Link href="/pricing" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full">
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      Manage Plan
+                    </Button>
+                  </Link>
                   <Link href="/driver-dashboard" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="outline" className="w-full">
                       <Wallet className="mr-2 h-4 w-4" />
