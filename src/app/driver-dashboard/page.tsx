@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { UserPlus, Wallet, User, Route, Upload, Loader2, Bus } from "lucide-react"
+import { UserPlus, Wallet, User, Route, Upload, Loader2, Bus, DollarSign, Clock, CreditCard, CheckCircle, FileText } from "lucide-react"
 import { useSession } from "@/lib/auth-client"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
 
 interface DriverProfile {
@@ -60,6 +61,9 @@ export default function DriverDashboard() {
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("apply")
   const [licenseNumber, setLicenseNumber] = useState("")
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [licenseFile, setLicenseFile] = useState<File | null>(null)
+  const [rcFile, setRcFile] = useState<File | null>(null)
   
   // State for profile, wallet, and rides
   const [profile, setProfile] = useState<DriverProfile | null>(null)
@@ -180,9 +184,17 @@ export default function DriverDashboard() {
       const data = await response.json()
       
       if (response.ok) {
-        toast.success("Application submitted successfully! We'll review it within 24-48 hours.")
+        setShowSuccess(true)
+        toast.success("Application submitted successfully!")
         toast.info(`Your application number is: ${data.application.applicationNumber}`)
         e.currentTarget.reset()
+        setLicenseFile(null)
+        setRcFile(null)
+        
+        // Scroll to success message
+        setTimeout(() => {
+          document.getElementById('successMessage')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }, 100)
       } else {
         toast.error(data.error || "Failed to submit application")
       }
@@ -262,7 +274,7 @@ export default function DriverDashboard() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              Driver Dashboard
+              Join as a Driver
             </motion.h1>
             <motion.p 
               className="text-xl text-muted-foreground"
@@ -270,9 +282,68 @@ export default function DriverDashboard() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              Manage your driving career with ease
+              Start earning with Bus Mate today
             </motion.p>
           </motion.div>
+
+          {/* Benefits Section */}
+          <div className="grid md:grid-cols-3 gap-6 mb-12 max-w-5xl mx-auto">
+            {[
+              {
+                icon: DollarSign,
+                title: "Great Earnings",
+                description: "Earn competitive fares with regular bonuses and incentives"
+              },
+              {
+                icon: Clock,
+                title: "Flexible Hours",
+                description: "Work on your own schedule with complete freedom"
+              },
+              {
+                icon: CreditCard,
+                title: "Weekly Payouts",
+                description: "Get paid every week directly to your account"
+              },
+            ].map((benefit, index) => (
+              <motion.div
+                key={benefit.title}
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ 
+                  delay: 0.6 + index * 0.1,
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 15
+                }}
+                whileHover={{ 
+                  scale: 1.05,
+                  y: -8,
+                  transition: { type: "spring", stiffness: 400 }
+                }}
+              >
+                <Card className="bg-gradient-to-br from-card to-card/50 border-border/50 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group h-full">
+                  {/* Shine effect */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                    initial={{ x: "-100%" }}
+                    whileHover={{ x: "100%" }}
+                    transition={{ duration: 0.6 }}
+                  />
+                  
+                  <CardContent className="p-6 text-center relative z-10">
+                    <motion.div
+                      whileHover={{ rotate: 360, scale: 1.2 }}
+                      transition={{ duration: 0.6 }}
+                    >
+                      <benefit.icon className="h-12 w-12 mx-auto mb-3 text-primary" />
+                    </motion.div>
+                    <h3 className="text-lg font-bold mb-2">{benefit.title}</h3>
+                    <p className="text-sm text-muted-foreground">{benefit.description}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
 
           {/* Quick Action Cards */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -287,7 +358,7 @@ export default function DriverDashboard() {
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ 
-                  delay: 0.6 + index * 0.1,
+                  delay: 0.9 + index * 0.1,
                   type: "spring",
                   stiffness: 200,
                   damping: 15
@@ -327,7 +398,7 @@ export default function DriverDashboard() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 0.6 }}
+            transition={{ delay: 1.3, duration: 0.6 }}
           >
             <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-4xl mx-auto">
               <TabsList className="grid w-full grid-cols-4 mb-8">
@@ -345,155 +416,468 @@ export default function DriverDashboard() {
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <Card className="bg-card/50 backdrop-blur-sm border-border/50">
-                      <CardHeader>
-                        <CardTitle>Become a Verified Bus Mate Driver</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                          <div className="grid md:grid-cols-2 gap-6">
-                            {[
-                              { id: "name", label: "Full Name", type: "text" },
-                              { id: "contact", label: "Contact Number", type: "tel" },
-                            ].map((field, index) => (
-                              <motion.div
-                                key={field.id}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.1 }}
+                    {showSuccess ? (
+                      <motion.div
+                        id="successMessage"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ type: "spring", stiffness: 200 }}
+                      >
+                        <Card className="bg-gradient-to-br from-primary/10 to-card border-primary/50">
+                          <CardContent className="p-12 text-center">
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+                            >
+                              <CheckCircle className="h-20 w-20 mx-auto mb-6 text-primary" />
+                            </motion.div>
+                            <motion.h2 
+                              className="text-3xl font-bold mb-4"
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.4 }}
+                            >
+                              Application Submitted!
+                            </motion.h2>
+                            <motion.p 
+                              className="text-muted-foreground mb-6"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: 0.6 }}
+                            >
+                              Thank you for applying to become a Bus Mate driver. We&apos;ll review your application and get back to you within 2-3 business days.
+                            </motion.p>
+                            <motion.div
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.8 }}
+                            >
+                              <Button 
+                                onClick={() => {
+                                  setShowSuccess(false)
+                                  router.push("/")
+                                }}
+                                className="hover:scale-105 transition-transform"
                               >
-                                <Label htmlFor={field.id}>{field.label}</Label>
-                                <Input 
-                                  id={field.id} 
-                                  name={field.id} 
-                                  type={field.type}
-                                  required 
-                                  className="transition-all duration-300 focus:scale-[1.02]"
-                                />
-                              </motion.div>
-                            ))}
+                                Back to Home
+                              </Button>
+                            </motion.div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ) : (
+                      <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+                        <CardHeader>
+                          <CardTitle>Become a Verified Bus Mate Driver</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <form onSubmit={handleSubmit} className="space-y-8">
+                            {/* Personal Information */}
+                            <motion.div
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.1 }}
+                            >
+                              <h3 className="text-lg font-bold mb-4 pb-2 border-b border-border/50">
+                                Personal Information
+                              </h3>
+                              <div className="space-y-4">
+                                <div className="grid md:grid-cols-2 gap-4">
+                                  {[
+                                    { id: "firstName", label: "First Name", name: "name" },
+                                    { id: "lastName", label: "Last Name", name: "lastName" },
+                                  ].map((field, index) => (
+                                    <motion.div
+                                      key={field.id}
+                                      initial={{ opacity: 0, x: -20 }}
+                                      animate={{ opacity: 1, x: 0 }}
+                                      transition={{ delay: 0.2 + index * 0.05 }}
+                                    >
+                                      <Label htmlFor={field.id}>
+                                        {field.label} <span className="text-destructive">*</span>
+                                      </Label>
+                                      <Input 
+                                        id={field.id} 
+                                        name={field.name} 
+                                        required 
+                                        className="transition-all duration-300 focus:scale-[1.02]"
+                                      />
+                                    </motion.div>
+                                  ))}
+                                </div>
 
-                            <motion.div 
-                              className="md:col-span-2"
+                                <div className="grid md:grid-cols-2 gap-4">
+                                  <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.3 }}
+                                  >
+                                    <Label htmlFor="email">
+                                      Email <span className="text-destructive">*</span>
+                                    </Label>
+                                    <Input 
+                                      id="email" 
+                                      name="email" 
+                                      type="email"
+                                      required 
+                                      className="transition-all duration-300 focus:scale-[1.02]"
+                                    />
+                                  </motion.div>
+
+                                  <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.35 }}
+                                  >
+                                    <Label htmlFor="contact">
+                                      Phone Number <span className="text-destructive">*</span>
+                                    </Label>
+                                    <Input 
+                                      id="contact" 
+                                      name="contact" 
+                                      type="tel"
+                                      placeholder="+91 1234567890"
+                                      required 
+                                      className="transition-all duration-300 focus:scale-[1.02]"
+                                    />
+                                  </motion.div>
+                                </div>
+
+                                <motion.div
+                                  initial={{ opacity: 0, y: 20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ delay: 0.4 }}
+                                >
+                                  <Label htmlFor="address">
+                                    Address <span className="text-destructive">*</span>
+                                  </Label>
+                                  <Textarea 
+                                    id="address" 
+                                    name="address" 
+                                    rows={3}
+                                    placeholder="Enter your full address"
+                                    required 
+                                    className="transition-all duration-300 focus:scale-[1.01]"
+                                  />
+                                </motion.div>
+
+                                <div className="grid md:grid-cols-2 gap-4">
+                                  {[
+                                    { id: "city", label: "City" },
+                                    { id: "district", label: "District" },
+                                  ].map((field, index) => (
+                                    <motion.div
+                                      key={field.id}
+                                      initial={{ opacity: 0, x: -20 }}
+                                      animate={{ opacity: 1, x: 0 }}
+                                      transition={{ delay: 0.45 + index * 0.05 }}
+                                    >
+                                      <Label htmlFor={field.id}>
+                                        {field.label} <span className="text-destructive">*</span>
+                                      </Label>
+                                      <Input 
+                                        id={field.id} 
+                                        name={field.id} 
+                                        required 
+                                        className="transition-all duration-300 focus:scale-[1.02]"
+                                      />
+                                    </motion.div>
+                                  ))}
+                                </div>
+                              </div>
+                            </motion.div>
+
+                            {/* Vehicle Information */}
+                            <motion.div
                               initial={{ opacity: 0, y: 20 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ delay: 0.2 }}
                             >
-                              <Label htmlFor="address">Address</Label>
-                              <Textarea 
-                                id="address" 
-                                name="address" 
-                                rows={3} 
-                                required 
-                                className="transition-all duration-300 focus:scale-[1.01]"
-                              />
+                              <h3 className="text-lg font-bold mb-4 pb-2 border-b border-border/50">
+                                Vehicle Information
+                              </h3>
+                              <div className="space-y-4">
+                                <div className="grid md:grid-cols-2 gap-4">
+                                  <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.55 }}
+                                  >
+                                    <Label htmlFor="vehicle">
+                                      Vehicle Type <span className="text-destructive">*</span>
+                                    </Label>
+                                    <Select name="vehicle" required>
+                                      <SelectTrigger className="transition-all duration-300 hover:border-primary/50">
+                                        <SelectValue placeholder="Select vehicle type" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="government">Government Bus</SelectItem>
+                                        <SelectItem value="private">Private Bus</SelectItem>
+                                        <SelectItem value="chartered">Chartered Bus</SelectItem>
+                                        <SelectItem value="e-rickshaw">E-Rickshaw</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </motion.div>
+
+                                  <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.6 }}
+                                  >
+                                    <Label htmlFor="vehicleNumber">
+                                      Vehicle Number <span className="text-destructive">*</span>
+                                    </Label>
+                                    <Input 
+                                      id="vehicleNumber" 
+                                      name="vehicleNumber"
+                                      placeholder="XX-00-XX-0000"
+                                      required 
+                                      className="transition-all duration-300 focus:scale-[1.02]"
+                                    />
+                                  </motion.div>
+                                </div>
+
+                                <div className="grid md:grid-cols-2 gap-4">
+                                  <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.65 }}
+                                  >
+                                    <Label htmlFor="seatingCapacity">
+                                      Seating Capacity <span className="text-destructive">*</span>
+                                    </Label>
+                                    <Input 
+                                      id="seatingCapacity" 
+                                      name="seatingCapacity"
+                                      type="number"
+                                      min="1"
+                                      required 
+                                      className="transition-all duration-300 focus:scale-[1.02]"
+                                    />
+                                  </motion.div>
+
+                                  <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.7 }}
+                                  >
+                                    <Label htmlFor="vehicleModel">Vehicle Model</Label>
+                                    <Input 
+                                      id="vehicleModel" 
+                                      name="vehicleModel"
+                                      placeholder="e.g., Tata Starbus"
+                                      className="transition-all duration-300 focus:scale-[1.02]"
+                                    />
+                                  </motion.div>
+                                </div>
+                              </div>
                             </motion.div>
 
-                            {[
-                              { id: "city", label: "City" },
-                              { id: "district", label: "District" },
-                              { id: "license", label: "License Number" },
-                            ].map((field, index) => (
-                              <motion.div
-                                key={field.id}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.3 + index * 0.1 }}
-                              >
-                                <Label htmlFor={field.id}>{field.label}</Label>
-                                <Input 
-                                  id={field.id} 
-                                  name={field.id} 
-                                  required 
-                                  className="transition-all duration-300 focus:scale-[1.02]"
-                                />
-                              </motion.div>
-                            ))}
-
+                            {/* License & Documents */}
                             <motion.div
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: 0.6 }}
-                            >
-                              <Label htmlFor="vehicle">Vehicle Type</Label>
-                              <Select name="vehicle" required>
-                                <SelectTrigger className="transition-all duration-300 hover:border-primary/50">
-                                  <SelectValue placeholder="Select vehicle type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="bus">Bus</SelectItem>
-                                  <SelectItem value="e-rickshaw">E-Rickshaw</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </motion.div>
-
-                            {[
-                              { id: "bloodGroup", label: "Blood Group" },
-                              { id: "email", label: "Email (Optional)", type: "email" },
-                            ].map((field, index) => (
-                              <motion.div
-                                key={field.id}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.7 + index * 0.1 }}
-                              >
-                                <Label htmlFor={field.id}>{field.label}</Label>
-                                <Input 
-                                  id={field.id} 
-                                  name={field.id} 
-                                  type={field.type || "text"}
-                                  required={field.id !== "email"}
-                                  className="transition-all duration-300 focus:scale-[1.02]"
-                                />
-                              </motion.div>
-                            ))}
-
-                            <motion.div 
-                              className="md:col-span-2"
                               initial={{ opacity: 0, y: 20 }}
                               animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: 0.9 }}
+                              transition={{ delay: 0.3 }}
                             >
-                              <Label htmlFor="idUpload">Upload Vehicle ID/License</Label>
-                              <Input 
-                                id="idUpload" 
-                                name="idUpload" 
-                                type="file" 
-                                accept="image/*,.pdf" 
-                                required 
-                                className="transition-all duration-300 hover:border-primary/50"
-                              />
+                              <h3 className="text-lg font-bold mb-4 pb-2 border-b border-border/50">
+                                License & Documents
+                              </h3>
+                              <div className="space-y-4">
+                                <div className="grid md:grid-cols-2 gap-4">
+                                  <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.75 }}
+                                  >
+                                    <Label htmlFor="license">
+                                      License Number <span className="text-destructive">*</span>
+                                    </Label>
+                                    <Input 
+                                      id="license" 
+                                      name="license" 
+                                      required 
+                                      className="transition-all duration-300 focus:scale-[1.02]"
+                                    />
+                                  </motion.div>
+
+                                  <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.8 }}
+                                  >
+                                    <Label htmlFor="licenseExpiry">
+                                      License Expiry Date <span className="text-destructive">*</span>
+                                    </Label>
+                                    <Input 
+                                      id="licenseExpiry" 
+                                      name="licenseExpiry"
+                                      type="date"
+                                      min={new Date().toISOString().split('T')[0]}
+                                      required 
+                                      className="transition-all duration-300 focus:scale-[1.02]"
+                                    />
+                                  </motion.div>
+                                </div>
+
+                                <motion.div
+                                  initial={{ opacity: 0, y: 20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ delay: 0.85 }}
+                                >
+                                  <Label htmlFor="idUpload">
+                                    Upload License <span className="text-destructive">*</span>
+                                  </Label>
+                                  <div className="relative">
+                                    <Input 
+                                      id="idUpload" 
+                                      name="idUpload" 
+                                      type="file" 
+                                      accept="image/*,.pdf"
+                                      required
+                                      onChange={(e) => setLicenseFile(e.target.files?.[0] || null)}
+                                      className="hidden"
+                                    />
+                                    <label
+                                      htmlFor="idUpload"
+                                      className="flex items-center justify-center gap-2 p-4 bg-surface border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary hover:bg-primary/5 transition-all duration-300"
+                                    >
+                                      <Upload className="h-5 w-5 text-muted-foreground" />
+                                      <span className="text-sm text-muted-foreground">
+                                        {licenseFile ? licenseFile.name : "Click to upload license"}
+                                      </span>
+                                    </label>
+                                    {licenseFile && (
+                                      <motion.p 
+                                        className="text-sm text-primary mt-2"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                      >
+                                        Selected: {licenseFile.name}
+                                      </motion.p>
+                                    )}
+                                  </div>
+                                </motion.div>
+
+                                <motion.div
+                                  initial={{ opacity: 0, y: 20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ delay: 0.9 }}
+                                >
+                                  <Label htmlFor="rcFile">
+                                    Vehicle Registration Certificate <span className="text-destructive">*</span>
+                                  </Label>
+                                  <div className="relative">
+                                    <Input 
+                                      id="rcFile" 
+                                      name="rcFile" 
+                                      type="file" 
+                                      accept="image/*,.pdf"
+                                      required
+                                      onChange={(e) => setRcFile(e.target.files?.[0] || null)}
+                                      className="hidden"
+                                    />
+                                    <label
+                                      htmlFor="rcFile"
+                                      className="flex items-center justify-center gap-2 p-4 bg-surface border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary hover:bg-primary/5 transition-all duration-300"
+                                    >
+                                      <FileText className="h-5 w-5 text-muted-foreground" />
+                                      <span className="text-sm text-muted-foreground">
+                                        {rcFile ? rcFile.name : "Click to upload RC"}
+                                      </span>
+                                    </label>
+                                    {rcFile && (
+                                      <motion.p 
+                                        className="text-sm text-primary mt-2"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                      >
+                                        Selected: {rcFile.name}
+                                      </motion.p>
+                                    )}
+                                  </div>
+                                </motion.div>
+
+                                <motion.div
+                                  initial={{ opacity: 0, x: -20 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: 0.95 }}
+                                >
+                                  <Label htmlFor="bloodGroup">
+                                    Blood Group <span className="text-destructive">*</span>
+                                  </Label>
+                                  <Input 
+                                    id="bloodGroup" 
+                                    name="bloodGroup" 
+                                    placeholder="e.g., O+"
+                                    required 
+                                    className="transition-all duration-300 focus:scale-[1.02]"
+                                  />
+                                </motion.div>
+                              </div>
                             </motion.div>
-                          </div>
 
-                          <motion.div 
-                            className="bg-primary/10 border border-primary/20 rounded-lg p-4"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 1 }}
-                          >
-                            <p className="text-sm">
-                              <strong>Verification Notice:</strong> All drivers are verified through government ID and local authority checks. Your application will be reviewed within 24-48 hours.
-                            </p>
-                          </motion.div>
-
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 1.1 }}
-                          >
-                            <Button 
-                              type="submit" 
-                              className="w-full hover:scale-[1.02] transition-all duration-300 hover:shadow-lg hover:shadow-primary/50" 
-                              disabled={isLoading}
+                            {/* Terms and Conditions */}
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: 1 }}
+                              className="bg-surface rounded-lg p-4"
                             >
-                              <Upload className="h-4 w-4 mr-2" />
-                              {isLoading ? "Submitting..." : "Submit for Verification"}
-                            </Button>
-                          </motion.div>
-                        </form>
-                      </CardContent>
-                    </Card>
+                              <div className="flex items-start gap-3">
+                                <Checkbox id="terms" name="terms" required className="mt-1" />
+                                <label htmlFor="terms" className="text-sm cursor-pointer">
+                                  I agree to the{" "}
+                                  <a href="#" className="text-primary hover:underline">
+                                    Terms and Conditions
+                                  </a>{" "}
+                                  and{" "}
+                                  <a href="#" className="text-primary hover:underline">
+                                    Privacy Policy
+                                  </a>
+                                  <span className="text-destructive ml-1">*</span>
+                                </label>
+                              </div>
+                            </motion.div>
+
+                            <motion.div 
+                              className="bg-primary/10 border border-primary/20 rounded-lg p-4"
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: 1.05 }}
+                            >
+                              <p className="text-sm">
+                                <strong>Verification Notice:</strong> All drivers are verified through government ID and local authority checks. Your application will be reviewed within 24-48 hours.
+                              </p>
+                            </motion.div>
+
+                            <motion.div
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 1.1 }}
+                            >
+                              <Button 
+                                type="submit" 
+                                className="w-full hover:scale-[1.02] transition-all duration-300 hover:shadow-lg hover:shadow-primary/50" 
+                                disabled={isLoading}
+                              >
+                                {isLoading ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Submitting...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Upload className="h-4 w-4 mr-2" />
+                                    Submit Application
+                                  </>
+                                )}
+                              </Button>
+                            </motion.div>
+                          </form>
+                        </CardContent>
+                      </Card>
+                    )}
                   </motion.div>
                 </TabsContent>
 
