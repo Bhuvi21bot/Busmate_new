@@ -140,6 +140,16 @@ export default function Home() {
                   View Pricing
                 </Button>
               </Link>
+              <Link href="/driver-dashboard">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="text-lg px-8 hover:scale-105 transition-transform duration-300 hover:border-primary/50 bg-primary/5"
+                >
+                  <Users className="h-5 w-5 mr-2" />
+                  Become a Driver
+                </Button>
+              </Link>
             </motion.div>
           </motion.div>
 
