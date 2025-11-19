@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { Bus, Users, Zap, TrendingUp, CheckCircle2, Lightbulb, Trophy, ArrowRight } from "lucide-react"
+import { Bus, Users, Zap, TrendingUp, CheckCircle2, Lightbulb, Trophy, ArrowRight, Crown, Star, Gift } from "lucide-react"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { Button } from "@/components/ui/button"
@@ -54,6 +54,64 @@ export default function Home() {
       icon: TrendingUp,
       title: "Sustainable Growth",
       description: "Supporting a greener urban future through innovation and community-focused design.",
+    },
+  ]
+
+  const membershipPlans = [
+    {
+      id: "free",
+      name: "Free",
+      icon: Gift,
+      price: "$0",
+      period: "forever",
+      description: "Perfect for occasional travelers",
+      features: [
+        "3 bookings per month",
+        "Standard route search",
+        "View schedules & fares",
+        "Email support",
+      ],
+      buttonText: "Get Started",
+      buttonVariant: "outline" as const,
+    },
+    {
+      id: "plus",
+      name: "Plus",
+      icon: Star,
+      price: "$9.99",
+      period: "per month",
+      description: "Best for regular commuters",
+      features: [
+        "10 bookings per month",
+        "Ad-free experience",
+        "Priority booking",
+        "Advanced seat selection",
+        "Real-time bus tracking",
+        "Live chat support",
+      ],
+      buttonText: "Upgrade to Plus",
+      buttonVariant: "default" as const,
+      popular: true,
+    },
+    {
+      id: "premium",
+      name: "Premium",
+      icon: Crown,
+      price: "$24.99",
+      period: "per month",
+      description: "For frequent travelers",
+      features: [
+        "Unlimited bookings",
+        "Everything in Plus",
+        "Early access to new routes",
+        "Concierge booking service",
+        "Multi-passenger bookings",
+        "Loyalty rewards & points",
+        "Flexible cancellation",
+        "Travel insurance included",
+      ],
+      buttonText: "Go Premium",
+      buttonVariant: "default" as const,
     },
   ]
 
@@ -185,20 +243,118 @@ export default function Home() {
                   transition={{ duration: 0.6 }}
                 />
                 
-                <motion.div
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ 
-                    duration: 20, 
-                    repeat: Infinity, 
-                    ease: "linear" 
-                  }}
-                >
-                  <stat.icon className="h-8 w-8 mx-auto mb-3 text-primary" />
-                </motion.div>
+                <stat.icon className="h-8 w-8 mx-auto mb-3 text-primary" />
                 <div className="text-3xl font-bold text-heading mb-1">{stat.value}</div>
                 <div className="text-sm text-muted-foreground">{stat.label}</div>
               </motion.div>
             ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Membership Plans Section */}
+      <section className="py-20 bg-gradient-to-br from-primary/5 via-background to-background relative overflow-hidden">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-12"
+          >
+            <motion.h2 
+              className="text-3xl md:text-5xl font-bold mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              Choose Your <span className="bg-gradient-to-r from-primary via-green-400 to-primary bg-clip-text text-transparent">Membership Plan</span>
+            </motion.h2>
+            <motion.p 
+              className="text-xl text-muted-foreground"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              Flexible plans for every type of traveler
+            </motion.p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {membershipPlans.map((plan, index) => (
+              <motion.div
+                key={plan.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ 
+                  delay: index * 0.2,
+                  type: "spring",
+                  stiffness: 100 
+                }}
+                whileHover={{ 
+                  y: -10,
+                  transition: { type: "spring", stiffness: 400 }
+                }}
+              >
+                <Card className={`h-full relative overflow-hidden ${
+                  plan.popular 
+                    ? "border-primary/50 bg-gradient-to-br from-primary/10 to-card shadow-lg shadow-primary/20" 
+                    : "bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50"
+                } transition-all duration-300`}>
+                  {plan.popular && (
+                    <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-bl-lg">
+                      MOST POPULAR
+                    </div>
+                  )}
+                  
+                  <CardContent className="p-8">
+                    <plan.icon className="h-12 w-12 text-primary mb-4" />
+                    <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                    <div className="mb-4">
+                      <span className="text-4xl font-bold">{plan.price}</span>
+                      <span className="text-muted-foreground ml-2">{plan.period}</span>
+                    </div>
+                    <p className="text-muted-foreground mb-6">{plan.description}</p>
+                    
+                    <ul className="space-y-3 mb-8">
+                      {plan.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                          <span className="text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    
+                    <Link href="/pricing" className="block">
+                      <Button 
+                        variant={plan.buttonVariant}
+                        className={`w-full ${plan.popular ? "bg-primary hover:bg-primary/90" : ""}`}
+                        size="lg"
+                      >
+                        {plan.buttonText}
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.6 }}
+            className="text-center mt-12"
+          >
+            <Link href="/pricing">
+              <Button variant="outline" size="lg" className="hover:border-primary/50">
+                View Detailed Pricing
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
           </motion.div>
         </div>
       </section>
@@ -256,12 +412,7 @@ export default function Home() {
                   />
                   
                   <CardContent className="p-6 relative z-10">
-                    <motion.div
-                      whileHover={{ rotate: 360, scale: 1.1 }}
-                      transition={{ duration: 0.6 }}
-                    >
-                      <feature.icon className="h-12 w-12 text-primary mb-4" />
-                    </motion.div>
+                    <feature.icon className="h-12 w-12 text-primary mb-4" />
                     <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
                     <p className="text-muted-foreground">{feature.description}</p>
                   </CardContent>
@@ -322,29 +473,8 @@ export default function Home() {
                 }}
               >
                 <Card className="h-full bg-gradient-to-br from-card to-card/50 border-border/50 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
-                  {/* Shimmer effect */}
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent"
-                    initial={{ x: "-100%" }}
-                    animate={{ x: "100%" }}
-                    transition={{
-                      duration: 3,
-                      repeat: Infinity,
-                      repeatDelay: 2,
-                      ease: "easeInOut"
-                    }}
-                  />
-                  
                   <CardContent className="p-6 text-center relative z-10">
-                    <motion.div
-                      whileHover={{ 
-                        scale: 1.2,
-                        rotate: [0, -10, 10, 0],
-                      }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      <service.icon className="h-16 w-16 mx-auto mb-4 text-primary" />
-                    </motion.div>
+                    <service.icon className="h-16 w-16 mx-auto mb-4 text-primary" />
                     <h3 className="text-xl font-bold mb-3">{service.title}</h3>
                     <p className="text-sm text-muted-foreground">{service.description}</p>
                   </CardContent>
