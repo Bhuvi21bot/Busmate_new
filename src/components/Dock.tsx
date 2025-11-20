@@ -188,11 +188,19 @@ export default function Dock({
     <motion.div 
       style={{ height, scrollbarWidth: 'none' }} 
       className="dock-outer"
+      initial={{ y: 0, opacity: 1, scale: 1 }}
       animate={{ 
-        y: isVisible ? 0 : 100,
-        opacity: isVisible ? 1 : 0
+        y: isVisible ? 0 : 120,
+        opacity: isVisible ? 1 : 0,
+        scale: isVisible ? 1 : 0.95,
+        filter: isVisible ? "blur(0px)" : "blur(4px)"
       }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
+      transition={{ 
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+        mass: 0.8
+      }}
     >
       <motion.div
         onMouseMove={({ pageX }) => {
