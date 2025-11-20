@@ -150,7 +150,8 @@ export default function Dock({
 }: DockProps) {
   const mouseX = useMotionValue(Infinity);
   const isHovered = useMotionValue(0);
-  const [isAtBottom, setIsAtBottom] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   const maxHeight = useMemo(
     () => Math.max(dockHeight, magnification + magnification / 2 + 4),
@@ -159,31 +160,37 @@ export default function Dock({
   const heightRow = useTransform(isHovered, [0, 1], [panelHeight, maxHeight]);
   const height = useSpring(heightRow, spring);
 
-  // Detect scroll to bottom
+  // Detect scroll direction
   useEffect(() => {
     const handleScroll = () => {
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const currentScrollY = window.scrollY;
       
-      // Check if user is within 50px of the bottom
-      const isBottom = windowHeight + scrollTop >= documentHeight - 50;
-      setIsAtBottom(isBottom);
+      // Only hide/show if scrolled more than 10px to avoid jitter
+      if (Math.abs(currentScrollY - lastScrollY) < 10) return;
+      
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down & not at top
+        setIsVisible(false);
+      } else {
+        // Scrolling up or at top
+        setIsVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
     };
 
-    window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Check initial position
+    window.addEventListener('scroll', handleScroll, { passive: true });
     
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [lastScrollY]);
 
   return (
     <motion.div 
       style={{ height, scrollbarWidth: 'none' }} 
       className="dock-outer"
       animate={{ 
-        y: isAtBottom ? 100 : 0,
-        opacity: isAtBottom ? 0 : 1
+        y: isVisible ? 0 : 100,
+        opacity: isVisible ? 1 : 0
       }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
     >
