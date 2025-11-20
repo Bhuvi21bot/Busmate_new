@@ -8,6 +8,7 @@ import { VscHome, VscCalendar } from "react-icons/vsc"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import Dock from "@/components/Dock"
+import ScrollToTop from "@/components/ScrollToTop"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 
@@ -597,6 +598,9 @@ export default function Home() {
         magnification={70}
         distance={200}
       />
+
+      {/* Scroll to Top Button */}
+      <ScrollToTop />
     </div>
   )
 }

@@ -114,9 +114,9 @@ export default function ChatBot() {
 
   return (
     <>
-      {/* Chat Toggle Button */}
+      {/* Chat Toggle Button - Moved to LEFT bottom */}
       <motion.div
-        className="fixed bottom-6 right-6 z-50"
+        className="fixed bottom-6 left-6 z-50"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: 1 }}
@@ -130,14 +130,14 @@ export default function ChatBot() {
         </Button>
       </motion.div>
 
-      {/* Chat Panel */}
+      {/* Chat Panel - Moved to LEFT bottom */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-3rem)]"
+            className="fixed bottom-24 left-6 z-50 w-96 max-w-[calc(100vw-3rem)]"
           >
             <Card className="bg-card/95 backdrop-blur-xl border-border/50 shadow-2xl overflow-hidden">
               {/* Header */}
