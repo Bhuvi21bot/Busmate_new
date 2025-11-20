@@ -160,20 +160,8 @@ export default function Dock({
 
   return (
     <motion.div 
-      style={{ height, scrollbarWidth: 'none' }} 
+      style={{ height }} 
       className="dock-outer"
-      initial={{ y: 0, opacity: 1, scale: 1 }}
-      animate={{ 
-        y: 0,
-        opacity: 1,
-        scale: 1
-      }}
-      transition={{ 
-        type: "spring",
-        stiffness: 300,
-        damping: 30,
-        mass: 0.8
-      }}
     >
       <motion.div
         onMouseMove={({ pageX }) => {
