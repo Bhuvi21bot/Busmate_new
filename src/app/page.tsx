@@ -62,7 +62,7 @@ export default function Home() {
       id: "free",
       name: "Free",
       icon: Gift,
-      price: "$0",
+      price: "₹0",
       period: "forever",
       description: "Perfect for occasional travelers",
       features: [
@@ -78,7 +78,7 @@ export default function Home() {
       id: "premium",
       name: "Premium",
       icon: Star,
-      price: "$14.99",
+      price: "₹1,249",
       period: "per month",
       description: "Best for regular commuters",
       features: [
@@ -98,7 +98,7 @@ export default function Home() {
       id: "super_premium",
       name: "Super Premium",
       icon: Crown,
-      price: "$29.99",
+      price: "₹2,499",
       period: "per month",
       description: "For frequent travelers",
       features: [
@@ -246,7 +246,12 @@ export default function Home() {
                   transition={{ duration: 0.6 }}
                 />
                 
-                <stat.icon className="h-8 w-8 mx-auto mb-3 text-primary" />
+                <motion.div
+                  whileHover={{ scale: 1.2 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
+                  <stat.icon className="h-8 w-8 mx-auto mb-3 text-primary" />
+                </motion.div>
                 <div className="text-3xl font-bold text-heading mb-1">{stat.value}</div>
                 <div className="text-sm text-muted-foreground">{stat.label}</div>
               </motion.div>

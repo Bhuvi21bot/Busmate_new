@@ -56,7 +56,7 @@ export default function PricingPage() {
       description: "Best for regular commuters who value convenience",
       recommendText: "Most Popular",
       price: {
-        primaryText: "$14.99/month",
+        primaryText: "₹1,249/month",
         secondaryText: "billed monthly",
       },
       items: [
@@ -101,7 +101,7 @@ export default function PricingPage() {
       id: "super_premium",
       description: "For frequent travelers who demand the best experience",
       price: {
-        primaryText: "$29.99/month",
+        primaryText: "₹2,499/month",
         secondaryText: "billed monthly",
       },
       items: [
@@ -182,12 +182,12 @@ export default function PricingPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-black">
       <Header />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 md:py-32">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background" />
+      <section className="relative overflow-hidden py-20 md:py-32 bg-black">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-black to-black" />
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -196,7 +196,7 @@ export default function PricingPage() {
             className="text-center max-w-3xl mx-auto"
           >
             <motion.h1
-              className="text-4xl md:text-6xl font-bold mb-6"
+              className="text-4xl md:text-6xl font-bold mb-6 text-white"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -204,7 +204,7 @@ export default function PricingPage() {
               Choose Your <span className="bg-gradient-to-r from-primary via-green-400 to-primary bg-clip-text text-transparent">Perfect Plan</span>
             </motion.h1>
             <motion.p
-              className="text-lg md:text-xl text-muted-foreground mb-8"
+              className="text-lg md:text-xl text-gray-300 mb-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
@@ -217,10 +217,10 @@ export default function PricingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/30"
               >
                 <Zap className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium">
+                <span className="text-sm font-medium text-white">
                   Current Plan: <span className="text-primary">{customer?.products?.at(-1)?.name || "Free"}</span>
                 </span>
               </motion.div>
@@ -230,14 +230,14 @@ export default function PricingPage() {
       </section>
 
       {/* Pricing Table Section */}
-      <section className="py-12">
+      <section className="py-12 bg-black">
         <div className="container mx-auto px-4">
           <PricingTable productDetails={productDetails} />
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-card/30">
+      <section className="py-20 bg-zinc-950">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0 }}
@@ -245,8 +245,8 @@ export default function PricingPage() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose Bus Mate?</h2>
-            <p className="text-lg text-muted-foreground">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">Why Choose Bus Mate?</h2>
+            <p className="text-lg text-gray-300">
               More than just a booking platform
             </p>
           </motion.div>
@@ -259,12 +259,18 @@ export default function PricingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.05 }}
               >
-                <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300">
+                <Card className="h-full bg-zinc-900/80 backdrop-blur-sm border-zinc-800 hover:border-primary/50 transition-all duration-300">
                   <CardContent className="p-6 text-center">
-                    <feature.icon className="h-12 w-12 mx-auto mb-4 text-primary" />
-                    <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-sm text-muted-foreground">{feature.description}</p>
+                    <motion.div
+                      whileHover={{ scale: 1.2 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                    >
+                      <feature.icon className="h-12 w-12 mx-auto mb-4 text-primary" />
+                    </motion.div>
+                    <h3 className="text-lg font-semibold mb-2 text-white">{feature.title}</h3>
+                    <p className="text-sm text-gray-400">{feature.description}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -274,7 +280,7 @@ export default function PricingPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20">
+      <section className="py-20 bg-black">
         <div className="container mx-auto px-4 max-w-3xl">
           <motion.div
             initial={{ opacity: 0 }}
@@ -282,42 +288,42 @@ export default function PricingPage() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Frequently Asked Questions</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">Frequently Asked Questions</h2>
           </motion.div>
 
           <div className="space-y-6">
-            <Card className="bg-card/50 backdrop-blur-sm">
+            <Card className="bg-zinc-900/80 backdrop-blur-sm border-zinc-800">
               <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-2">Can I change my plan anytime?</h3>
-                <p className="text-muted-foreground">
+                <h3 className="text-lg font-semibold mb-2 text-white">Can I change my plan anytime?</h3>
+                <p className="text-gray-400">
                   Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-card/50 backdrop-blur-sm">
+            <Card className="bg-zinc-900/80 backdrop-blur-sm border-zinc-800">
               <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-2">What payment methods do you accept?</h3>
-                <p className="text-muted-foreground">
+                <h3 className="text-lg font-semibold mb-2 text-white">What payment methods do you accept?</h3>
+                <p className="text-gray-400">
                   We accept all major credit cards, debit cards, and digital wallets through our secure payment processor.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-card/50 backdrop-blur-sm">
+            <Card className="bg-zinc-900/80 backdrop-blur-sm border-zinc-800">
               <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-2">Is there a long-term commitment?</h3>
-                <p className="text-muted-foreground">
+                <h3 className="text-lg font-semibold mb-2 text-white">Is there a long-term commitment?</h3>
+                <p className="text-gray-400">
                   No! All plans are month-to-month with no long-term commitment. Cancel anytime.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-card/50 backdrop-blur-sm">
+            <Card className="bg-zinc-900/80 backdrop-blur-sm border-zinc-800">
               <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-2">What happens when I reach my booking limit?</h3>
-                <p className="text-muted-foreground">
-                  Free plan users have 3 bookings per month, Plus users get 10. Premium users enjoy unlimited bookings. You'll be prompted to upgrade if you reach your limit.
+                <h3 className="text-lg font-semibold mb-2 text-white">What happens when I reach my booking limit?</h3>
+                <p className="text-gray-400">
+                  Free plan users have 10 bookings per month, Premium users get 25. Super Premium users enjoy unlimited bookings. You'll be prompted to upgrade if you reach your limit.
                 </p>
               </CardContent>
             </Card>
