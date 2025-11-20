@@ -3,15 +3,24 @@
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { MapPin, Bus } from "lucide-react"
+import { MapPin, Bus, Wallet } from "lucide-react"
+import { VscHome, VscCalendar } from "react-icons/vsc"
 import { useSession } from "@/lib/auth-client"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
+import Dock from "@/components/Dock"
 import BusTracker from "@/components/BusTracker"
 
 export default function TrackingPage() {
   const router = useRouter()
   const { data: session, isPending } = useSession()
+
+  // Dock items
+  const dockItems = [
+    { icon: <VscHome size={20} />, label: 'Home', onClick: () => router.push('/') },
+    { icon: <VscCalendar size={20} />, label: 'Booking', onClick: () => router.push('/booking') },
+    { icon: <Wallet size={20} />, label: 'My Wallet', onClick: () => router.push('/driver-dashboard?tab=wallet') },
+  ]
 
   // Protect route - redirect to login if not authenticated
   useEffect(() => {
@@ -194,6 +203,13 @@ export default function TrackingPage() {
       </section>
 
       <Footer />
+
+      <Dock 
+        items={dockItems}
+        panelHeight={68}
+        baseItemSize={50}
+        magnification={70}
+      />
     </div>
   )
 }

@@ -1,19 +1,28 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { MapPin, Clock, Users, Shield, Star, ArrowLeft, Check } from "lucide-react"
+import { MapPin, Clock, Users, Shield, Star, ArrowLeft, Check, Wallet } from "lucide-react"
+import { VscHome, VscCalendar } from "react-icons/vsc"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import Dock from "@/components/Dock"
 
 export default function VehicleDetailPage() {
   const params = useParams()
   const id = params.id
+  const router = useRouter()
+
+  const dockItems = [
+    { icon: <VscHome size={20} />, label: 'Home', onClick: () => router.push('/') },
+    { icon: <VscCalendar size={20} />, label: 'Booking', onClick: () => router.push('/booking') },
+    { icon: <Wallet size={20} />, label: 'My Wallet', onClick: () => router.push('/driver-dashboard?tab=wallet') },
+  ]
 
   // Mock data - in a real app, this would be fetched from an API
   const vehicle = {
@@ -209,8 +218,8 @@ export default function VehicleDetailPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <motion.div
-                        animate={{ rotate: [0, 360] }}
-                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                        whileHover={{ scale: 1.2 }}
+                        transition={{ type: "spring", stiffness: 400 }}
                       >
                         <Shield className="h-5 w-5 text-primary" />
                       </motion.div>
@@ -336,6 +345,13 @@ export default function VehicleDetailPage() {
       </section>
 
       <Footer />
+
+      <Dock 
+        items={dockItems}
+        panelHeight={68}
+        baseItemSize={50}
+        magnification={70}
+      />
     </div>
   )
 }

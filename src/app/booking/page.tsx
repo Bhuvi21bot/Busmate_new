@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { MapPin, Calendar, Bus, Users, DollarSign, CheckCircle, AlertCircle, Zap, Crown, ArrowRight, Sparkles } from "lucide-react"
+import { MapPin, Calendar, Bus, Users, DollarSign, CheckCircle, AlertCircle, Zap, Crown, ArrowRight, Sparkles, Wallet } from "lucide-react"
+import { VscHome, VscCalendar } from "react-icons/vsc"
 import { useSession } from "@/lib/auth-client"
 import { useCustomer } from "autumn-js/react"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
+import Dock from "@/components/Dock"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -22,6 +24,13 @@ export default function BookingPage() {
   const { data: session, isPending } = useSession()
   const { customer, check, track, refetch, isLoading: isLoadingCustomer } = useCustomer()
   
+  // Dock items
+  const dockItems = [
+    { icon: <VscHome size={20} />, label: 'Home', onClick: () => router.push('/') },
+    { icon: <VscCalendar size={20} />, label: 'Booking', onClick: () => router.push('/booking') },
+    { icon: <Wallet size={20} />, label: 'My Wallet', onClick: () => router.push('/driver-dashboard?tab=wallet') },
+  ]
+
   const [formData, setFormData] = useState({
     pickup: "",
     dropoff: "",
@@ -747,6 +756,13 @@ export default function BookingPage() {
       </section>
 
       <Footer />
+
+      <Dock 
+        items={dockItems}
+        panelHeight={68}
+        baseItemSize={50}
+        magnification={70}
+      />
     </div>
   )
 }

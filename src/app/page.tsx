@@ -2,13 +2,25 @@
 
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { Bus, Users, Zap, TrendingUp, CheckCircle2, Lightbulb, Trophy, ArrowRight, Crown, Star, Gift } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Bus, Users, Zap, TrendingUp, CheckCircle2, Lightbulb, Trophy, ArrowRight, Crown, Star, Gift, Home as HomeIcon, Wallet } from "lucide-react"
+import { VscHome, VscCalendar } from "react-icons/vsc"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
+import Dock from "@/components/Dock"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 
 export default function Home() {
+  const router = useRouter()
+
+  // Dock items configuration
+  const dockItems = [
+    { icon: <VscHome size={20} />, label: 'Home', onClick: () => router.push('/') },
+    { icon: <VscCalendar size={20} />, label: 'Booking', onClick: () => router.push('/booking') },
+    { icon: <Wallet size={20} />, label: 'My Wallet', onClick: () => router.push('/driver-dashboard?tab=wallet') },
+  ]
+
   const stats = [
     { icon: Trophy, label: "Bus Operators", value: "25+" },
     { icon: Users, label: "Active Buses", value: "850+" },
@@ -576,6 +588,15 @@ export default function Home() {
       </section>
 
       <Footer />
+
+      {/* Dock Component */}
+      <Dock 
+        items={dockItems}
+        panelHeight={68}
+        baseItemSize={50}
+        magnification={70}
+        distance={200}
+      />
     </div>
   )
 }

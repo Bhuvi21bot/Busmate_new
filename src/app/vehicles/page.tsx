@@ -4,15 +4,25 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowRight, Info, Sparkles } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { ArrowRight, Info, Sparkles, Wallet } from "lucide-react"
+import { VscHome, VscCalendar } from "react-icons/vsc"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import Dock from "@/components/Dock"
 
 export default function VehiclesPage() {
   const [activeTab, setActiveTab] = useState("all")
+  const router = useRouter()
+
+  const dockItems = [
+    { icon: <VscHome size={20} />, label: 'Home', onClick: () => router.push('/') },
+    { icon: <VscCalendar size={20} />, label: 'Booking', onClick: () => router.push('/booking') },
+    { icon: <Wallet size={20} />, label: 'My Wallet', onClick: () => router.push('/driver-dashboard?tab=wallet') },
+  ]
 
   const vehicles = [
     {
@@ -232,6 +242,13 @@ export default function VehiclesPage() {
       </section>
 
       <Footer />
+
+      <Dock 
+        items={dockItems}
+        panelHeight={68}
+        baseItemSize={50}
+        magnification={70}
+      />
     </div>
   )
 }
