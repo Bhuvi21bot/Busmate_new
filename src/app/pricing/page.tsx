@@ -34,6 +34,8 @@ export default function PricingPage() {
       items: [
         {
           featureId: "bookings",
+          primaryText: "10 bookings per month",
+          secondaryText: "Book your rides with ease",
         },
         {
           primaryText: "Standard route search",
@@ -47,23 +49,31 @@ export default function PricingPage() {
           primaryText: "Email support",
           secondaryText: "24-hour response time",
         },
-        {
-          primaryText: "Ad-supported experience",
-          secondaryText: "Helps keep the service free",
-        },
       ],
     },
     {
-      id: "plus",
+      id: "premium",
       description: "Best for regular commuters who value convenience",
       recommendText: "Most Popular",
       price: {
-        primaryText: "$9.99/month",
+        primaryText: "$14.99/month",
         secondaryText: "billed monthly",
       },
       items: [
         {
           featureId: "bookings",
+          primaryText: "25 bookings per month",
+          secondaryText: "More trips for regular commuters",
+        },
+        {
+          featureId: "seat_selection",
+          primaryText: "Seat choice available",
+          secondaryText: "Choose your preferred seat",
+        },
+        {
+          featureId: "third_booking_discount",
+          primaryText: "10% discount on every 3rd booking",
+          secondaryText: "Save money on frequent trips",
         },
         {
           featureId: "ad_free",
@@ -76,19 +86,9 @@ export default function PricingPage() {
           secondaryText: "Book before other passengers",
         },
         {
-          featureId: "seat_selection",
-          primaryText: "Advanced seat selection",
-          secondaryText: "Choose your preferred seat",
-        },
-        {
           featureId: "real_time_tracking",
           primaryText: "Real-time bus tracking",
           secondaryText: "Live location updates",
-        },
-        {
-          featureId: "booking_history",
-          primaryText: "Booking history & receipts",
-          secondaryText: "Full travel records",
         },
         {
           featureId: "live_chat",
@@ -98,10 +98,10 @@ export default function PricingPage() {
       ],
     },
     {
-      id: "premium",
+      id: "super_premium",
       description: "For frequent travelers who demand the best experience",
       price: {
-        primaryText: "$24.99/month",
+        primaryText: "$29.99/month",
         secondaryText: "billed monthly",
       },
       items: [
@@ -111,7 +111,17 @@ export default function PricingPage() {
           secondaryText: "No monthly limits",
         },
         {
-          primaryText: "Everything in Plus, plus:",
+          featureId: "multi_passenger",
+          primaryText: "Multiple bookings at a time",
+          secondaryText: "Book for up to 10 passengers",
+        },
+        {
+          featureId: "express_checkin",
+          primaryText: "Express check-in & fast boarding",
+          secondaryText: "Skip lines, save time",
+        },
+        {
+          primaryText: "Everything in Premium, plus:",
           secondaryText: "",
         },
         {
@@ -123,11 +133,6 @@ export default function PricingPage() {
           featureId: "concierge_service",
           primaryText: "Concierge booking service",
           secondaryText: "Personal booking assistance",
-        },
-        {
-          featureId: "multi_passenger",
-          primaryText: "Multi-passenger bookings",
-          secondaryText: "Book for up to 5 passengers",
         },
         {
           featureId: "loyalty_rewards",

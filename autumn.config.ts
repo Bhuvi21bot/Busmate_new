@@ -84,6 +84,18 @@ export const travelInsurance = feature({
   type: "boolean",
 });
 
+export const thirdBookingDiscount = feature({
+  id: "third_booking_discount",
+  name: "10% Discount on Every 3rd Booking",
+  type: "boolean",
+});
+
+export const expressCheckin = feature({
+  id: "express_checkin",
+  name: "Express Check-in",
+  type: "boolean",
+});
+
 export const free = product({
   id: "free",
   name: "Free",
@@ -91,42 +103,8 @@ export const free = product({
   items: [
     featureItem({
       feature_id: bookings.id,
-      included_usage: 3,
-      interval: "month",
-    }),
-  ],
-});
-
-export const plus = product({
-  id: "plus",
-  name: "Plus",
-  items: [
-    priceItem({
-      price: 9.99,
-      interval: "month",
-    }),
-    featureItem({
-      feature_id: bookings.id,
       included_usage: 10,
       interval: "month",
-    }),
-    featureItem({
-      feature_id: adFree.id,
-    }),
-    featureItem({
-      feature_id: priorityBooking.id,
-    }),
-    featureItem({
-      feature_id: seatSelection.id,
-    }),
-    featureItem({
-      feature_id: realTimeTracking.id,
-    }),
-    featureItem({
-      feature_id: bookingHistory.id,
-    }),
-    featureItem({
-      feature_id: liveChat.id,
     }),
   ],
 });
@@ -136,12 +114,54 @@ export const premium = product({
   name: "Premium",
   items: [
     priceItem({
-      price: 24.99,
+      price: 14.99,
       interval: "month",
     }),
     featureItem({
       feature_id: bookings.id,
-      included_usage: -1,
+      included_usage: 25,
+      interval: "month",
+    }),
+    featureItem({
+      feature_id: seatSelection.id,
+    }),
+    featureItem({
+      feature_id: thirdBookingDiscount.id,
+    }),
+    featureItem({
+      feature_id: adFree.id,
+    }),
+    featureItem({
+      feature_id: priorityBooking.id,
+    }),
+    featureItem({
+      feature_id: realTimeTracking.id,
+    }),
+    featureItem({
+      feature_id: bookingHistory.id,
+    }),
+    featureItem({
+      feature_id: liveChat.id,
+    }),
+  ],
+});
+
+export const superPremium = product({
+  id: "super_premium",
+  name: "Super Premium",
+  items: [
+    priceItem({
+      price: 29.99,
+      interval: "month",
+    }),
+    featureItem({
+      feature_id: bookings.id,
+      included_usage: 999999,
+      interval: "month",
+    }),
+    featureItem({
+      feature_id: multiPassenger.id,
+      included_usage: 10,
     }),
     featureItem({
       feature_id: adFree.id,
@@ -162,14 +182,13 @@ export const premium = product({
       feature_id: liveChat.id,
     }),
     featureItem({
+      feature_id: thirdBookingDiscount.id,
+    }),
+    featureItem({
       feature_id: earlyRouteAccess.id,
     }),
     featureItem({
       feature_id: conciergeService.id,
-    }),
-    featureItem({
-      feature_id: multiPassenger.id,
-      included_usage: 5,
     }),
     featureItem({
       feature_id: loyaltyRewards.id,
@@ -182,6 +201,9 @@ export const premium = product({
     }),
     featureItem({
       feature_id: travelInsurance.id,
+    }),
+    featureItem({
+      feature_id: expressCheckin.id,
     }),
   ],
 });
