@@ -152,6 +152,7 @@ export default function Dock({
   const isHovered = useMotionValue(0);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const maxHeight = useMemo(
     () => Math.max(dockHeight, magnification + magnification / 2 + 4),
@@ -160,28 +161,56 @@ export default function Dock({
   const heightRow = useTransform(isHovered, [0, 1], [panelHeight, maxHeight]);
   const height = useSpring(heightRow, spring);
 
-  // Detect scroll direction
+  // Detect scroll direction with improved logic
   useEffect(() => {
+    let ticking = false;
+    
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      // Only hide/show if scrolled more than 10px to avoid jitter
-      if (Math.abs(currentScrollY - lastScrollY) < 10) return;
-      
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down & not at top
-        setIsVisible(false);
-      } else {
-        // Scrolling up or at top
-        setIsVisible(true);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          
+          // Always show at top of page
+          if (currentScrollY < 50) {
+            setIsVisible(true);
+            setLastScrollY(currentScrollY);
+            ticking = false;
+            return;
+          }
+          
+          // Only update if scrolled more than 5px to avoid jitter
+          const scrollDiff = currentScrollY - lastScrollY;
+          
+          if (Math.abs(scrollDiff) > 5) {
+            if (scrollDiff > 0 && currentScrollY > 100) {
+              // Scrolling down & past threshold
+              setIsVisible(false);
+            } else if (scrollDiff < 0) {
+              // Scrolling up
+              setIsVisible(true);
+            }
+            
+            setLastScrollY(currentScrollY);
+          }
+          
+          ticking = false;
+        });
+        
+        ticking = true;
       }
-      
-      setLastScrollY(currentScrollY);
     };
+
+    // Initialize - dock always starts visible
+    setLastScrollY(window.scrollY);
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollTimeout.current) {
+        clearTimeout(scrollTimeout.current);
+      }
+    };
   }, [lastScrollY]);
 
   return (
