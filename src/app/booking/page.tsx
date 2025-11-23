@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { MapPin, Calendar, Bus, Users, DollarSign, CheckCircle, Zap, ArrowRight, Sparkles, Wallet } from "lucide-react"
+import { MapPin, Calendar, Bus, Users, DollarSign, CheckCircle, Zap, ArrowRight, Sparkles, Wallet, Clock, Armchair } from "lucide-react"
 import { VscHome, VscCalendar } from "react-icons/vsc"
 import { useSession } from "@/lib/auth-client"
 import Header from "@/components/Header"
@@ -15,6 +15,29 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
+
+// Indian cities list
+const INDIAN_CITIES = [
+  "Agra", "Ahmedabad", "Ajmer", "Aligarh", "Allahabad", "Amritsar", "Aurangabad",
+  "Bangalore", "Bareilly", "Bhopal", "Bhubaneswar", "Bikaner",
+  "Chandigarh", "Chennai", "Coimbatore", "Cuttack",
+  "Dehradun", "Delhi", "Dhanbad", "Durgapur",
+  "Faridabad", "Firozabad",
+  "Ghaziabad", "Gorakhpur", "Gulbarga", "Guntur", "Gurgaon", "Guwahati", "Gwalior",
+  "Haridwar", "Howrah", "Hyderabad",
+  "Indore",
+  "Jabalpur", "Jaipur", "Jalandhar", "Jamshedpur", "Jhansi", "Jodhpur",
+  "Kanpur", "Kochi", "Kolkata", "Kota",
+  "Lucknow", "Ludhiana",
+  "Madurai", "Meerut", "Moradabad", "Mumbai", "Mysore",
+  "Nagpur", "Nashik", "Noida",
+  "Patna", "Pune",
+  "Raipur", "Rajkot", "Ranchi",
+  "Surat",
+  "Thiruvananthapuram", "Thrissur", "Tiruppur",
+  "Udaipur",
+  "Vadodara", "Varanasi", "Vijayawada", "Visakhapatnam",
+].sort()
 
 export default function BookingPage() {
   const router = useRouter()
@@ -31,13 +54,20 @@ export default function BookingPage() {
     pickup: "",
     dropoff: "",
     vehicleType: "",
-    datetime: "",
+    date: "",
+    time: "",
     passengers: "1",
   })
   const [estimatedFare, setEstimatedFare] = useState<number | null>(null)
   const [selectedSeats, setSelectedSeats] = useState<string[]>([])
   const [showSeatSelection, setShowSeatSelection] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  
+  // Autocomplete states
+  const [pickupSuggestions, setPickupSuggestions] = useState<string[]>([])
+  const [dropoffSuggestions, setDropoffSuggestions] = useState<string[]>([])
+  const [showPickupSuggestions, setShowPickupSuggestions] = useState(false)
+  const [showDropoffSuggestions, setShowDropoffSuggestions] = useState(false)
 
   // Protect route - redirect to login if not authenticated
   useEffect(() => {
@@ -63,6 +93,39 @@ export default function BookingPage() {
   // Don't render if not authenticated
   if (!session?.user) {
     return null
+  }
+
+  // Filter cities based on input
+  const filterCities = (input: string) => {
+    if (!input) return []
+    const searchTerm = input.toLowerCase()
+    return INDIAN_CITIES.filter(city => 
+      city.toLowerCase().startsWith(searchTerm)
+    ).slice(0, 8)
+  }
+
+  const handlePickupChange = (value: string) => {
+    setFormData({ ...formData, pickup: value })
+    const suggestions = filterCities(value)
+    setPickupSuggestions(suggestions)
+    setShowPickupSuggestions(suggestions.length > 0)
+  }
+
+  const handleDropoffChange = (value: string) => {
+    setFormData({ ...formData, dropoff: value })
+    const suggestions = filterCities(value)
+    setDropoffSuggestions(suggestions)
+    setShowDropoffSuggestions(suggestions.length > 0)
+  }
+
+  const selectPickupCity = (city: string) => {
+    setFormData({ ...formData, pickup: city })
+    setShowPickupSuggestions(false)
+  }
+
+  const selectDropoffCity = (city: string) => {
+    setFormData({ ...formData, dropoff: city })
+    setShowDropoffSuggestions(false)
   }
 
   const handleEstimateFare = async () => {
@@ -110,6 +173,7 @@ export default function BookingPage() {
     setIsLoading(true)
     try {
       const token = localStorage.getItem("bearer_token")
+      const datetime = `${formData.date}T${formData.time}`
       const response = await fetch("/api/bookings", {
         method: "POST",
         headers: { 
@@ -118,6 +182,7 @@ export default function BookingPage() {
         },
         body: JSON.stringify({
           ...formData,
+          datetime,
           seats: selectedSeats,
           fare: estimatedFare,
         }),
@@ -133,7 +198,8 @@ export default function BookingPage() {
           pickup: "",
           dropoff: "",
           vehicleType: "",
-          datetime: "",
+          date: "",
+          time: "",
           passengers: "1",
         })
         setSelectedSeats([])
@@ -149,11 +215,25 @@ export default function BookingPage() {
     }
   }
 
-  const seats = Array.from({ length: 20 }, (_, i) => {
-    const row = Math.floor(i / 5) + 1
-    const col = String.fromCharCode(65 + (i % 5))
-    return `${row}${col}`
-  })
+  // Generate bus seat layout (40 seats in 4 columns with aisle)
+  const generateBusSeats = () => {
+    const seats = []
+    const rows = 10
+    const seatsPerRow = 4
+    
+    for (let row = 1; row <= rows; row++) {
+      const rowSeats = []
+      for (let col = 0; col < seatsPerRow; col++) {
+        const seatNumber = `${row}${String.fromCharCode(65 + col)}`
+        rowSeats.push(seatNumber)
+      }
+      seats.push(rowSeats)
+    }
+    
+    return seats
+  }
+
+  const busSeats = generateBusSeats()
 
   // Animation variants
   const containerVariants = {
@@ -287,38 +367,82 @@ export default function BookingPage() {
                     initial="hidden"
                     animate="visible"
                   >
-                    <motion.div variants={itemVariants}>
+                    <motion.div variants={itemVariants} className="relative">
                       <Label htmlFor="pickup" className="flex items-center gap-2 mb-2">
                         <MapPin className="h-4 w-4 text-primary" />
                         Pickup Location
                       </Label>
                       <Input
                         id="pickup"
-                        placeholder="Enter pickup location"
+                        placeholder="Search city (e.g., A for Agra)"
                         value={formData.pickup}
-                        onChange={(e) =>
-                          setFormData({ ...formData, pickup: e.target.value })
-                        }
+                        onChange={(e) => handlePickupChange(e.target.value)}
+                        onFocus={() => formData.pickup && setShowPickupSuggestions(true)}
+                        onBlur={() => setTimeout(() => setShowPickupSuggestions(false), 200)}
                         required
                         className="transition-all focus:scale-[1.02]"
+                        autoComplete="off"
                       />
+                      <AnimatePresence>
+                        {showPickupSuggestions && pickupSuggestions.length > 0 && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="absolute z-50 w-full mt-1 bg-card border border-border rounded-lg shadow-lg overflow-hidden"
+                          >
+                            {pickupSuggestions.map((city) => (
+                              <button
+                                key={city}
+                                type="button"
+                                onClick={() => selectPickupCity(city)}
+                                className="w-full px-4 py-2 text-left hover:bg-primary/10 transition-colors text-sm"
+                              >
+                                {city}
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </motion.div>
 
-                    <motion.div variants={itemVariants}>
+                    <motion.div variants={itemVariants} className="relative">
                       <Label htmlFor="dropoff" className="flex items-center gap-2 mb-2">
                         <MapPin className="h-4 w-4 text-primary" />
                         Drop-off Location
                       </Label>
                       <Input
                         id="dropoff"
-                        placeholder="Enter drop-off location"
+                        placeholder="Search city (e.g., A for Agra)"
                         value={formData.dropoff}
-                        onChange={(e) =>
-                          setFormData({ ...formData, dropoff: e.target.value })
-                        }
+                        onChange={(e) => handleDropoffChange(e.target.value)}
+                        onFocus={() => formData.dropoff && setShowDropoffSuggestions(true)}
+                        onBlur={() => setTimeout(() => setShowDropoffSuggestions(false), 200)}
                         required
                         className="transition-all focus:scale-[1.02]"
+                        autoComplete="off"
                       />
+                      <AnimatePresence>
+                        {showDropoffSuggestions && dropoffSuggestions.length > 0 && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="absolute z-50 w-full mt-1 bg-card border border-border rounded-lg shadow-lg overflow-hidden"
+                          >
+                            {dropoffSuggestions.map((city) => (
+                              <button
+                                key={city}
+                                type="button"
+                                onClick={() => selectDropoffCity(city)}
+                                className="w-full px-4 py-2 text-left hover:bg-primary/10 transition-colors text-sm"
+                              >
+                                {city}
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </motion.div>
 
                     <motion.div variants={itemVariants}>
@@ -339,22 +463,39 @@ export default function BookingPage() {
                           <SelectItem value="government-bus">Government Bus</SelectItem>
                           <SelectItem value="private-bus">Private Bus</SelectItem>
                           <SelectItem value="chartered-bus">Chartered Bus</SelectItem>
-                          <SelectItem value="e-rickshaw">E-Rickshaw</SelectItem>
                         </SelectContent>
                       </Select>
                     </motion.div>
 
                     <motion.div variants={itemVariants}>
-                      <Label htmlFor="datetime" className="flex items-center gap-2 mb-2">
+                      <Label htmlFor="date" className="flex items-center gap-2 mb-2">
                         <Calendar className="h-4 w-4 text-primary" />
-                        Date & Time
+                        Journey Date
                       </Label>
                       <Input
-                        id="datetime"
-                        type="datetime-local"
-                        value={formData.datetime}
+                        id="date"
+                        type="date"
+                        value={formData.date}
                         onChange={(e) =>
-                          setFormData({ ...formData, datetime: e.target.value })
+                          setFormData({ ...formData, date: e.target.value })
+                        }
+                        min={new Date().toISOString().split('T')[0]}
+                        required
+                        className="transition-all focus:scale-[1.02]"
+                      />
+                    </motion.div>
+
+                    <motion.div variants={itemVariants}>
+                      <Label htmlFor="time" className="flex items-center gap-2 mb-2">
+                        <Clock className="h-4 w-4 text-primary" />
+                        Journey Time
+                      </Label>
+                      <Input
+                        id="time"
+                        type="time"
+                        value={formData.time}
+                        onChange={(e) =>
+                          setFormData({ ...formData, time: e.target.value })
                         }
                         required
                         className="transition-all focus:scale-[1.02]"
@@ -384,7 +525,7 @@ export default function BookingPage() {
                       onClick={() => setShowSeatSelection(!showSeatSelection)}
                       className="flex-1 group hover:bg-primary/10 hover:border-primary/50 transition-all"
                     >
-                      <Users className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
+                      <Armchair className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
                       Select Seats
                     </Button>
                   </motion.div>
@@ -435,48 +576,120 @@ export default function BookingPage() {
                           initial={{ x: -20 }}
                           animate={{ x: 0 }}
                         >
-                          <Sparkles className="h-5 w-5 text-primary" />
+                          <Armchair className="h-5 w-5 text-primary" />
                           Select Your Seats
                         </motion.h3>
-                        <motion.div 
-                          className="grid grid-cols-5 gap-2"
-                          variants={containerVariants}
-                          initial="hidden"
-                          animate="visible"
-                        >
-                          {seats.map((seat, index) => (
-                            <motion.div
-                              key={seat}
-                              custom={index}
-                              variants={seatVariants}
-                              whileHover="hover"
-                              whileTap="tap"
-                            >
-                              <Button
-                                type="button"
-                                variant={
-                                  selectedSeats.includes(seat) ? "default" : "outline"
-                                }
-                                onClick={() => handleSeatSelection(seat)}
-                                className={`h-12 w-full transition-all ${
-                                  selectedSeats.includes(seat) 
-                                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/50" 
-                                    : "hover:border-primary/50 hover:bg-primary/10"
-                                }`}
-                              >
-                                {seat}
-                              </Button>
-                            </motion.div>
-                          ))}
-                        </motion.div>
+
+                        {/* Bus Layout */}
+                        <div className="bg-gradient-to-b from-muted/50 to-transparent p-6 rounded-lg border border-border/50">
+                          {/* Driver Section */}
+                          <div className="flex items-center justify-between mb-6 pb-4 border-b border-border/50">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 rounded-lg bg-primary/20 border-2 border-primary/50 flex items-center justify-center">
+                                <Bus className="h-6 w-6 text-primary" />
+                              </div>
+                              <span className="text-sm text-muted-foreground">Driver</span>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-xs text-muted-foreground mb-1">Legend</div>
+                              <div className="flex gap-3 text-xs">
+                                <span className="flex items-center gap-1">
+                                  <div className="w-3 h-3 rounded bg-primary"></div>
+                                  Selected
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <div className="w-3 h-3 rounded border-2 border-border"></div>
+                                  Available
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Seats Layout */}
+                          <motion.div 
+                            className="space-y-3"
+                            variants={containerVariants}
+                            initial="hidden"
+                            animate="visible"
+                          >
+                            {busSeats.map((row, rowIndex) => (
+                              <div key={rowIndex} className="flex items-center gap-2">
+                                {/* Left side - 2 seats */}
+                                <div className="flex gap-2 flex-1 justify-end">
+                                  {row.slice(0, 2).map((seat, seatIndex) => (
+                                    <motion.div
+                                      key={seat}
+                                      custom={rowIndex * 4 + seatIndex}
+                                      variants={seatVariants}
+                                      whileHover="hover"
+                                      whileTap="tap"
+                                      className="flex-1"
+                                    >
+                                      <Button
+                                        type="button"
+                                        variant={selectedSeats.includes(seat) ? "default" : "outline"}
+                                        onClick={() => handleSeatSelection(seat)}
+                                        className={`h-14 w-full transition-all relative ${
+                                          selectedSeats.includes(seat)
+                                            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/50 border-primary"
+                                            : "hover:border-primary/50 hover:bg-primary/10 border-2"
+                                        }`}
+                                      >
+                                        <Armchair className={`h-4 w-4 mb-1 ${selectedSeats.includes(seat) ? 'opacity-100' : 'opacity-50'}`} />
+                                        <span className="text-xs font-medium">{seat}</span>
+                                      </Button>
+                                    </motion.div>
+                                  ))}
+                                </div>
+
+                                {/* Aisle */}
+                                <div className="w-8 flex items-center justify-center">
+                                  <div className="h-px w-full bg-border/30"></div>
+                                </div>
+
+                                {/* Right side - 2 seats */}
+                                <div className="flex gap-2 flex-1">
+                                  {row.slice(2, 4).map((seat, seatIndex) => (
+                                    <motion.div
+                                      key={seat}
+                                      custom={rowIndex * 4 + seatIndex + 2}
+                                      variants={seatVariants}
+                                      whileHover="hover"
+                                      whileTap="tap"
+                                      className="flex-1"
+                                    >
+                                      <Button
+                                        type="button"
+                                        variant={selectedSeats.includes(seat) ? "default" : "outline"}
+                                        onClick={() => handleSeatSelection(seat)}
+                                        className={`h-14 w-full transition-all relative ${
+                                          selectedSeats.includes(seat)
+                                            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/50 border-primary"
+                                            : "hover:border-primary/50 hover:bg-primary/10 border-2"
+                                        }`}
+                                      >
+                                        <Armchair className={`h-4 w-4 mb-1 ${selectedSeats.includes(seat) ? 'opacity-100' : 'opacity-50'}`} />
+                                        <span className="text-xs font-medium">{seat}</span>
+                                      </Button>
+                                    </motion.div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </motion.div>
+                        </div>
+
                         {selectedSeats.length > 0 && (
-                          <motion.p 
-                            className="text-sm text-muted-foreground"
+                          <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
+                            className="p-4 bg-primary/10 rounded-lg border border-primary/20"
                           >
-                            Selected seats: <span className="text-primary font-medium">{selectedSeats.join(", ")}</span>
-                          </motion.p>
+                            <p className="text-sm font-medium mb-2">Selected Seats ({selectedSeats.length})</p>
+                            <p className="text-sm text-muted-foreground">
+                              <span className="text-primary font-medium">{selectedSeats.join(", ")}</span>
+                            </p>
+                          </motion.div>
                         )}
                       </motion.div>
                     )}
