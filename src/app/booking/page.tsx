@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { MapPin, Calendar, Bus, Users, DollarSign, CheckCircle, Zap, ArrowRight, Sparkles, Wallet, Clock, Armchair } from "lucide-react"
+import { MapPin, Calendar, Bus, Users, DollarSign, CheckCircle, Zap, ArrowRight, Sparkles, Wallet, Clock, Armchair, Radio, User } from "lucide-react"
 import { VscHome, VscCalendar } from "react-icons/vsc"
 import { useSession } from "@/lib/auth-client"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import Dock from "@/components/Dock"
+import ClickSpark from "@/components/ClickSpark"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -46,8 +47,8 @@ export default function BookingPage() {
   // Dock items
   const dockItems = [
     { icon: <VscHome size={20} />, label: 'Home', onClick: () => router.push('/') },
-    { icon: <VscCalendar size={20} />, label: 'Booking', onClick: () => router.push('/booking') },
-    { icon: <Wallet size={20} />, label: 'My Wallet', onClick: () => router.push('/driver-dashboard?tab=wallet') },
+    { icon: <Radio size={20} />, label: 'Live Tracking', onClick: () => router.push('/tracking') },
+    { icon: <User size={20} />, label: 'My Profile', onClick: () => router.push('/driver-dashboard') },
   ]
 
   const [formData, setFormData] = useState({
@@ -280,266 +281,440 @@ export default function BookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <ClickSpark
+      sparkColor="#4ade80"
+      sparkSize={12}
+      sparkRadius={25}
+      sparkCount={12}
+      duration={600}
+    >
+      <div className="min-h-screen bg-background">
+        <Header />
 
-      {/* Animated Background Gradient */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/10"
-          animate={{
-            backgroundPosition: ["0% 0%", "100% 100%"],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            repeatType: "reverse"
-          }}
-        />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(0,136,112,0.1),transparent)]" />
-      </div>
-
-      <section className="py-20">
-        <div className="container mx-auto px-4 max-w-4xl">
+        {/* Animated Background Gradient */}
+        <div className="fixed inset-0 -z-10 overflow-hidden">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
-          >
+            className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/10"
+            animate={{
+              backgroundPosition: ["0% 0%", "100% 100%"],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              repeatType: "reverse"
+            }}
+          />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(0,136,112,0.1),transparent)]" />
+        </div>
+
+        <section className="py-20">
+          <div className="container mx-auto px-4 max-w-4xl">
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-center mb-12"
             >
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Smart Booking System</span>
-            </motion.div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-green-300 to-primary bg-clip-text text-transparent">
-              Book Your Ride
-            </h1>
-            <p className="text-xl text-muted-foreground">
-              Choose your destination and let's get you moving
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, type: "spring" }}
-          >
-            <Card className="bg-card/50 backdrop-blur-xl border-border/50 overflow-hidden relative">
               <motion.div
-                className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent"
-                animate={{
-                  x: ["-100%", "100%"],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  repeatType: "loop",
-                  ease: "linear"
-                }}
-              />
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <motion.div
-                    animate={{ 
-                      x: [0, 5, 0],
-                    }}
-                    transition={{ 
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                  >
-                    <Bus className="h-6 w-6 text-primary" />
-                  </motion.div>
-                  Booking Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <motion.div 
-                    className="grid md:grid-cols-2 gap-6"
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                  >
-                    <motion.div variants={itemVariants} className="relative">
-                      <Label htmlFor="pickup" className="flex items-center gap-2 mb-2">
-                        <MapPin className="h-4 w-4 text-primary" />
-                        Pickup Location
-                      </Label>
-                      <Input
-                        id="pickup"
-                        placeholder="Search city (e.g., A for Agra)"
-                        value={formData.pickup}
-                        onChange={(e) => handlePickupChange(e.target.value)}
-                        onFocus={() => formData.pickup && setShowPickupSuggestions(true)}
-                        onBlur={() => setTimeout(() => setShowPickupSuggestions(false), 200)}
-                        required
-                        className="transition-all focus:scale-[1.02]"
-                        autoComplete="off"
-                      />
-                      <AnimatePresence>
-                        {showPickupSuggestions && pickupSuggestions.length > 0 && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="absolute z-50 w-full mt-1 bg-card border border-border rounded-lg shadow-lg overflow-hidden"
-                          >
-                            {pickupSuggestions.map((city) => (
-                              <button
-                                key={city}
-                                type="button"
-                                onClick={() => selectPickupCity(city)}
-                                className="w-full px-4 py-2 text-left hover:bg-primary/10 transition-colors text-sm"
-                              >
-                                {city}
-                              </button>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4"
+              >
+                <Sparkles className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-primary">Smart Booking System</span>
+              </motion.div>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-green-300 to-primary bg-clip-text text-transparent">
+                Book Your Ride
+              </h1>
+              <p className="text-xl text-muted-foreground">
+                Choose your destination and let's get you moving
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, type: "spring" }}
+            >
+              <Card className="bg-card/50 backdrop-blur-xl border-border/50 overflow-hidden relative">
+                <motion.div
+                  className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent"
+                  animate={{
+                    x: ["-100%", "100%"],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatType: "loop",
+                    ease: "linear"
+                  }}
+                />
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <motion.div
+                      animate={{ 
+                        x: [0, 5, 0],
+                      }}
+                      transition={{ 
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      <Bus className="h-6 w-6 text-primary" />
+                    </motion.div>
+                    Booking Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <motion.div 
+                      className="grid md:grid-cols-2 gap-6"
+                      variants={containerVariants}
+                      initial="hidden"
+                      animate="visible"
+                    >
+                      <motion.div variants={itemVariants} className="relative">
+                        <Label htmlFor="pickup" className="flex items-center gap-2 mb-2">
+                          <MapPin className="h-4 w-4 text-primary" />
+                          Pickup Location
+                        </Label>
+                        <Input
+                          id="pickup"
+                          placeholder="Search city (e.g., A for Agra)"
+                          value={formData.pickup}
+                          onChange={(e) => handlePickupChange(e.target.value)}
+                          onFocus={() => formData.pickup && setShowPickupSuggestions(true)}
+                          onBlur={() => setTimeout(() => setShowPickupSuggestions(false), 200)}
+                          required
+                          className="transition-all focus:scale-[1.02]"
+                          autoComplete="off"
+                        />
+                        <AnimatePresence>
+                          {showPickupSuggestions && pickupSuggestions.length > 0 && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="absolute z-50 w-full mt-1 bg-card border border-border rounded-lg shadow-lg overflow-hidden"
+                            >
+                              {pickupSuggestions.map((city) => (
+                                <button
+                                  key={city}
+                                  type="button"
+                                  onClick={() => selectPickupCity(city)}
+                                  className="w-full px-4 py-2 text-left hover:bg-primary/10 transition-colors text-sm"
+                                >
+                                  {city}
+                                </button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </motion.div>
+
+                      <motion.div variants={itemVariants} className="relative">
+                        <Label htmlFor="dropoff" className="flex items-center gap-2 mb-2">
+                          <MapPin className="h-4 w-4 text-primary" />
+                          Drop-off Location
+                        </Label>
+                        <Input
+                          id="dropoff"
+                          placeholder="Search city (e.g., A for Agra)"
+                          value={formData.dropoff}
+                          onChange={(e) => handleDropoffChange(e.target.value)}
+                          onFocus={() => formData.dropoff && setShowDropoffSuggestions(true)}
+                          onBlur={() => setTimeout(() => setShowDropoffSuggestions(false), 200)}
+                          required
+                          className="transition-all focus:scale-[1.02]"
+                          autoComplete="off"
+                        />
+                        <AnimatePresence>
+                          {showDropoffSuggestions && dropoffSuggestions.length > 0 && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="absolute z-50 w-full mt-1 bg-card border border-border rounded-lg shadow-lg overflow-hidden"
+                            >
+                              {dropoffSuggestions.map((city) => (
+                                <button
+                                  key={city}
+                                  type="button"
+                                  onClick={() => selectDropoffCity(city)}
+                                  className="w-full px-4 py-2 text-left hover:bg-primary/10 transition-colors text-sm"
+                                >
+                                  {city}
+                                </button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </motion.div>
+
+                      <motion.div variants={itemVariants}>
+                        <Label htmlFor="vehicleType" className="flex items-center gap-2 mb-2">
+                          <Bus className="h-4 w-4 text-primary" />
+                          Vehicle Type
+                        </Label>
+                        <Select
+                          value={formData.vehicleType}
+                          onValueChange={(value) =>
+                            setFormData({ ...formData, vehicleType: value })
+                          }
+                        >
+                          <SelectTrigger className="transition-all focus:scale-[1.02]">
+                            <SelectValue placeholder="Select vehicle type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="government-bus">Government Bus</SelectItem>
+                            <SelectItem value="private-bus">Private Bus</SelectItem>
+                            <SelectItem value="chartered-bus">Chartered Bus</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </motion.div>
+
+                      <motion.div variants={itemVariants}>
+                        <Label htmlFor="date" className="flex items-center gap-2 mb-2">
+                          <Calendar className="h-4 w-4 text-primary" />
+                          Journey Date
+                        </Label>
+                        <Input
+                          id="date"
+                          type="date"
+                          value={formData.date}
+                          onChange={(e) =>
+                            setFormData({ ...formData, date: e.target.value })
+                          }
+                          min={new Date().toISOString().split('T')[0]}
+                          required
+                          className="transition-all focus:scale-[1.02]"
+                        />
+                      </motion.div>
+
+                      <motion.div variants={itemVariants}>
+                        <Label htmlFor="time" className="flex items-center gap-2 mb-2">
+                          <Clock className="h-4 w-4 text-primary" />
+                          Journey Time
+                        </Label>
+                        <Input
+                          id="time"
+                          type="time"
+                          value={formData.time}
+                          onChange={(e) =>
+                            setFormData({ ...formData, time: e.target.value })
+                          }
+                          required
+                          className="transition-all focus:scale-[1.02]"
+                        />
+                      </motion.div>
                     </motion.div>
 
-                    <motion.div variants={itemVariants} className="relative">
-                      <Label htmlFor="dropoff" className="flex items-center gap-2 mb-2">
-                        <MapPin className="h-4 w-4 text-primary" />
-                        Drop-off Location
-                      </Label>
-                      <Input
-                        id="dropoff"
-                        placeholder="Search city (e.g., A for Agra)"
-                        value={formData.dropoff}
-                        onChange={(e) => handleDropoffChange(e.target.value)}
-                        onFocus={() => formData.dropoff && setShowDropoffSuggestions(true)}
-                        onBlur={() => setTimeout(() => setShowDropoffSuggestions(false), 200)}
-                        required
-                        className="transition-all focus:scale-[1.02]"
-                        autoComplete="off"
-                      />
-                      <AnimatePresence>
-                        {showDropoffSuggestions && dropoffSuggestions.length > 0 && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="absolute z-50 w-full mt-1 bg-card border border-border rounded-lg shadow-lg overflow-hidden"
-                          >
-                            {dropoffSuggestions.map((city) => (
-                              <button
-                                key={city}
-                                type="button"
-                                onClick={() => selectDropoffCity(city)}
-                                className="w-full px-4 py-2 text-left hover:bg-primary/10 transition-colors text-sm"
-                              >
-                                {city}
-                              </button>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
-
-                    <motion.div variants={itemVariants}>
-                      <Label htmlFor="vehicleType" className="flex items-center gap-2 mb-2">
-                        <Bus className="h-4 w-4 text-primary" />
-                        Vehicle Type
-                      </Label>
-                      <Select
-                        value={formData.vehicleType}
-                        onValueChange={(value) =>
-                          setFormData({ ...formData, vehicleType: value })
-                        }
+                    <motion.div 
+                      className="flex gap-4"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6 }}
+                    >
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleEstimateFare}
+                        disabled={isLoading}
+                        className="flex-1 group hover:bg-primary/10 hover:border-primary/50 transition-all"
                       >
-                        <SelectTrigger className="transition-all focus:scale-[1.02]">
-                          <SelectValue placeholder="Select vehicle type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="government-bus">Government Bus</SelectItem>
-                          <SelectItem value="private-bus">Private Bus</SelectItem>
-                          <SelectItem value="chartered-bus">Chartered Bus</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        <DollarSign className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
+                        Estimate Fare
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowSeatSelection(!showSeatSelection)}
+                        className="flex-1 group hover:bg-primary/10 hover:border-primary/50 transition-all"
+                      >
+                        <Armchair className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
+                        Select Seats
+                      </Button>
                     </motion.div>
 
-                    <motion.div variants={itemVariants}>
-                      <Label htmlFor="date" className="flex items-center gap-2 mb-2">
-                        <Calendar className="h-4 w-4 text-primary" />
-                        Journey Date
-                      </Label>
-                      <Input
-                        id="date"
-                        type="date"
-                        value={formData.date}
-                        onChange={(e) =>
-                          setFormData({ ...formData, date: e.target.value })
-                        }
-                        min={new Date().toISOString().split('T')[0]}
-                        required
-                        className="transition-all focus:scale-[1.02]"
-                      />
-                    </motion.div>
+                    <AnimatePresence>
+                      {estimatedFare && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                          className="p-6 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-lg text-center border border-primary/30 relative overflow-hidden"
+                        >
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
+                            animate={{
+                              x: ["-100%", "100%"],
+                            }}
+                            transition={{
+                              duration: 2,
+                              repeat: Infinity,
+                              repeatType: "loop",
+                              ease: "linear"
+                            }}
+                          />
+                          <motion.p 
+                            className="text-2xl font-bold text-primary relative z-10"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ type: "spring", stiffness: 200 }}
+                          >
+                            Estimated Fare: ₹{estimatedFare}
+                          </motion.p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
 
-                    <motion.div variants={itemVariants}>
-                      <Label htmlFor="time" className="flex items-center gap-2 mb-2">
-                        <Clock className="h-4 w-4 text-primary" />
-                        Journey Time
-                      </Label>
-                      <Input
-                        id="time"
-                        type="time"
-                        value={formData.time}
-                        onChange={(e) =>
-                          setFormData({ ...formData, time: e.target.value })
-                        }
-                        required
-                        className="transition-all focus:scale-[1.02]"
-                      />
-                    </motion.div>
-                  </motion.div>
+                    <AnimatePresence>
+                      {showSeatSelection && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ type: "spring", stiffness: 200 }}
+                          className="space-y-4 overflow-hidden"
+                        >
+                          <motion.h3 
+                            className="text-lg font-semibold flex items-center gap-2"
+                            initial={{ x: -20 }}
+                            animate={{ x: 0 }}
+                          >
+                            <Armchair className="h-5 w-5 text-primary" />
+                            Select Your Seats
+                          </motion.h3>
 
-                  <motion.div 
-                    className="flex gap-4"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 }}
-                  >
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleEstimateFare}
-                      disabled={isLoading}
-                      className="flex-1 group hover:bg-primary/10 hover:border-primary/50 transition-all"
+                          {/* Bus Layout */}
+                          <div className="bg-gradient-to-b from-muted/50 to-transparent p-6 rounded-lg border border-border/50">
+                            {/* Driver Section */}
+                            <div className="flex items-center justify-between mb-6 pb-4 border-b border-border/50">
+                              <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-lg bg-primary/20 border-2 border-primary/50 flex items-center justify-center">
+                                  <Bus className="h-6 w-6 text-primary" />
+                                </div>
+                                <span className="text-sm text-muted-foreground">Driver</span>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-xs text-muted-foreground mb-1">Legend</div>
+                                <div className="flex gap-3 text-xs">
+                                  <span className="flex items-center gap-1">
+                                    <div className="w-3 h-3 rounded bg-primary"></div>
+                                    Selected
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <div className="w-3 h-3 rounded border-2 border-border"></div>
+                                    Available
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Seats Layout */}
+                            <motion.div 
+                              className="space-y-3"
+                              variants={containerVariants}
+                              initial="hidden"
+                              animate="visible"
+                            >
+                              {busSeats.map((row, rowIndex) => (
+                                <div key={rowIndex} className="flex items-center gap-2">
+                                  {/* Left side - 2 seats */}
+                                  <div className="flex gap-2 flex-1 justify-end">
+                                    {row.slice(0, 2).map((seat, seatIndex) => (
+                                      <motion.div
+                                        key={seat}
+                                        custom={rowIndex * 4 + seatIndex}
+                                        variants={seatVariants}
+                                        whileHover="hover"
+                                        whileTap="tap"
+                                        className="flex-1"
+                                      >
+                                        <Button
+                                          type="button"
+                                          variant={selectedSeats.includes(seat) ? "default" : "outline"}
+                                          onClick={() => handleSeatSelection(seat)}
+                                          className={`h-14 w-full transition-all relative ${
+                                            selectedSeats.includes(seat)
+                                              ? "bg-primary text-primary-foreground shadow-lg shadow-primary/50 border-primary"
+                                              : "hover:border-primary/50 hover:bg-primary/10 border-2"
+                                          }`}
+                                        >
+                                          <Armchair className={`h-4 w-4 mb-1 ${selectedSeats.includes(seat) ? 'opacity-100' : 'opacity-50'}`} />
+                                          <span className="text-xs font-medium">{seat}</span>
+                                        </Button>
+                                      </motion.div>
+                                    ))}
+                                  </div>
+
+                                  {/* Aisle */}
+                                  <div className="w-8 flex items-center justify-center">
+                                    <div className="h-px w-full bg-border/30"></div>
+                                  </div>
+
+                                  {/* Right side - 2 seats */}
+                                  <div className="flex gap-2 flex-1">
+                                    {row.slice(2, 4).map((seat, seatIndex) => (
+                                      <motion.div
+                                        key={seat}
+                                        custom={rowIndex * 4 + seatIndex + 2}
+                                        variants={seatVariants}
+                                        whileHover="hover"
+                                        whileTap="tap"
+                                        className="flex-1"
+                                      >
+                                        <Button
+                                          type="button"
+                                          variant={selectedSeats.includes(seat) ? "default" : "outline"}
+                                          onClick={() => handleSeatSelection(seat)}
+                                          className={`h-14 w-full transition-all relative ${
+                                            selectedSeats.includes(seat)
+                                              ? "bg-primary text-primary-foreground shadow-lg shadow-primary/50 border-primary"
+                                              : "hover:border-primary/50 hover:bg-primary/10 border-2"
+                                          }`}
+                                        >
+                                          <Armchair className={`h-4 w-4 mb-1 ${selectedSeats.includes(seat) ? 'opacity-100' : 'opacity-50'}`} />
+                                          <span className="text-xs font-medium">{seat}</span>
+                                        </Button>
+                                      </motion.div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </motion.div>
+                          </div>
+
+                          {selectedSeats.length > 0 && (
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="p-4 bg-primary/10 rounded-lg border border-primary/20"
+                            >
+                              <p className="text-sm font-medium mb-2">Selected Seats ({selectedSeats.length})</p>
+                              <p className="text-sm text-muted-foreground">
+                                <span className="text-primary font-medium">{selectedSeats.join(", ")}</span>
+                              </p>
+                            </motion.div>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.7 }}
                     >
-                      <DollarSign className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
-                      Estimate Fare
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setShowSeatSelection(!showSeatSelection)}
-                      className="flex-1 group hover:bg-primary/10 hover:border-primary/50 transition-all"
-                    >
-                      <Armchair className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
-                      Select Seats
-                    </Button>
-                  </motion.div>
-
-                  <AnimatePresence>
-                    {estimatedFare && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: -10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                        className="p-6 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-lg text-center border border-primary/30 relative overflow-hidden"
+                      <Button
+                        type="submit"
+                        className="w-full bg-primary hover:bg-primary/90 group relative overflow-hidden"
+                        disabled={isLoading || !estimatedFare || selectedSeats.length === 0}
                       >
                         <motion.div
-                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
+                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
                           animate={{
                             x: ["-100%", "100%"],
                           }}
@@ -550,192 +725,26 @@ export default function BookingPage() {
                             ease: "linear"
                           }}
                         />
-                        <motion.p 
-                          className="text-2xl font-bold text-primary relative z-10"
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ type: "spring", stiffness: 200 }}
-                        >
-                          Estimated Fare: ₹{estimatedFare}
-                        </motion.p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                        <CheckCircle className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
+                        {isLoading ? "Processing..." : "Confirm Booking"}
+                      </Button>
+                    </motion.div>
+                  </form>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </section>
 
-                  <AnimatePresence>
-                    {showSeatSelection && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ type: "spring", stiffness: 200 }}
-                        className="space-y-4 overflow-hidden"
-                      >
-                        <motion.h3 
-                          className="text-lg font-semibold flex items-center gap-2"
-                          initial={{ x: -20 }}
-                          animate={{ x: 0 }}
-                        >
-                          <Armchair className="h-5 w-5 text-primary" />
-                          Select Your Seats
-                        </motion.h3>
+        <Footer />
 
-                        {/* Bus Layout */}
-                        <div className="bg-gradient-to-b from-muted/50 to-transparent p-6 rounded-lg border border-border/50">
-                          {/* Driver Section */}
-                          <div className="flex items-center justify-between mb-6 pb-4 border-b border-border/50">
-                            <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 rounded-lg bg-primary/20 border-2 border-primary/50 flex items-center justify-center">
-                                <Bus className="h-6 w-6 text-primary" />
-                              </div>
-                              <span className="text-sm text-muted-foreground">Driver</span>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-xs text-muted-foreground mb-1">Legend</div>
-                              <div className="flex gap-3 text-xs">
-                                <span className="flex items-center gap-1">
-                                  <div className="w-3 h-3 rounded bg-primary"></div>
-                                  Selected
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <div className="w-3 h-3 rounded border-2 border-border"></div>
-                                  Available
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Seats Layout */}
-                          <motion.div 
-                            className="space-y-3"
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                          >
-                            {busSeats.map((row, rowIndex) => (
-                              <div key={rowIndex} className="flex items-center gap-2">
-                                {/* Left side - 2 seats */}
-                                <div className="flex gap-2 flex-1 justify-end">
-                                  {row.slice(0, 2).map((seat, seatIndex) => (
-                                    <motion.div
-                                      key={seat}
-                                      custom={rowIndex * 4 + seatIndex}
-                                      variants={seatVariants}
-                                      whileHover="hover"
-                                      whileTap="tap"
-                                      className="flex-1"
-                                    >
-                                      <Button
-                                        type="button"
-                                        variant={selectedSeats.includes(seat) ? "default" : "outline"}
-                                        onClick={() => handleSeatSelection(seat)}
-                                        className={`h-14 w-full transition-all relative ${
-                                          selectedSeats.includes(seat)
-                                            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/50 border-primary"
-                                            : "hover:border-primary/50 hover:bg-primary/10 border-2"
-                                        }`}
-                                      >
-                                        <Armchair className={`h-4 w-4 mb-1 ${selectedSeats.includes(seat) ? 'opacity-100' : 'opacity-50'}`} />
-                                        <span className="text-xs font-medium">{seat}</span>
-                                      </Button>
-                                    </motion.div>
-                                  ))}
-                                </div>
-
-                                {/* Aisle */}
-                                <div className="w-8 flex items-center justify-center">
-                                  <div className="h-px w-full bg-border/30"></div>
-                                </div>
-
-                                {/* Right side - 2 seats */}
-                                <div className="flex gap-2 flex-1">
-                                  {row.slice(2, 4).map((seat, seatIndex) => (
-                                    <motion.div
-                                      key={seat}
-                                      custom={rowIndex * 4 + seatIndex + 2}
-                                      variants={seatVariants}
-                                      whileHover="hover"
-                                      whileTap="tap"
-                                      className="flex-1"
-                                    >
-                                      <Button
-                                        type="button"
-                                        variant={selectedSeats.includes(seat) ? "default" : "outline"}
-                                        onClick={() => handleSeatSelection(seat)}
-                                        className={`h-14 w-full transition-all relative ${
-                                          selectedSeats.includes(seat)
-                                            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/50 border-primary"
-                                            : "hover:border-primary/50 hover:bg-primary/10 border-2"
-                                        }`}
-                                      >
-                                        <Armchair className={`h-4 w-4 mb-1 ${selectedSeats.includes(seat) ? 'opacity-100' : 'opacity-50'}`} />
-                                        <span className="text-xs font-medium">{seat}</span>
-                                      </Button>
-                                    </motion.div>
-                                  ))}
-                                </div>
-                              </div>
-                            ))}
-                          </motion.div>
-                        </div>
-
-                        {selectedSeats.length > 0 && (
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="p-4 bg-primary/10 rounded-lg border border-primary/20"
-                          >
-                            <p className="text-sm font-medium mb-2">Selected Seats ({selectedSeats.length})</p>
-                            <p className="text-sm text-muted-foreground">
-                              <span className="text-primary font-medium">{selectedSeats.join(", ")}</span>
-                            </p>
-                          </motion.div>
-                        )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.7 }}
-                  >
-                    <Button
-                      type="submit"
-                      className="w-full bg-primary hover:bg-primary/90 group relative overflow-hidden"
-                      disabled={isLoading || !estimatedFare || selectedSeats.length === 0}
-                    >
-                      <motion.div
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                        animate={{
-                          x: ["-100%", "100%"],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          repeatType: "loop",
-                          ease: "linear"
-                        }}
-                      />
-                      <CheckCircle className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
-                      {isLoading ? "Processing..." : "Confirm Booking"}
-                    </Button>
-                  </motion.div>
-                </form>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-      </section>
-
-      <Footer />
-
-      <Dock 
-        items={dockItems}
-        panelHeight={68}
-        baseItemSize={50}
-        magnification={70}
-      />
-    </div>
+        <Dock 
+          items={dockItems}
+          panelHeight={68}
+          baseItemSize={50}
+          magnification={70}
+        />
+      </div>
+    </ClickSpark>
   )
 }

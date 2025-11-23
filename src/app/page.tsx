@@ -4,7 +4,7 @@ import { motion } from "framer-motion"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { Bus, Users, Zap, TrendingUp, CheckCircle2, Lightbulb, Trophy, ArrowRight, Wallet, Search, MapPin, Star, Verified } from "lucide-react"
+import { Bus, Users, Zap, TrendingUp, CheckCircle2, Lightbulb, Trophy, ArrowRight, Wallet, Search, MapPin, Star, Verified, Settings, Ticket } from "lucide-react"
 import { VscHome, VscCalendar } from "react-icons/vsc"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
@@ -20,9 +20,9 @@ export default function Home() {
 
   // Dock items configuration
   const dockItems = [
-    { icon: <VscHome size={20} />, label: 'Home', onClick: () => router.push('/') },
-    { icon: <VscCalendar size={20} />, label: 'Booking', onClick: () => router.push('/booking') },
+    { icon: <Settings size={20} />, label: 'Settings', onClick: () => router.push('/driver-dashboard?tab=settings') },
     { icon: <Wallet size={20} />, label: 'My Wallet', onClick: () => router.push('/driver-dashboard?tab=wallet') },
+    { icon: <Ticket size={20} />, label: 'Book Ticket', onClick: () => router.push('/booking') },
   ]
 
   const stats = [
