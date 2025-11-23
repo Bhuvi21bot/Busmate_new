@@ -2,8 +2,9 @@
 
 import { motion } from "framer-motion"
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { Bus, Users, Zap, TrendingUp, CheckCircle2, Lightbulb, Trophy, ArrowRight, Wallet } from "lucide-react"
+import { Bus, Users, Zap, TrendingUp, CheckCircle2, Lightbulb, Trophy, ArrowRight, Wallet, Search, MapPin, Star, Verified } from "lucide-react"
 import { VscHome, VscCalendar } from "react-icons/vsc"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
@@ -12,6 +13,7 @@ import ScrollToTop from "@/components/ScrollToTop"
 import ClickSpark from "@/components/ClickSpark"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function Home() {
   const router = useRouter()
@@ -71,6 +73,111 @@ export default function Home() {
     },
   ]
 
+  const bookingSteps = [
+    {
+      number: "01",
+      icon: Search,
+      title: "Search Your Route",
+      description: "Enter your pickup and drop location to find available buses and e-rickshaws on your route.",
+    },
+    {
+      number: "02",
+      icon: CheckCircle2,
+      title: "Select Your Ride",
+      description: "Choose from government, private, or chartered options. View real-time availability and fares.",
+    },
+    {
+      number: "03",
+      icon: Verified,
+      title: "Confirm Booking",
+      description: "Review your selection, choose your seat, and complete payment securely through our platform.",
+    },
+    {
+      number: "04",
+      icon: MapPin,
+      title: "Track & Travel",
+      description: "Get live updates on your ride location, estimated arrival time, and driver details for a safe journey.",
+    },
+  ]
+
+  const testimonials = [
+    {
+      name: "Rajesh Kumar",
+      role: "Daily Commuter",
+      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200",
+      rating: 5,
+      review: "Bus Mate has transformed my daily commute! Real-time tracking and easy booking make traveling stress-free. Highly recommended!",
+    },
+    {
+      name: "Priya Sharma",
+      role: "College Student",
+      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200",
+      rating: 5,
+      review: "As a student, affordability matters. Bus Mate offers the best rates with verified drivers. I feel safe and save money!",
+    },
+    {
+      name: "Amit Patel",
+      role: "Business Professional",
+      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200",
+      rating: 5,
+      review: "The chartered bus service for our corporate events is exceptional. Professional drivers, clean vehicles, and punctual service every time.",
+    },
+    {
+      name: "Sneha Reddy",
+      role: "Freelancer",
+      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200",
+      rating: 5,
+      review: "E-rickshaw booking feature is a game changer! Quick, eco-friendly, and perfect for short distances. Love the convenience!",
+    },
+  ]
+
+  const availableDrivers = [
+    {
+      id: 1,
+      name: "Vikram Singh",
+      vehicle: "UPSRTC Government Bus",
+      image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200",
+      rating: 4.8,
+      trips: 1250,
+      distance: "0.8 km away",
+      verified: true,
+      available: true,
+    },
+    {
+      id: 2,
+      name: "Mohammad Ali",
+      vehicle: "Private AC Bus",
+      image: "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=200",
+      rating: 4.9,
+      trips: 980,
+      distance: "1.2 km away",
+      verified: true,
+      available: true,
+    },
+    {
+      id: 3,
+      name: "Suresh Yadav",
+      vehicle: "E-Rickshaw",
+      image: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=200",
+      rating: 4.7,
+      trips: 2340,
+      distance: "0.5 km away",
+      verified: true,
+      available: true,
+    },
+    {
+      id: 4,
+      name: "Ramesh Gupta",
+      vehicle: "Chartered Bus (45 Seater)",
+      image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200",
+      rating: 4.9,
+      trips: 567,
+      distance: "2.1 km away",
+      verified: true,
+      available: true,
+    },
+  ]
+
   return (
     <ClickSpark
       sparkColor="#4ade80"
@@ -84,6 +191,8 @@ export default function Home() {
 
         {/* Hero Section */}
         <section className="relative overflow-hidden py-20 md:py-32">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-background" />
+
           <div className="container mx-auto px-4 relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -144,7 +253,6 @@ export default function Home() {
               </motion.div>
             </motion.div>
 
-            {/* Stats */}
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
@@ -168,7 +276,6 @@ export default function Home() {
                   }}
                   className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center relative overflow-hidden group"
                 >
-                  {/* Shine effect */}
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
                     initial={{ x: "-100%" }}
@@ -237,7 +344,6 @@ export default function Home() {
                   }}
                 >
                   <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
-                    {/* Gradient overlay on hover */}
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     />
@@ -256,7 +362,6 @@ export default function Home() {
 
         {/* Services Section */}
         <section className="py-20 relative overflow-hidden">
-          {/* Background decoration */}
           <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background opacity-50" />
           
           <div className="container mx-auto px-4 relative z-10">
@@ -313,6 +418,254 @@ export default function Home() {
                 </motion.div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* Booking Steps Section */}
+        <section className="py-20 bg-card/30 backdrop-blur-sm">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <motion.h2 
+                className="text-3xl md:text-5xl font-bold mb-4"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                How to Book Your Ride
+              </motion.h2>
+              <motion.p 
+                className="text-xl text-muted-foreground"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+              >
+                Simple steps to get you moving
+              </motion.p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+              {bookingSteps.map((step, index) => (
+                <motion.div
+                  key={step.number}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ 
+                    delay: index * 0.15,
+                    type: "spring",
+                    stiffness: 100 
+                  }}
+                  whileHover={{ 
+                    y: -10,
+                    transition: { type: "spring", stiffness: 400 }
+                  }}
+                >
+                  <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
+                    <CardContent className="p-6 relative z-10">
+                      <div className="flex items-start gap-4 mb-4">
+                        <span className="text-5xl font-bold text-primary/20">{step.number}</span>
+                        <div className="bg-primary/10 rounded-full p-3 mt-2">
+                          <step.icon className="h-6 w-6 text-primary" />
+                        </div>
+                      </div>
+                      <h3 className="text-xl font-bold mb-3">{step.title}</h3>
+                      <p className="text-sm text-muted-foreground">{step.description}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Customer Reviews Section */}
+        <section className="py-20 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background opacity-50" />
+          
+          <div className="container mx-auto px-4 relative z-10">
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <motion.h2 
+                className="text-3xl md:text-5xl font-bold mb-4"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                What Our Customers Say
+              </motion.h2>
+              <motion.p 
+                className="text-xl text-muted-foreground"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+              >
+                Real experiences from real travelers
+              </motion.p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+              {testimonials.map((testimonial, index) => (
+                <motion.div
+                  key={testimonial.name}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ 
+                    delay: index * 0.1,
+                    type: "spring",
+                    stiffness: 100 
+                  }}
+                  whileHover={{ 
+                    y: -10,
+                    transition: { type: "spring", stiffness: 400 }
+                  }}
+                >
+                  <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
+                    <CardContent className="p-6 flex flex-col h-full">
+                      <div className="flex items-center gap-1 mb-4">
+                        {[...Array(testimonial.rating)].map((_, i) => (
+                          <Star key={i} className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                        ))}
+                      </div>
+                      
+                      <p className="text-sm text-muted-foreground mb-6 flex-grow italic">
+                        "{testimonial.review}"
+                      </p>
+                      
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-12 w-12 border-2 border-primary/20">
+                          <AvatarImage src={testimonial.image} alt={testimonial.name} />
+                          <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <h4 className="font-semibold text-sm">{testimonial.name}</h4>
+                          <p className="text-xs text-muted-foreground">{testimonial.role}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Available Drivers Section */}
+        <section className="py-20 bg-card/30 backdrop-blur-sm">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <motion.h2 
+                className="text-3xl md:text-5xl font-bold mb-4"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                Available Drivers Near You
+              </motion.h2>
+              <motion.p 
+                className="text-xl text-muted-foreground"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+              >
+                Verified and ready to serve you
+              </motion.p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+              {availableDrivers.map((driver, index) => (
+                <motion.div
+                  key={driver.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ 
+                    delay: index * 0.1,
+                    type: "spring",
+                    stiffness: 100 
+                  }}
+                  whileHover={{ 
+                    y: -15,
+                    scale: 1.02,
+                    transition: { type: "spring", stiffness: 400 }
+                  }}
+                >
+                  <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <Avatar className="h-16 w-16 border-2 border-primary/20">
+                          <AvatarImage src={driver.image} alt={driver.name} />
+                          <AvatarFallback>{driver.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        {driver.verified && (
+                          <div className="bg-primary/10 rounded-full p-1">
+                            <Verified className="h-4 w-4 text-primary" />
+                          </div>
+                        )}
+                      </div>
+                      
+                      <h3 className="text-lg font-bold mb-1">{driver.name}</h3>
+                      <p className="text-sm text-muted-foreground mb-3">{driver.vehicle}</p>
+                      
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                          <span className="font-semibold">{driver.rating}</span>
+                          <span className="text-muted-foreground">({driver.trips} trips)</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <MapPin className="h-4 w-4 text-primary" />
+                          <span>{driver.distance}</span>
+                        </div>
+                      </div>
+                      
+                      <Link href="/booking">
+                        <Button className="w-full bg-primary hover:bg-primary/90 hover:scale-[1.02] transition-all duration-300">
+                          <ArrowRight className="h-4 w-4 mr-2" />
+                          Book Now
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+              className="text-center mt-8"
+            >
+              <Link href="/vehicles">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="hover:scale-105 transition-all duration-300 hover:border-primary/50"
+                >
+                  View All Available Drivers
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </Link>
+            </motion.div>
           </div>
         </section>
 
