@@ -1,3 +1,19 @@
+/* Updated: 2025-11-23T14:47:30.338Z */
+/* Updated: 2025-11-23T14:46:02.654Z */
+/* Updated: 2025-11-23T14:42:05.185Z */
+/* Updated: 2025-11-23T11:40:00.801Z */
+/* Updated: 2025-11-20T14:27:28.673Z */
+/* Updated: 2025-11-20T08:55:11.695Z */
+/* Updated: 2025-11-20T05:35:07.520Z */
+/* Updated: 2025-11-20T05:33:18.729Z */
+/* Updated: 2025-11-20T05:03:44.300Z */
+/* Updated: 2025-11-20T05:03:22.669Z */
+/* Updated: 2025-11-19T16:53:11.220Z */
+/* Updated: 2025-11-19T05:59:40.207Z */
+/* Updated: 2025-11-18T15:44:01.231Z */
+/* Updated: 2025-11-18T15:43:01.277Z */
+/* Updated: 2025-11-18T15:37:40.097Z */
+/* Updated: 2025-11-17T15:42:36.200Z */
 /* Updated: 2025-11-16T15:36:30.261Z */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
@@ -7,25 +23,25 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-background: oklch(0.05 0 0);
+  --color-background: oklch(0 0 0);
   --color-foreground: oklch(0.98 0 0 / 80%);
-  --color-card: oklch(0.08 0 0);
+  --color-card: oklch(0.03 0 0);
   --color-card-foreground: oklch(0.98 0 0);
-  --color-popover: oklch(0.12 0 0);
+  --color-popover: oklch(0.05 0 0);
   --color-popover-foreground: oklch(0.98 0 0);
   --color-primary: oklch(0.55 0.15 170);
   --color-primary-foreground: oklch(0.98 0 0);
-  --color-secondary: oklch(0.15 0 0);
+  --color-secondary: oklch(0.08 0 0);
   --color-secondary-foreground: oklch(0.98 0 0);
-  --color-muted: oklch(0.15 0 0);
+  --color-muted: oklch(0.1 0 0);
   --color-muted-foreground: oklch(0.65 0 0);
-  --color-accent: oklch(0.15 0 0);
+  --color-accent: oklch(0.1 0 0);
   --color-accent-foreground: oklch(0.98 0 0);
   --color-destructive: oklch(0.58 0.24 27);
   --color-border: oklch(0.98 0 0 / 10%);
   --color-input: oklch(0.98 0 0 / 15%);
   --color-ring: oklch(0.55 0.15 170);
-  --color-surface: oklch(0.12 0 0);
+  --color-surface: oklch(0.05 0 0);
   --color-heading: oklch(1 0 0);
   --radius-lg: 0.75rem;
   --radius-md: 0.625rem;
