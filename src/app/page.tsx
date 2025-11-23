@@ -1,6 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
@@ -11,12 +12,24 @@ import Footer from "@/components/Footer"
 import Dock from "@/components/Dock"
 import ScrollToTop from "@/components/ScrollToTop"
 import ClickSpark from "@/components/ClickSpark"
+import MovingLogos from "@/components/MovingLogos"
+import ShinyText from "@/components/ShinyText"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function Home() {
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    // Simulate page load
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 2000) // 2 seconds loading time
+
+    return () => clearTimeout(timer)
+  }, [])
 
   // Dock items configuration
   const dockItems = [
@@ -177,6 +190,79 @@ export default function Home() {
       available: true,
     },
   ]
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+        {/* Animated Loading Icon */}
+        <motion.div
+          className="relative mb-8"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          {/* Outer rotating circle */}
+          <motion.div
+            className="absolute inset-0 w-24 h-24 rounded-full border-4 border-primary/20 border-t-primary"
+            animate={{ rotate: 360 }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "linear"
+            }}
+          />
+          
+          {/* Inner rotating circle */}
+          <motion.div
+            className="absolute inset-2 w-20 h-20 rounded-full border-4 border-green-500/20 border-b-green-500"
+            animate={{ rotate: -360 }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "linear"
+            }}
+          />
+          
+          {/* Center bus icon */}
+          <motion.div
+            className="relative w-24 h-24 flex items-center justify-center"
+            animate={{
+              scale: [1, 1.1, 1],
+              opacity: [0.8, 1, 0.8]
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <Bus className="w-10 h-10 text-primary" />
+          </motion.div>
+        </motion.div>
+
+        {/* ShinyText below */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mb-12"
+        >
+          <ShinyText text="please wait.." speed={3} className="text-xl" />
+        </motion.div>
+
+        {/* Moving Logos Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="w-full"
+        >
+          <MovingLogos />
+        </motion.div>
+      </div>
+    )
+  }
 
   return (
     <ClickSpark
