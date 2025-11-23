@@ -12,6 +12,7 @@ import Dock from "@/components/Dock"
 import ClickSpark from "@/components/ClickSpark"
 import BusTracker from "@/components/BusTracker"
 import ShinyText from "@/components/ShinyText"
+import MovingLogos from "@/components/MovingLogos"
 
 export default function TrackingPage() {
   const router = useRouter()
@@ -159,6 +160,16 @@ export default function TrackingPage() {
               >
                 Track your bus in real-time and never miss your ride
               </motion.p>
+            </motion.div>
+
+            {/* Moving Logos Section */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+              className="mb-12"
+            >
+              <MovingLogos />
             </motion.div>
 
             <motion.div
