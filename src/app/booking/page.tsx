@@ -3,10 +3,9 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { MapPin, Calendar, Bus, Users, DollarSign, CheckCircle, AlertCircle, Zap, Crown, ArrowRight, Sparkles, Wallet } from "lucide-react"
+import { MapPin, Calendar, Bus, Users, DollarSign, CheckCircle, Zap, ArrowRight, Sparkles, Wallet } from "lucide-react"
 import { VscHome, VscCalendar } from "react-icons/vsc"
 import { useSession } from "@/lib/auth-client"
-import { useCustomer } from "autumn-js/react"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import Dock from "@/components/Dock"
@@ -16,13 +15,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import Link from "next/link"
 
 export default function BookingPage() {
   const router = useRouter()
   const { data: session, isPending } = useSession()
-  const { customer, check, track, refetch, isLoading: isLoadingCustomer } = useCustomer()
   
   // Dock items
   const dockItems = [
@@ -51,7 +47,7 @@ export default function BookingPage() {
   }, [session, isPending, router])
 
   // Show loading while checking auth
-  if (isPending || isLoadingCustomer) {
+  if (isPending) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <motion.div
@@ -68,20 +64,6 @@ export default function BookingPage() {
   if (!session?.user) {
     return null
   }
-
-  // Get booking limits
-  const bookingFeature = customer?.features?.bookings
-  const currentPlan = customer?.products?.at(-1)
-  const planName = currentPlan?.name || "Free"
-  const isUnlimited = bookingFeature?.unlimited || bookingFeature?.included_usage === -1
-  const bookingsRemaining = isUnlimited ? "Unlimited" : (bookingFeature?.balance || 0)
-  const bookingsUsed = bookingFeature?.usage || 0
-  const bookingsTotal = bookingFeature?.included_usage || 0
-  const bookingPercentage = isUnlimited ? 0 : Math.min(100, (bookingsUsed / bookingsTotal) * 100)
-
-  // Check if user can access advanced seat selection
-  const hasSeatSelection = customer?.features?.seat_selection !== undefined
-  const hasPriorityBooking = customer?.features?.priority_booking !== undefined
 
   const handleEstimateFare = async () => {
     if (!formData.pickup || !formData.dropoff || !formData.vehicleType) {
@@ -111,12 +93,6 @@ export default function BookingPage() {
   }
 
   const handleSeatSelection = async (seat: string) => {
-    // Check if user has seat selection feature
-    if (!hasSeatSelection) {
-      toast.error("Advanced seat selection is only available for Plus and Premium members")
-      return
-    }
-
     setSelectedSeats((prev) =>
       prev.includes(seat) ? prev.filter((s) => s !== seat) : [...prev, seat]
     )
@@ -130,24 +106,9 @@ export default function BookingPage() {
       return
     }
 
-    // CRITICAL: Check booking allowance before submission
+    // Proceed with booking
     setIsLoading(true)
     try {
-      const { data: checkData } = await check({ 
-        featureId: "bookings", 
-        requiredBalance: 1 
-      })
-      
-      if (!checkData?.allowed) {
-        toast.error(
-          `You've reached your booking limit (${bookingsTotal} per month). Please upgrade your plan to continue.`,
-          { duration: 5000 }
-        )
-        setIsLoading(false)
-        return
-      }
-
-      // Proceed with booking
       const token = localStorage.getItem("bearer_token")
       const response = await fetch("/api/bookings", {
         method: "POST",
@@ -165,16 +126,6 @@ export default function BookingPage() {
       const data = await response.json()
       
       if (response.ok) {
-        // Track the booking usage
-        await track({ 
-          featureId: "bookings", 
-          value: 1, 
-          idempotencyKey: `booking-${Date.now()}-${data.id}` 
-        })
-        
-        // Refresh customer data to update usage
-        await refetch()
-        
         toast.success("Booking confirmed!")
         
         // Reset form
@@ -293,160 +244,6 @@ export default function BookingPage() {
             </p>
           </motion.div>
 
-          {/* Usage Indicator with Enhanced Animation */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3, type: "spring" }}
-            className="mb-6"
-          >
-            <Card className="bg-gradient-to-br from-primary/5 via-card/50 to-transparent border-primary/20 backdrop-blur-xl overflow-hidden relative">
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10"
-                animate={{
-                  x: ["-100%", "100%"],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  repeatType: "loop",
-                  ease: "linear"
-                }}
-              />
-              <CardContent className="p-6 relative z-10">
-                <div className="flex items-center justify-between mb-3">
-                  <motion.div 
-                    className="flex items-center gap-2"
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                    >
-                      <Zap className="h-5 w-5 text-primary" />
-                    </motion.div>
-                    <h3 className="font-semibold">Your Plan: {planName}</h3>
-                  </motion.div>
-                  <Link href="/pricing">
-                    <Button variant="outline" size="sm" className="text-xs group">
-                      {planName === "Free" ? "Upgrade" : "Manage Plan"}
-                      <ArrowRight className="h-3 w-3 ml-1 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </Link>
-                </div>
-                
-                <div className="space-y-3">
-                  {/* Bookings meter with animation */}
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="text-muted-foreground">Monthly Bookings</span>
-                      <motion.span 
-                        className="font-mono text-sm font-medium"
-                        key={bookingsUsed}
-                        initial={{ scale: 1.5, color: "rgb(0, 136, 112)" }}
-                        animate={{ scale: 1, color: "currentColor" }}
-                        transition={{ type: "spring" }}
-                      >
-                        {isUnlimited ? "Unlimited" : `${bookingsUsed}/${bookingsTotal}`}
-                      </motion.span>
-                    </div>
-                    {!isUnlimited && (
-                      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                        <motion.div 
-                          className={`h-2 rounded-full ${
-                            bookingPercentage > 90 ? "bg-destructive" : 
-                            bookingPercentage > 75 ? "bg-yellow-500" : "bg-primary"
-                          }`}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${bookingPercentage}%` }}
-                          transition={{ duration: 1, ease: "easeOut" }}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Feature badges with stagger animation */}
-                  <motion.div 
-                    className="flex flex-wrap gap-2 pt-2"
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                  >
-                    {hasPriorityBooking && (
-                      <motion.span 
-                        variants={itemVariants}
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20"
-                      >
-                        ⚡ Priority Booking
-                      </motion.span>
-                    )}
-                    {hasSeatSelection && (
-                      <motion.span 
-                        variants={itemVariants}
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20"
-                      >
-                        🎯 Advanced Seats
-                      </motion.span>
-                    )}
-                    {customer?.features?.real_time_tracking && (
-                      <motion.span 
-                        variants={itemVariants}
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20"
-                      >
-                        📍 Live Tracking
-                      </motion.span>
-                    )}
-                  </motion.div>
-                </div>
-
-                {/* Warning if low on bookings */}
-                <AnimatePresence>
-                  {!isUnlimited && bookingsRemaining === 0 && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                      animate={{ opacity: 1, height: "auto", marginTop: 16 }}
-                      exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                      transition={{ type: "spring", stiffness: 200 }}
-                    >
-                      <Alert className="border-destructive/50 bg-destructive/5">
-                        <AlertCircle className="h-4 w-4 text-destructive" />
-                        <AlertTitle className="text-destructive">Booking Limit Reached</AlertTitle>
-                        <AlertDescription className="text-destructive/80">
-                          You've used all {bookingsTotal} bookings this month. 
-                          <Link href="/pricing" className="underline font-medium ml-1">
-                            Upgrade to Plus or Premium
-                          </Link> for more bookings.
-                        </AlertDescription>
-                      </Alert>
-                    </motion.div>
-                  )}
-                  {!isUnlimited && bookingsRemaining > 0 && bookingsRemaining <= 1 && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                      animate={{ opacity: 1, height: "auto", marginTop: 16 }}
-                      exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                      transition={{ type: "spring", stiffness: 200 }}
-                    >
-                      <Alert className="border-yellow-500/50 bg-yellow-500/5">
-                        <AlertCircle className="h-4 w-4 text-yellow-600" />
-                        <AlertTitle className="text-yellow-600">Almost at Limit</AlertTitle>
-                        <AlertDescription className="text-yellow-600/80">
-                          Only {bookingsRemaining} booking remaining this month.
-                          <Link href="/pricing" className="underline font-medium ml-1">
-                            Upgrade for unlimited bookings
-                          </Link>.
-                        </AlertDescription>
-                      </Alert>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </CardContent>
-            </Card>
-          </motion.div>
-
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -480,17 +277,6 @@ export default function BookingPage() {
                     <Bus className="h-6 w-6 text-primary" />
                   </motion.div>
                   Booking Details
-                  {hasPriorityBooking && (
-                    <motion.span 
-                      className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary ml-auto"
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.6, type: "spring" }}
-                      whileHover={{ scale: 1.1 }}
-                    >
-                      Priority Access
-                    </motion.span>
-                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -595,26 +381,11 @@ export default function BookingPage() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => {
-                        if (!hasSeatSelection) {
-                          toast.error("Advanced seat selection requires Plus or Premium plan", {
-                            duration: 4000,
-                            action: {
-                              label: "Upgrade",
-                              onClick: () => router.push("/pricing")
-                            }
-                          })
-                          return
-                        }
-                        setShowSeatSelection(!showSeatSelection)
-                      }}
+                      onClick={() => setShowSeatSelection(!showSeatSelection)}
                       className="flex-1 group hover:bg-primary/10 hover:border-primary/50 transition-all"
                     >
                       <Users className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
                       Select Seats
-                      {!hasSeatSelection && (
-                        <Crown className="h-3 w-3 ml-1 text-primary" />
-                      )}
                     </Button>
                   </motion.div>
 
@@ -651,7 +422,7 @@ export default function BookingPage() {
                   </AnimatePresence>
 
                   <AnimatePresence>
-                    {showSeatSelection && hasSeatSelection && (
+                    {showSeatSelection && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
@@ -719,7 +490,7 @@ export default function BookingPage() {
                     <Button
                       type="submit"
                       className="w-full bg-primary hover:bg-primary/90 group relative overflow-hidden"
-                      disabled={isLoading || !estimatedFare || selectedSeats.length === 0 || (!isUnlimited && bookingsRemaining === 0)}
+                      disabled={isLoading || !estimatedFare || selectedSeats.length === 0}
                     >
                       <motion.div
                         className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
@@ -737,17 +508,6 @@ export default function BookingPage() {
                       {isLoading ? "Processing..." : "Confirm Booking"}
                     </Button>
                   </motion.div>
-
-                  {!isUnlimited && bookingsRemaining === 0 && (
-                    <motion.p 
-                      className="text-center text-sm text-destructive"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.8 }}
-                    >
-                      Upgrade your plan to make more bookings this month
-                    </motion.p>
-                  )}
                 </form>
               </CardContent>
             </Card>
