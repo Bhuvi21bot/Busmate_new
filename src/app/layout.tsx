@@ -5,6 +5,7 @@ import ErrorReporter from "@/components/ErrorReporter";
 import Script from "next/script";
 import { Toaster } from "@/components/ui/sonner";
 import ChatBot from "@/components/ChatBot";
+import CustomAutumnProvider from "@/lib/autumn-provider";
 
 export const metadata: Metadata = {
   title: "Bus Mate - Smart Travel Solutions",
@@ -30,7 +31,9 @@ export default function RootLayout({
           data-debug="true"
           data-custom-data='{"appName": "YourApp", "version": "1.0.0", "greeting": "hi"}'
         />
-        {children}
+        <CustomAutumnProvider>
+          {children}
+        </CustomAutumnProvider>
         <ChatBot />
         <Toaster />
         <VisualEditsMessenger />
