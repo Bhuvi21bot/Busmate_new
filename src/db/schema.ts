@@ -77,6 +77,19 @@ export const driverSettings = sqliteTable('driver_settings', {
   updatedAt: text('updated_at').notNull(),
 });
 
+// Modify driver_reviews table to remove foreign key constraint on customer_id
+export const driverReviews = sqliteTable('driver_reviews', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  driverId: integer('driver_id').notNull().references(() => drivers.id),
+  customerId: text('customer_id').notNull(),
+  customerName: text('customer_name').notNull(),
+  rating: integer('rating').notNull(),
+  comment: text('comment'),
+  rideId: integer('ride_id').references(() => driverRides.id),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
 // Auth tables for better-auth
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),

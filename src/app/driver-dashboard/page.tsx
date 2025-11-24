@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { UserPlus, Wallet, User, Route, Upload, Loader2, Bus, DollarSign, Clock, CreditCard, CheckCircle, FileText, Settings, ArrowUpRight, ArrowDownRight, TrendingUp, Bell, Mail, Smartphone, Shield, Globe, Moon, Sun, Plus, X, Download } from "lucide-react"
+import { UserPlus, Wallet, User, Route, Upload, Loader2, Bus, DollarSign, Clock, CreditCard, CheckCircle, FileText, Settings, ArrowUpRight, ArrowDownRight, TrendingUp, Bell, Mail, Smartphone, Shield, Globe, Moon, Sun, Plus, X, Download, Star, MessageSquare } from "lucide-react"
 import { VscHome, VscCalendar } from "react-icons/vsc"
 import { useSession } from "@/lib/auth-client"
 import Header from "@/components/Header"
@@ -87,19 +87,20 @@ interface WalletTransaction {
   } | null
 }
 
-interface DriverSettings {
+interface DriverReview {
   id: number
   driverId: number
-  notificationsEnabled: boolean
-  emailNotifications: boolean
-  smsNotifications: boolean
-  autoAcceptRides: boolean
-  availabilityStatus: 'available' | 'busy' | 'offline'
-  preferredRoutes: string[] | null
-  language: string
-  theme: string
+  customerId: number
+  customerName: string
+  rating: number
+  comment: string
+  rideId: number | null
   createdAt: string
-  updatedAt: string
+  ride: {
+    rideNumber: string
+    route: string
+    date: string
+  } | null
 }
 
 export default function DriverDashboard() {
@@ -110,12 +111,12 @@ export default function DriverDashboard() {
   // Get tab from URL query params
   const tabFromUrl = searchParams.get('tab')
 
-  // Dock items
+  // Dock items - removed Settings
   const dockItems = [
     { icon: <VscHome size={20} />, label: 'Home', onClick: () => router.push('/') },
     { icon: <VscCalendar size={20} />, label: 'Booking', onClick: () => router.push('/booking') },
     { icon: <Wallet size={20} />, label: 'My Wallet', onClick: () => router.push('/driver-dashboard?tab=wallet') },
-    { icon: <Settings size={20} />, label: 'Settings', onClick: () => router.push('/driver-dashboard?tab=settings') },
+    { icon: <User size={20} />, label: 'Account', onClick: () => router.push('/profile') },
   ]
 
   const [isLoading, setIsLoading] = useState(false)
@@ -130,12 +131,13 @@ export default function DriverDashboard() {
   const [wallet, setWallet] = useState<DriverWallet | null>(null)
   const [rides, setRides] = useState<DriverRide[]>([])
   const [transactions, setTransactions] = useState<WalletTransaction[]>([])
-  const [settings, setSettings] = useState<DriverSettings | null>(null)
+  const [reviews, setReviews] = useState<DriverReview[]>([])
   const [loadingProfile, setLoadingProfile] = useState(false)
   const [loadingWallet, setLoadingWallet] = useState(false)
   const [loadingRides, setLoadingRides] = useState(false)
   const [loadingTransactions, setLoadingTransactions] = useState(false)
-  const [loadingSettings, setLoadingSettings] = useState(false)
+  const [loadingReviews, setLoadingReviews] = useState(false)
+  const [averageRating, setAverageRating] = useState(0)
 
   // Add money dialog state
   const [showAddMoneyDialog, setShowAddMoneyDialog] = useState(false)
@@ -217,12 +219,12 @@ export default function DriverDashboard() {
           city: data.city,
           district: data.district
         })
-        // If profile found, fetch wallet, rides, transactions, and settings
+        // If profile found, fetch wallet, rides, transactions, and reviews
         if (data.id) {
           fetchWallet(data.id)
           fetchRides(data.id)
           fetchTransactions(data.id)
-          fetchSettings(data.id)
+          fetchReviews(data.id)
         }
       } else {
         toast.error(data.error || "Profile not found")
@@ -299,24 +301,25 @@ export default function DriverDashboard() {
     }
   }
 
-  // Fetch settings data
-  const fetchSettings = async (driverId: number) => {
-    setLoadingSettings(true)
+  // Fetch reviews data
+  const fetchReviews = async (driverId: number) => {
+    setLoadingReviews(true)
     try {
-      const response = await fetch(`/api/drivers/settings?driverId=${driverId}`)
+      const response = await fetch(`/api/drivers/reviews?driverId=${driverId}`)
       const data = await response.json()
 
       if (response.ok) {
-        setSettings(data)
+        setReviews(data.reviews || [])
+        setAverageRating(data.averageRating || 0)
       } else {
-        toast.error(data.error || "Failed to fetch settings")
-        setSettings(null)
+        toast.error(data.error || "Failed to fetch reviews")
+        setReviews([])
       }
     } catch (error) {
-      toast.error("Failed to fetch settings")
-      setSettings(null)
+      toast.error("Failed to fetch reviews")
+      setReviews([])
     } finally {
-      setLoadingSettings(false)
+      setLoadingReviews(false)
     }
   }
 
@@ -481,32 +484,6 @@ export default function DriverDashboard() {
     }
   }
 
-  // Update settings handler
-  const handleUpdateSettings = async (updatedSettings: Partial<DriverSettings>) => {
-    if (!profile?.id) return
-
-    try {
-      const response = await fetch('/api/drivers/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          driverId: profile.id,
-          settings: updatedSettings
-        })
-      })
-
-      const data = await response.json()
-      if (response.ok) {
-        toast.success("Settings updated successfully!")
-        setSettings(data)
-      } else {
-        toast.error(data.error || "Failed to update settings")
-      }
-    } catch (error) {
-      toast.error("An error occurred while updating settings")
-    }
-  }
-
   const formatCurrency = (amount: number) => {
     return `₹${amount.toFixed(2)}`
   }
@@ -563,6 +540,23 @@ export default function DriverDashboard() {
     }
   }
 
+  const renderStars = (rating: number) => {
+    return (
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`h-4 w-4 ${
+              star <= rating
+                ? "fill-yellow-500 text-yellow-500"
+                : "text-muted-foreground"
+            }`}
+          />
+        ))}
+      </div>
+    )
+  }
+
   return (
     <ClickSpark
       sparkColor="#4ade80"
@@ -601,9 +595,9 @@ export default function DriverDashboard() {
                     <Route className="h-4 w-4" />
                     Rides
                   </TabsTrigger>
-                  <TabsTrigger value="settings" className="flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
-                    Settings
+                  <TabsTrigger value="reviews" className="flex items-center gap-2">
+                    <Star className="h-4 w-4" />
+                    Reviews
                   </TabsTrigger>
                 </TabsList>
 
@@ -1068,152 +1062,107 @@ export default function DriverDashboard() {
                   )}
                 </TabsContent>
 
-                {/* Settings Tab */}
-                <TabsContent value="settings">
+                {/* Reviews Tab */}
+                <TabsContent value="reviews">
                   {!profile ? (
                     <Card>
                       <CardContent className="py-12 text-center">
-                        <Settings className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                        <p className="text-muted-foreground">Please search your profile first to view settings</p>
-                      </CardContent>
-                    </Card>
-                  ) : loadingSettings ? (
-                    <Card>
-                      <CardContent className="py-12 text-center">
-                        <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+                        <Star className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                        <p className="text-muted-foreground">Please search your profile first to view reviews</p>
                       </CardContent>
                     </Card>
                   ) : (
                     <div className="space-y-6">
-                      {/* Notifications Settings */}
+                      {/* Rating Summary Card */}
                       <Card>
                         <CardHeader>
-                          <CardTitle>Notifications</CardTitle>
-                          <CardDescription>Manage your notification preferences</CardDescription>
+                          <CardTitle>Rating Summary</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-6">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <Bell className="h-5 w-5 text-muted-foreground" />
-                              <div>
-                                <p className="font-medium">Push Notifications</p>
-                                <p className="text-sm text-muted-foreground">Receive push notifications</p>
+                        <CardContent>
+                          <div className="flex flex-col md:flex-row items-center gap-8">
+                            <div className="text-center">
+                              <div className="text-6xl font-bold mb-2">{averageRating.toFixed(1)}</div>
+                              <div className="flex justify-center mb-2">
+                                {renderStars(Math.round(averageRating))}
                               </div>
+                              <p className="text-sm text-muted-foreground">
+                                Based on {reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}
+                              </p>
                             </div>
-                            <Switch
-                              checked={settings?.notificationsEnabled}
-                              onCheckedChange={(checked) => handleUpdateSettings({ notificationsEnabled: checked })}
-                            />
-                          </div>
-
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <Mail className="h-5 w-5 text-muted-foreground" />
-                              <div>
-                                <p className="font-medium">Email Notifications</p>
-                                <p className="text-sm text-muted-foreground">Receive email updates</p>
-                              </div>
+                            <div className="flex-1 w-full space-y-2">
+                              {[5, 4, 3, 2, 1].map((star) => {
+                                const count = reviews.filter(r => r.rating === star).length
+                                const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0
+                                return (
+                                  <div key={star} className="flex items-center gap-3">
+                                    <span className="text-sm w-12">{star} star</span>
+                                    <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                      <div
+                                        className="h-full bg-yellow-500 transition-all duration-300"
+                                        style={{ width: `${percentage}%` }}
+                                      />
+                                    </div>
+                                    <span className="text-sm w-12 text-right text-muted-foreground">{count}</span>
+                                  </div>
+                                )
+                              })}
                             </div>
-                            <Switch
-                              checked={settings?.emailNotifications}
-                              onCheckedChange={(checked) => handleUpdateSettings({ emailNotifications: checked })}
-                            />
-                          </div>
-
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <Smartphone className="h-5 w-5 text-muted-foreground" />
-                              <div>
-                                <p className="font-medium">SMS Notifications</p>
-                                <p className="text-sm text-muted-foreground">Receive SMS alerts</p>
-                              </div>
-                            </div>
-                            <Switch
-                              checked={settings?.smsNotifications}
-                              onCheckedChange={(checked) => handleUpdateSettings({ smsNotifications: checked })}
-                            />
                           </div>
                         </CardContent>
                       </Card>
 
-                      {/* Ride Settings */}
+                      {/* Reviews List */}
                       <Card>
                         <CardHeader>
-                          <CardTitle>Ride Preferences</CardTitle>
-                          <CardDescription>Configure your ride settings</CardDescription>
+                          <CardTitle>Customer Reviews</CardTitle>
+                          <CardDescription>Feedback from your passengers</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-6">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <Shield className="h-5 w-5 text-muted-foreground" />
-                              <div>
-                                <p className="font-medium">Auto Accept Rides</p>
-                                <p className="text-sm text-muted-foreground">Automatically accept incoming rides</p>
-                              </div>
+                        <CardContent>
+                          {loadingReviews ? (
+                            <div className="text-center py-8">
+                              <Loader2 className="h-8 w-8 animate-spin mx-auto" />
                             </div>
-                            <Switch
-                              checked={settings?.autoAcceptRides}
-                              onCheckedChange={(checked) => handleUpdateSettings({ autoAcceptRides: checked })}
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>Availability Status</Label>
-                            <Select
-                              value={settings?.availabilityStatus}
-                              onValueChange={(value) => handleUpdateSettings({ availabilityStatus: value as any })}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="available">Available</SelectItem>
-                                <SelectItem value="busy">Busy</SelectItem>
-                                <SelectItem value="offline">Offline</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      {/* Appearance Settings */}
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Appearance</CardTitle>
-                          <CardDescription>Customize your app appearance</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                          <div className="space-y-2">
-                            <Label>Theme</Label>
-                            <Select
-                              value={settings?.theme}
-                              onValueChange={(value) => handleUpdateSettings({ theme: value })}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="light">Light</SelectItem>
-                                <SelectItem value="dark">Dark</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>Language</Label>
-                            <Select
-                              value={settings?.language}
-                              onValueChange={(value) => handleUpdateSettings({ language: value })}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="en">English</SelectItem>
-                                <SelectItem value="hi">Hindi</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+                          ) : reviews.length === 0 ? (
+                            <div className="text-center py-8">
+                              <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                              <p className="text-muted-foreground">No reviews yet</p>
+                              <p className="text-sm text-muted-foreground mt-2">
+                                Complete rides to receive reviews from customers
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="space-y-4">
+                              {reviews.map((review) => (
+                                <div
+                                  key={review.id}
+                                  className="p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                                >
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div>
+                                      <p className="font-semibold">{review.customerName}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {formatDateTime(review.createdAt)}
+                                      </p>
+                                    </div>
+                                    {renderStars(review.rating)}
+                                  </div>
+                                  {review.comment && (
+                                    <p className="text-sm mb-3">{review.comment}</p>
+                                  )}
+                                  {review.ride && (
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                      <Bus className="h-3 w-3" />
+                                      <span>Ride: {review.ride.rideNumber}</span>
+                                      <span>•</span>
+                                      <span>{review.ride.route}</span>
+                                      <span>•</span>
+                                      <span>{formatDate(review.ride.date)}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     </div>
