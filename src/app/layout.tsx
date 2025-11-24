@@ -6,6 +6,8 @@ import Script from "next/script";
 import { Toaster } from "@/components/ui/sonner";
 import ChatBot from "@/components/ChatBot";
 import CustomAutumnProvider from "@/lib/autumn-provider";
+import { ThemeProvider } from "@/providers/ThemeProvider";
+import { LanguageProvider } from "@/providers/LanguageProvider";
 
 export const metadata: Metadata = {
   title: "Bus Mate - Smart Travel Solutions",
@@ -18,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="antialiased">
         <ErrorReporter />
         <Script
@@ -31,11 +33,15 @@ export default function RootLayout({
           data-debug="true"
           data-custom-data='{"appName": "YourApp", "version": "1.0.0", "greeting": "hi"}'
         />
-        <CustomAutumnProvider>
-          {children}
-        </CustomAutumnProvider>
-        <ChatBot />
-        <Toaster />
+        <ThemeProvider>
+          <LanguageProvider>
+            <CustomAutumnProvider>
+              {children}
+            </CustomAutumnProvider>
+            <ChatBot />
+            <Toaster />
+          </LanguageProvider>
+        </ThemeProvider>
         <VisualEditsMessenger />
       </body>
     </html>

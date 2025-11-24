@@ -4,8 +4,10 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Menu, X, User, Wallet, MapPin, LogOut, LogIn, UserPlus } from "lucide-react"
+import { Menu, X, User, Wallet, MapPin, LogOut, LogIn, UserPlus, Moon, Sun, Languages } from "lucide-react"
 import { authClient, useSession } from "@/lib/auth-client"
+import { useTheme } from "@/providers/ThemeProvider"
+import { useLanguage } from "@/providers/LanguageProvider"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -20,14 +22,16 @@ import { toast } from "sonner"
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { data: session, isPending, refetch } = useSession()
+  const { theme, toggleTheme } = useTheme()
+  const { language, toggleLanguage, t } = useLanguage()
   const router = useRouter()
 
   const navItems = [
-    { label: "Home", href: "/" },
-    { label: "Vehicles", href: "/vehicles" },
-    { label: "Book Ride", href: "/booking" },
-    { label: "Live Tracking", href: "/tracking" },
-    { label: "Contact", href: "/#contact" },
+    { label: t("home"), href: "/" },
+    { label: t("vehicles"), href: "/vehicles" },
+    { label: t("bookRide"), href: "/booking" },
+    { label: t("liveTracking"), href: "/tracking" },
+    { label: t("contact"), href: "/#contact" },
   ]
 
   const handleSignOut = async () => {
@@ -89,7 +93,40 @@ export default function Header() {
         </nav>
 
         {/* Desktop Actions */}
-        <div className="hidden md:flex items-center space-x-4">
+        <div className="hidden md:flex items-center space-x-2">
+          {/* Theme Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="hover:bg-accent"
+          >
+            <motion.div
+              initial={false}
+              animate={{ rotate: theme === "dark" ? 0 : 180 }}
+              transition={{ duration: 0.3 }}
+            >
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
+            </motion.div>
+          </Button>
+
+          {/* Language Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleLanguage}
+            className="hover:bg-accent relative"
+          >
+            <Languages className="h-5 w-5" />
+            <span className="absolute -bottom-1 -right-1 text-[10px] font-bold bg-primary text-primary-foreground rounded-full px-1">
+              {language.toUpperCase()}
+            </span>
+          </Button>
+
           {isPending ? (
             <div className="h-9 w-24 bg-muted/50 animate-pulse rounded-md" />
           ) : session?.user ? (
@@ -111,26 +148,26 @@ export default function Header() {
                   <DropdownMenuItem asChild>
                     <Link href="/driver-dashboard" className="cursor-pointer">
                       <Wallet className="mr-2 h-4 w-4" />
-                      Driver Dashboard
+                      {t("driverDashboard")}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/tracking" className="cursor-pointer">
                       <MapPin className="mr-2 h-4 w-4" />
-                      Track My Ride
+                      {t("trackMyRide")}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
                     <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
+                    {t("signOut")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
               <Link href="/booking">
                 <Button className="bg-primary hover:bg-primary/90">
-                  Book Now
+                  {t("bookNow")}
                 </Button>
               </Link>
             </>
@@ -139,13 +176,13 @@ export default function Header() {
               <Link href="/login">
                 <Button variant="ghost" size="sm">
                   <LogIn className="mr-2 h-4 w-4" />
-                  Login
+                  {t("login")}
                 </Button>
               </Link>
               <Link href="/register">
                 <Button className="bg-primary hover:bg-primary/90" size="sm">
                   <UserPlus className="mr-2 h-4 w-4" />
-                  Sign Up
+                  {t("signUp")}
                 </Button>
               </Link>
             </>
@@ -181,6 +218,37 @@ export default function Header() {
                   {item.label}
                 </Link>
               ))}
+
+              {/* Mobile Theme & Language Toggles */}
+              <div className="flex gap-2 pt-2 border-t border-border/40">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={toggleTheme}
+                  className="flex-1"
+                >
+                  {theme === "dark" ? (
+                    <>
+                      <Sun className="h-4 w-4 mr-2" />
+                      Light
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="h-4 w-4 mr-2" />
+                      Dark
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={toggleLanguage}
+                  className="flex-1"
+                >
+                  <Languages className="h-4 w-4 mr-2" />
+                  {language === "en" ? "हिंदी" : "English"}
+                </Button>
+              </div>
               
               {isPending ? (
                 <div className="h-9 w-full bg-muted/50 animate-pulse rounded-md" />
@@ -194,11 +262,11 @@ export default function Header() {
                   <Link href="/driver-dashboard" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="outline" className="w-full">
                       <Wallet className="mr-2 h-4 w-4" />
-                      Driver Dashboard
+                      {t("driverDashboard")}
                     </Button>
                   </Link>
                   <Link href="/booking" onClick={() => setMobileMenuOpen(false)}>
-                    <Button className="w-full bg-primary">Book Now</Button>
+                    <Button className="w-full bg-primary">{t("bookNow")}</Button>
                   </Link>
                   <Button 
                     variant="destructive" 
@@ -209,7 +277,7 @@ export default function Header() {
                     }}
                   >
                     <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
+                    {t("signOut")}
                   </Button>
                 </>
               ) : (
@@ -217,13 +285,13 @@ export default function Header() {
                   <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="outline" className="w-full">
                       <LogIn className="mr-2 h-4 w-4" />
-                      Login
+                      {t("login")}
                     </Button>
                   </Link>
                   <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
                     <Button className="w-full bg-primary">
                       <UserPlus className="mr-2 h-4 w-4" />
-                      Sign Up
+                      {t("signUp")}
                     </Button>
                   </Link>
                 </>

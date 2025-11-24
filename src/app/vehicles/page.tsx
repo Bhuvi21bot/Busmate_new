@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import Image from "next/image"
@@ -9,6 +9,7 @@ import { ArrowRight, Info, Sparkles, Wallet, Navigation } from "lucide-react"
 import { VscHome, VscCalendar } from "react-icons/vsc"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
+import PageLoader from "@/components/PageLoader"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -17,7 +18,17 @@ import ClickSpark from "@/components/ClickSpark"
 
 export default function VehiclesPage() {
   const [activeTab, setActiveTab] = useState("all")
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+
+  useEffect(() => {
+    // Simulate page load
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [])
 
   const dockItems = [
     { icon: <VscHome size={20} />, label: 'Home', onClick: () => router.push('/') },
@@ -86,6 +97,10 @@ export default function VehiclesPage() {
     activeTab === "all"
       ? vehicles
       : vehicles.filter((v) => v.category === activeTab)
+
+  if (isLoading) {
+    return <PageLoader />
+  }
 
   return (
     <ClickSpark

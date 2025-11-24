@@ -7,29 +7,155 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Bus, Users, Zap, TrendingUp, CheckCircle2, Lightbulb, Trophy, ArrowRight, Wallet, Search, MapPin, Star, Verified, Settings, Ticket } from "lucide-react"
 import { VscHome, VscCalendar } from "react-icons/vsc"
+import { useLanguage } from "@/providers/LanguageProvider"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import Dock from "@/components/Dock"
 import ScrollToTop from "@/components/ScrollToTop"
 import ClickSpark from "@/components/ClickSpark"
 import MovingLogos from "@/components/MovingLogos"
-import ShinyText from "@/components/ShinyText"
+import PageLoader from "@/components/PageLoader"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function Home() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [isLoading, setIsLoading] = useState(true)
+  const [availableDrivers, setAvailableDrivers] = useState<any[]>([])
+  const [loadingDrivers, setLoadingDrivers] = useState(false)
+  const [driversError, setDriversError] = useState<string | null>(null)
 
   useEffect(() => {
     // Simulate page load
     const timer = setTimeout(() => {
       setIsLoading(false)
-    }, 2000) // 2 seconds loading time
+    }, 1500) // 1.5 seconds loading time
 
     return () => clearTimeout(timer)
   }, [])
+
+  // Fetch available drivers
+  useEffect(() => {
+    const fetchDrivers = async () => {
+      setLoadingDrivers(true)
+      setDriversError(null)
+      try {
+        const response = await fetch('/api/drivers?status=approved&limit=4')
+        const data = await response.json()
+
+        if (response.ok && data.success) {
+          setAvailableDrivers(data.drivers)
+        } else {
+          setDriversError(data.error || 'Failed to fetch drivers')
+          // Fallback to static data if API fails
+          setAvailableDrivers([
+            {
+              id: 1,
+              name: "Vikram Singh",
+              vehicle: "UPSRTC Government Bus",
+              image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200",
+              rating: 4.8,
+              trips: 1250,
+              distance: "0.8 km away",
+              verified: true,
+              available: true,
+            },
+            {
+              id: 2,
+              name: "Mohammad Ali",
+              vehicle: "Private AC Bus",
+              image: "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=200",
+              rating: 4.9,
+              trips: 980,
+              distance: "1.2 km away",
+              verified: true,
+              available: true,
+            },
+            {
+              id: 3,
+              name: "Suresh Yadav",
+              vehicle: "E-Rickshaw",
+              image: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=200",
+              rating: 4.7,
+              trips: 2340,
+              distance: "0.5 km away",
+              verified: true,
+              available: true,
+            },
+            {
+              id: 4,
+              name: "Ramesh Gupta",
+              vehicle: "Chartered Bus (45 Seater)",
+              image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200",
+              rating: 4.9,
+              trips: 567,
+              distance: "2.1 km away",
+              verified: true,
+              available: true,
+            },
+          ])
+        }
+      } catch (error) {
+        console.error('Error fetching drivers:', error)
+        setDriversError('Network error')
+        // Fallback to static data
+        setAvailableDrivers([
+          {
+            id: 1,
+            name: "Vikram Singh",
+            vehicle: "UPSRTC Government Bus",
+            image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200",
+            rating: 4.8,
+            trips: 1250,
+            distance: "0.8 km away",
+            verified: true,
+            available: true,
+          },
+          {
+            id: 2,
+            name: "Mohammad Ali",
+            vehicle: "Private AC Bus",
+            image: "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=200",
+            rating: 4.9,
+            trips: 980,
+            distance: "1.2 km away",
+            verified: true,
+            available: true,
+          },
+          {
+            id: 3,
+            name: "Suresh Yadav",
+            vehicle: "E-Rickshaw",
+            image: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=200",
+            rating: 4.7,
+            trips: 2340,
+            distance: "0.5 km away",
+            verified: true,
+            available: true,
+          },
+          {
+            id: 4,
+            name: "Ramesh Gupta",
+            vehicle: "Chartered Bus (45 Seater)",
+            image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200",
+            rating: 4.9,
+            trips: 567,
+            distance: "2.1 km away",
+            verified: true,
+            available: true,
+          },
+        ])
+      } finally {
+        setLoadingDrivers(false)
+      }
+    }
+
+    if (!isLoading) {
+      fetchDrivers()
+    }
+  }, [isLoading])
 
   // Dock items configuration
   const dockItems = [
@@ -144,124 +270,9 @@ export default function Home() {
     },
   ]
 
-  const availableDrivers = [
-    {
-      id: 1,
-      name: "Vikram Singh",
-      vehicle: "UPSRTC Government Bus",
-      image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200",
-      rating: 4.8,
-      trips: 1250,
-      distance: "0.8 km away",
-      verified: true,
-      available: true,
-    },
-    {
-      id: 2,
-      name: "Mohammad Ali",
-      vehicle: "Private AC Bus",
-      image: "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=200",
-      rating: 4.9,
-      trips: 980,
-      distance: "1.2 km away",
-      verified: true,
-      available: true,
-    },
-    {
-      id: 3,
-      name: "Suresh Yadav",
-      vehicle: "E-Rickshaw",
-      image: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=200",
-      rating: 4.7,
-      trips: 2340,
-      distance: "0.5 km away",
-      verified: true,
-      available: true,
-    },
-    {
-      id: 4,
-      name: "Ramesh Gupta",
-      vehicle: "Chartered Bus (45 Seater)",
-      image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200",
-      rating: 4.9,
-      trips: 567,
-      distance: "2.1 km away",
-      verified: true,
-      available: true,
-    },
-  ]
-
   // Show loading state
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
-        {/* Animated Loading Icon */}
-        <motion.div
-          className="relative mb-8"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          {/* Outer rotating circle */}
-          <motion.div
-            className="absolute inset-0 w-24 h-24 rounded-full border-4 border-primary/20 border-t-primary"
-            animate={{ rotate: 360 }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: "linear"
-            }}
-          />
-          
-          {/* Inner rotating circle */}
-          <motion.div
-            className="absolute inset-2 w-20 h-20 rounded-full border-4 border-green-500/20 border-b-green-500"
-            animate={{ rotate: -360 }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "linear"
-            }}
-          />
-          
-          {/* Center bus icon */}
-          <motion.div
-            className="relative w-24 h-24 flex items-center justify-center"
-            animate={{
-              scale: [1, 1.1, 1],
-              opacity: [0.8, 1, 0.8]
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          >
-            <Bus className="w-10 h-10 text-primary" />
-          </motion.div>
-        </motion.div>
-
-        {/* ShinyText below */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mb-12"
-        >
-          <ShinyText text="please wait.." speed={3} className="text-xl" />
-        </motion.div>
-
-        {/* Moving Logos Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="w-full"
-        >
-          <MovingLogos />
-        </motion.div>
-      </div>
-    )
+    return <PageLoader />
   }
 
   return (
@@ -292,7 +303,7 @@ export default function Home() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                Innovative Travel
+                {t("innovativeTravel")}
               </motion.h1>
               <motion.p
                 className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto"
@@ -300,7 +311,7 @@ export default function Home() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
               >
-                Your neighborhood ride just got smarter! Track your route, book a seat, and move around your city with confidence and comfort.
+                {t("heroDescription")}
               </motion.p>
               <motion.div
                 className="flex flex-col sm:flex-row gap-4 justify-center"
@@ -314,7 +325,7 @@ export default function Home() {
                     className="bg-primary hover:bg-primary/90 text-lg px-8 hover:scale-105 transition-transform duration-300"
                   >
                     <ArrowRight className="h-5 w-5 mr-2" />
-                    Start Your Journey
+                    {t("startJourney")}
                   </Button>
                 </Link>
                 <Link href="/pricing">
@@ -323,7 +334,7 @@ export default function Home() {
                     variant="outline" 
                     className="text-lg px-8 hover:scale-105 transition-transform duration-300 hover:border-primary/50"
                   >
-                    View Pricing
+                    {t("viewPricing")}
                   </Button>
                 </Link>
                 <Link href="/driver-dashboard">
@@ -333,7 +344,7 @@ export default function Home() {
                     className="text-lg px-8 hover:scale-105 transition-transform duration-300 hover:border-primary/50 bg-primary/5"
                   >
                     <Users className="h-5 w-5 mr-2" />
-                    Become a Driver
+                    {t("becomeDriver")}
                   </Button>
                 </Link>
               </motion.div>
@@ -399,7 +410,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                About Bus Mate
+                {t("aboutBusMate")}
               </motion.h2>
               <motion.p 
                 className="text-xl text-muted-foreground"
@@ -408,7 +419,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
               >
-                Fast and cheapest way for traveling
+                {t("aboutDescription")}
               </motion.p>
             </motion.div>
 
@@ -463,7 +474,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                Our Services
+                {t("ourServices")}
               </motion.h2>
               <motion.p 
                 className="text-xl text-muted-foreground"
@@ -472,7 +483,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
               >
-                The best ride that suits you
+                {t("servicesDescription")}
               </motion.p>
             </motion.div>
 
@@ -522,7 +533,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                How to Book Your Ride
+                {t("howToBook")}
               </motion.h2>
               <motion.p 
                 className="text-xl text-muted-foreground"
@@ -531,7 +542,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
               >
-                Simple steps to get you moving
+                {t("bookingDescription")}
               </motion.p>
             </motion.div>
 
@@ -587,7 +598,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                What Our Customers Say
+                {t("customerReviews")}
               </motion.h2>
               <motion.p 
                 className="text-xl text-muted-foreground"
@@ -596,7 +607,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
               >
-                Real experiences from real travelers
+                {t("reviewsDescription")}
               </motion.p>
             </motion.div>
 
@@ -662,7 +673,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                Available Drivers Near You
+                {t("availableDrivers")}
               </motion.h2>
               <motion.p 
                 className="text-xl text-muted-foreground"
@@ -671,87 +682,121 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
               >
-                Verified and ready to serve you
+                {t("driversDescription")}
               </motion.p>
             </motion.div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-              {availableDrivers.map((driver, index) => (
-                <motion.div
-                  key={driver.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ 
-                    delay: index * 0.1,
-                    type: "spring",
-                    stiffness: 100 
-                  }}
-                  whileHover={{ 
-                    y: -15,
-                    scale: 1.02,
-                    transition: { type: "spring", stiffness: 400 }
-                  }}
-                >
-                  <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
+            {loadingDrivers ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+                {[1, 2, 3, 4].map((i) => (
+                  <Card key={i} className="h-full bg-card/50 backdrop-blur-sm border-border/50 animate-pulse">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <Avatar className="h-16 w-16 border-2 border-primary/20">
-                          <AvatarImage src={driver.image} alt={driver.name} />
-                          <AvatarFallback>{driver.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        {driver.verified && (
-                          <div className="bg-primary/10 rounded-full p-1">
-                            <Verified className="h-4 w-4 text-primary" />
-                          </div>
-                        )}
+                        <div className="h-16 w-16 rounded-full bg-muted" />
+                        <div className="h-6 w-6 rounded-full bg-muted" />
                       </div>
-                      
-                      <h3 className="text-lg font-bold mb-1">{driver.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-3">{driver.vehicle}</p>
-                      
+                      <div className="h-6 w-32 bg-muted rounded mb-2" />
+                      <div className="h-4 w-full bg-muted rounded mb-4" />
                       <div className="space-y-2 mb-4">
-                        <div className="flex items-center gap-2 text-sm">
-                          <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                          <span className="font-semibold">{driver.rating}</span>
-                          <span className="text-muted-foreground">({driver.trips} trips)</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <MapPin className="h-4 w-4 text-primary" />
-                          <span>{driver.distance}</span>
-                        </div>
+                        <div className="h-4 w-28 bg-muted rounded" />
+                        <div className="h-4 w-24 bg-muted rounded" />
                       </div>
-                      
-                      <Link href="/booking">
-                        <Button className="w-full bg-primary hover:bg-primary/90 hover:scale-[1.02] transition-all duration-300">
-                          <ArrowRight className="h-4 w-4 mr-2" />
-                          Book Now
-                        </Button>
-                      </Link>
+                      <div className="h-10 w-full bg-muted rounded" />
                     </CardContent>
                   </Card>
-                </motion.div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : availableDrivers.length > 0 ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+                {availableDrivers.map((driver, index) => (
+                  <motion.div
+                    key={driver.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ 
+                      delay: index * 0.1,
+                      type: "spring",
+                      stiffness: 100 
+                    }}
+                    whileHover={{ 
+                      y: -15,
+                      scale: 1.02,
+                      transition: { type: "spring", stiffness: 400 }
+                    }}
+                  >
+                    <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <Avatar className="h-16 w-16 border-2 border-primary/20">
+                            <AvatarImage src={driver.image} alt={driver.name} />
+                            <AvatarFallback>{driver.name.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          {driver.verified && (
+                            <div className="bg-primary/10 rounded-full p-1">
+                              <Verified className="h-4 w-4 text-primary" />
+                            </div>
+                          )}
+                        </div>
+                        
+                        <h3 className="text-lg font-bold mb-1">{driver.name}</h3>
+                        <p className="text-sm text-muted-foreground mb-3">{driver.vehicle}</p>
+                        
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-center gap-2 text-sm">
+                            <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                            <span className="font-semibold">{driver.rating}</span>
+                            <span className="text-muted-foreground">({driver.trips} trips)</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <MapPin className="h-4 w-4 text-primary" />
+                            <span>{driver.distance}</span>
+                          </div>
+                        </div>
+                        
+                        <Link href="/booking">
+                          <Button className="w-full bg-primary hover:bg-primary/90 hover:scale-[1.02] transition-all duration-300">
+                            <ArrowRight className="h-4 w-4 mr-2" />
+                            {t("bookNow")}
+                          </Button>
+                        </Link>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center py-12"
+              >
+                <Bus className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
+                <p className="text-xl text-muted-foreground mb-2">No drivers available at the moment</p>
+                <p className="text-sm text-muted-foreground">Please check back later or try refreshing the page</p>
+              </motion.div>
+            )}
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
-              className="text-center mt-8"
-            >
-              <Link href="/vehicles">
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="hover:scale-105 transition-all duration-300 hover:border-primary/50"
-                >
-                  View All Available Drivers
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              </Link>
-            </motion.div>
+            {!loadingDrivers && availableDrivers.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 }}
+                className="text-center mt-8"
+              >
+                <Link href="/vehicles">
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="hover:scale-105 transition-all duration-300 hover:border-primary/50"
+                  >
+                    View All Available Drivers
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </Link>
+              </motion.div>
+            )}
           </div>
         </section>
 
@@ -770,7 +815,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
               >
-                Ready to Start Your Journey?
+                {t("readyToStart")}
               </motion.h2>
               <motion.p 
                 className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto"
@@ -779,7 +824,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
               >
-                Book your ride now and experience seamless, affordable, and eco-friendly travel.
+                {t("ctaDescription")}
               </motion.p>
               <motion.div 
                 className="flex flex-col sm:flex-row gap-4 justify-center"
@@ -794,7 +839,7 @@ export default function Home() {
                     className="bg-primary hover:bg-primary/90 text-lg px-12 hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-primary/50"
                   >
                     <ArrowRight className="h-5 w-5 mr-2" />
-                    Book Your Ride Now
+                    {t("bookYourRide")}
                   </Button>
                 </Link>
                 <Link href="/pricing">
@@ -803,7 +848,7 @@ export default function Home() {
                     variant="outline" 
                     className="text-lg px-12 hover:scale-105 transition-all duration-300 hover:border-primary/50"
                   >
-                    View Plans & Pricing
+                    {t("viewPlans")}
                   </Button>
                 </Link>
               </motion.div>
