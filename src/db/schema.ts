@@ -46,6 +46,36 @@ export const driverRides = sqliteTable('driver_rides', {
   createdAt: text('created_at').notNull(),
 });
 
+// Add new wallet_transactions table
+export const walletTransactions = sqliteTable('wallet_transactions', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  driverId: integer('driver_id').notNull().references(() => drivers.id),
+  walletId: integer('wallet_id').notNull().references(() => driverWallets.id),
+  type: text('type').notNull(),
+  amount: real('amount').notNull(),
+  balanceAfter: real('balance_after').notNull(),
+  description: text('description').notNull(),
+  referenceNumber: text('reference_number').unique(),
+  rideId: integer('ride_id').references(() => driverRides.id),
+  status: text('status').notNull().default('completed'),
+  createdAt: text('created_at').notNull(),
+});
+
+// Add new driver_settings table
+export const driverSettings = sqliteTable('driver_settings', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  driverId: integer('driver_id').notNull().unique().references(() => drivers.id),
+  notificationsEnabled: integer('notifications_enabled', { mode: 'boolean' }).default(true),
+  emailNotifications: integer('email_notifications', { mode: 'boolean' }).default(true),
+  smsNotifications: integer('sms_notifications', { mode: 'boolean' }).default(true),
+  autoAcceptRides: integer('auto_accept_rides', { mode: 'boolean' }).default(false),
+  availabilityStatus: text('availability_status').notNull().default('available'),
+  preferredRoutes: text('preferred_routes', { mode: 'json' }),
+  language: text('language').notNull().default('en'),
+  theme: text('theme').notNull().default('light'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
 
 // Auth tables for better-auth
 export const user = sqliteTable("user", {

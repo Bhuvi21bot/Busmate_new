@@ -15,6 +15,13 @@
       "when": 1763394250066,
       "tag": "0001_vengeful_union_jack",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1763993709850,
+      "tag": "0002_bored_franklin_storm",
+      "breakpoints": true
     }
   ]
 }

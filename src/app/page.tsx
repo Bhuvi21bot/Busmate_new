@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { Bus, Users, Zap, TrendingUp, CheckCircle2, Lightbulb, Trophy, ArrowRight, Wallet, Search, MapPin, Star, Verified, Settings, Ticket } from "lucide-react"
+import { Bus, Users, Zap, TrendingUp, CheckCircle2, Lightbulb, Trophy, ArrowRight, Wallet, Search, MapPin, Star, Verified, Settings, Ticket, User } from "lucide-react"
 import { VscHome, VscCalendar } from "react-icons/vsc"
 import { useLanguage } from "@/providers/LanguageProvider"
 import Header from "@/components/Header"
@@ -159,6 +159,7 @@ export default function Home() {
 
   // Dock items configuration
   const dockItems = [
+    { icon: <User size={20} />, label: 'Profile', onClick: () => router.push('/profile') },
     { icon: <Settings size={20} />, label: 'Settings', onClick: () => router.push('/driver-dashboard?tab=settings') },
     { icon: <Wallet size={20} />, label: 'My Wallet', onClick: () => router.push('/driver-dashboard?tab=wallet') },
     { icon: <Ticket size={20} />, label: 'Book Ticket', onClick: () => router.push('/booking') },
