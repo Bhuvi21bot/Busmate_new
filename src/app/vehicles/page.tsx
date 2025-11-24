@@ -5,8 +5,9 @@ import { motion } from "framer-motion"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { ArrowRight, Info, Sparkles, Wallet, Navigation } from "lucide-react"
-import { VscHome, VscCalendar } from "react-icons/vsc"
+import { ArrowRight, Info, Wallet, Navigation } from "lucide-react"
+import { VscHome } from "react-icons/vsc"
+import { useLanguage } from "@/providers/LanguageProvider"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import PageLoader from "@/components/PageLoader"
@@ -20,6 +21,7 @@ export default function VehiclesPage() {
   const [activeTab, setActiveTab] = useState("all")
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+  const { t } = useLanguage()
 
   useEffect(() => {
     // Simulate page load
@@ -140,7 +142,7 @@ export default function VehiclesPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                Available Vehicles
+                {t("availableVehicles")}
               </motion.h1>
               <motion.p 
                 className="text-xl text-muted-foreground"
@@ -148,7 +150,7 @@ export default function VehiclesPage() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
               >
-                Your ride, ready when you are—fast, reliable, and just a click away!
+                {t("vehiclesHeroDescription")}
               </motion.p>
             </motion.div>
 
@@ -159,10 +161,10 @@ export default function VehiclesPage() {
             >
               <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-12">
                 <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4">
-                  <TabsTrigger value="all" className="transition-all duration-300">All</TabsTrigger>
-                  <TabsTrigger value="government" className="transition-all duration-300">Government</TabsTrigger>
-                  <TabsTrigger value="private" className="transition-all duration-300">Private</TabsTrigger>
-                  <TabsTrigger value="chartered" className="transition-all duration-300">Chartered</TabsTrigger>
+                  <TabsTrigger value="all" className="transition-all duration-300">{t("all")}</TabsTrigger>
+                  <TabsTrigger value="government" className="transition-all duration-300">{t("government")}</TabsTrigger>
+                  <TabsTrigger value="private" className="transition-all duration-300">{t("private")}</TabsTrigger>
+                  <TabsTrigger value="chartered" className="transition-all duration-300">{t("chartered")}</TabsTrigger>
                 </TabsList>
               </Tabs>
             </motion.div>
@@ -228,13 +230,13 @@ export default function VehiclesPage() {
                         </p>
                         <div className="space-y-2 mb-4">
                           <p className="text-sm">
-                            <span className="font-semibold">Route:</span> {vehicle.route}
+                            <span className="font-semibold">{t("route")}:</span> {vehicle.route}
                           </p>
                           <motion.p 
                             className="text-sm"
                             whileHover={{ scale: 1.05, x: 5 }}
                           >
-                            <span className="font-semibold">Fare:</span> <span className="text-primary font-bold">{vehicle.fare}</span>
+                            <span className="font-semibold">{t("fare")}:</span> <span className="text-primary font-bold">{vehicle.fare}</span>
                           </motion.p>
                         </div>
                         <div className="flex gap-2">
@@ -244,13 +246,13 @@ export default function VehiclesPage() {
                               className="w-full hover:scale-[1.02] transition-all duration-300"
                             >
                               <Info className="h-4 w-4 mr-2" />
-                              Details
+                              {t("details")}
                             </Button>
                           </Link>
                           <Link href="/booking" className="flex-1">
                             <Button className="w-full bg-primary hover:scale-[1.02] transition-all duration-300 hover:shadow-lg hover:shadow-primary/50">
                               <ArrowRight className="h-4 w-4 mr-2" />
-                              Book
+                              {t("book")}
                             </Button>
                           </Link>
                         </div>

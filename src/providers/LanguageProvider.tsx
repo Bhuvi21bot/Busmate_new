@@ -43,6 +43,16 @@ const translations: Translations = {
     ctaDescription: "Book your ride now and experience seamless, affordable, and eco-friendly travel.",
     bookYourRide: "Book Your Ride Now",
     viewPlans: "View Plans & Pricing",
+    availableVehicles: "Available Vehicles",
+    vehiclesHeroDescription: "Your ride, ready when you are—fast, reliable, and just a click away!",
+    all: "All",
+    government: "Government",
+    private: "Private",
+    chartered: "Chartered",
+    details: "Details",
+    book: "Book",
+    route: "Route",
+    fare: "Fare",
   },
   hi: {
     home: "होम",
@@ -76,6 +86,16 @@ const translations: Translations = {
     ctaDescription: "अभी अपनी सवारी बुक करें और निर्बाध, किफायती और पर्यावरण के अनुकूल यात्रा का अनुभव करें।",
     bookYourRide: "अभी अपनी सवारी बुक करें",
     viewPlans: "योजनाएं और मूल्य देखें",
+    availableVehicles: "उपलब्ध वाहन",
+    vehiclesHeroDescription: "आपकी सवारी, जब आप तैयार हों—तेज़, विश्वसनीय, और बस एक क्लिक दूर!",
+    all: "सभी",
+    government: "सरकारी",
+    private: "निजी",
+    chartered: "चार्टर्ड",
+    details: "विवरण",
+    book: "बुक करें",
+    route: "मार्ग",
+    fare: "किराया",
   },
 }
 
@@ -90,23 +110,22 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>("en")
-  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
-    const savedLang = localStorage.getItem("language") as Language
+    const savedLang = localStorage.getItem("language") as Language | null
     if (savedLang) {
       setLanguage(savedLang)
     }
   }, [])
 
-  useEffect(() => {
-    if (!mounted) return
-    localStorage.setItem("language", language)
-  }, [language, mounted])
+  const handleSetLanguage = (lang: Language) => {
+    setLanguage(lang)
+    localStorage.setItem("language", lang)
+  }
 
   const toggleLanguage = () => {
-    setLanguage((prev) => (prev === "en" ? "hi" : "en"))
+    const newLang = language === "en" ? "hi" : "en"
+    handleSetLanguage(newLang)
   }
 
   const t = (key: string): string => {
@@ -114,7 +133,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, toggleLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, toggleLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   )
