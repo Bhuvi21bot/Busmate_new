@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
 import { User, Wallet, Settings, Edit, Save, X, Loader2, Bell, Mail, Smartphone, Shield, Plus, Download, ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, FileText, Bus } from "lucide-react"
 import { useSession } from "@/lib/auth-client"
@@ -90,6 +90,7 @@ interface DriverSettings {
 
 export default function ProfilePage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { data: session, isPending } = useSession()
 
   const [activeTab, setActiveTab] = useState("profile")
@@ -131,6 +132,14 @@ export default function ProfilePage() {
     bankName: ""
   })
   const [withdrawing, setWithdrawing] = useState(false)
+
+  // Set active tab from URL parameter
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab && ['profile', 'wallet', 'settings'].includes(tab)) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
 
   // Protect route - redirect to login if not authenticated
   useEffect(() => {

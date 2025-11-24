@@ -53,6 +53,10 @@ const translations: Translations = {
     book: "Book",
     route: "Route",
     fare: "Fare",
+    myAccount: "My Account",
+    myWallet: "My Wallet",
+    settings: "Settings",
+    personalDetails: "Personal Details",
   },
   hi: {
     home: "होम",
@@ -96,6 +100,10 @@ const translations: Translations = {
     book: "बुक करें",
     route: "मार्ग",
     fare: "किराया",
+    myAccount: "मेरा खाता",
+    myWallet: "मेरा वॉलेट",
+    settings: "सेटिंग्स",
+    personalDetails: "व्यक्तिगत विवरण",
   },
 }
 

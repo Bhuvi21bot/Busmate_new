@@ -4,7 +4,7 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Menu, X, User, Wallet, MapPin, LogOut, LogIn, UserPlus, Moon, Sun, Languages } from "lucide-react"
+import { Menu, X, User, Wallet, MapPin, LogOut, LogIn, UserPlus, Moon, Sun, Languages, Settings, UserCircle } from "lucide-react"
 import { authClient, useSession } from "@/lib/auth-client"
 import { useTheme } from "@/providers/ThemeProvider"
 import { useLanguage } from "@/providers/LanguageProvider"
@@ -133,21 +133,46 @@ export default function Header() {
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <User className="h-5 w-5" />
+                  <Button variant="ghost" size="icon" className="relative">
+                    <UserCircle className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-64">
                   <DropdownMenuLabel>
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium">{session.user.name}</p>
-                      <p className="text-xs text-muted-foreground">{session.user.email}</p>
+                      <p className="text-sm font-medium leading-none">{session.user.name}</p>
+                      <p className="text-xs text-muted-foreground leading-none">{session.user.email}</p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground uppercase">
+                    {t("myAccount")}
+                  </DropdownMenuLabel>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      {t("personalDetails")}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile?tab=wallet" className="cursor-pointer">
+                      <Wallet className="mr-2 h-4 w-4" />
+                      {t("myWallet")}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile?tab=settings" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      {t("settings")}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground uppercase">
+                    Quick Links
+                  </DropdownMenuLabel>
                   <DropdownMenuItem asChild>
                     <Link href="/driver-dashboard" className="cursor-pointer">
-                      <Wallet className="mr-2 h-4 w-4" />
+                      <MapPin className="mr-2 h-4 w-4" />
                       {t("driverDashboard")}
                     </Link>
                   </DropdownMenuItem>
@@ -158,7 +183,7 @@ export default function Header() {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive focus:text-destructive">
                     <LogOut className="mr-2 h-4 w-4" />
                     {t("signOut")}
                   </DropdownMenuItem>
@@ -259,9 +284,34 @@ export default function Header() {
                     <p className="text-sm font-medium">{session.user.name}</p>
                     <p className="text-xs text-muted-foreground">{session.user.email}</p>
                   </div>
+                  
+                  <div className="pt-2 border-t border-border/40">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">{t("myAccount")}</p>
+                    <div className="space-y-2">
+                      <Link href="/profile" onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant="outline" className="w-full justify-start">
+                          <User className="mr-2 h-4 w-4" />
+                          {t("personalDetails")}
+                        </Button>
+                      </Link>
+                      <Link href="/profile?tab=wallet" onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant="outline" className="w-full justify-start">
+                          <Wallet className="mr-2 h-4 w-4" />
+                          {t("myWallet")}
+                        </Button>
+                      </Link>
+                      <Link href="/profile?tab=settings" onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant="outline" className="w-full justify-start">
+                          <Settings className="mr-2 h-4 w-4" />
+                          {t("settings")}
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+
                   <Link href="/driver-dashboard" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="outline" className="w-full">
-                      <Wallet className="mr-2 h-4 w-4" />
+                      <MapPin className="mr-2 h-4 w-4" />
                       {t("driverDashboard")}
                     </Button>
                   </Link>

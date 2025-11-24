@@ -159,10 +159,10 @@ export default function Home() {
 
   // Dock items configuration
   const dockItems = [
-    { icon: <User size={20} />, label: 'Profile', onClick: () => router.push('/profile') },
-    { icon: <Settings size={20} />, label: 'Settings', onClick: () => router.push('/driver-dashboard?tab=settings') },
-    { icon: <Wallet size={20} />, label: 'My Wallet', onClick: () => router.push('/driver-dashboard?tab=wallet') },
+    { icon: <VscHome size={20} />, label: 'Home', onClick: () => router.push('/') },
     { icon: <Ticket size={20} />, label: 'Book Ticket', onClick: () => router.push('/booking') },
+    { icon: <Wallet size={20} />, label: 'My Wallet', onClick: () => router.push('/profile?tab=wallet') },
+    { icon: <Settings size={20} />, label: 'Settings', onClick: () => router.push('/profile?tab=settings') },
   ]
 
   const stats = [
