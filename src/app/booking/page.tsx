@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { MapPin, Calendar, Bus, Users, DollarSign, CheckCircle, Zap, ArrowRight, Sparkles, Wallet, Clock, Armchair, Radio, User } from "lucide-react"
+import { MapPin, Calendar, Bus, Users, DollarSign, CheckCircle, Zap, ArrowRight, Sparkles, Wallet, Armchair, Radio, User } from "lucide-react"
 import { VscHome, VscCalendar } from "react-icons/vsc"
 import { useSession } from "@/lib/auth-client"
 import Header from "@/components/Header"
@@ -56,7 +56,6 @@ export default function BookingPage() {
     dropoff: "",
     vehicleType: "",
     date: "",
-    time: "",
     passengers: "1",
   })
   const [estimatedFare, setEstimatedFare] = useState<number | null>(null)
@@ -174,7 +173,7 @@ export default function BookingPage() {
     setIsLoading(true)
     try {
       const token = localStorage.getItem("bearer_token")
-      const datetime = `${formData.date}T${formData.time}`
+      const datetime = `${formData.date}T09:00:00`
       const response = await fetch("/api/bookings", {
         method: "POST",
         headers: { 
@@ -200,7 +199,6 @@ export default function BookingPage() {
           dropoff: "",
           vehicleType: "",
           date: "",
-          time: "",
           passengers: "1",
         })
         setSelectedSeats([])
@@ -492,23 +490,6 @@ export default function BookingPage() {
                           className="transition-all focus:scale-[1.02]"
                         />
                       </motion.div>
-
-                      <motion.div variants={itemVariants}>
-                        <Label htmlFor="time" className="flex items-center gap-2 mb-2">
-                          <Clock className="h-4 w-4 text-primary" />
-                          Journey Time
-                        </Label>
-                        <Input
-                          id="time"
-                          type="time"
-                          value={formData.time}
-                          onChange={(e) =>
-                            setFormData({ ...formData, time: e.target.value })
-                          }
-                          required
-                          className="transition-all focus:scale-[1.02]"
-                        />
-                      </motion.div>
                     </motion.div>
 
                     <motion.div 
@@ -524,7 +505,17 @@ export default function BookingPage() {
                         disabled={isLoading}
                         className="flex-1 group hover:bg-primary/10 hover:border-primary/50 transition-all"
                       >
-                        <DollarSign className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
+                        {isLoading ? (
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            className="mr-2"
+                          >
+                            <Bus className="h-4 w-4" />
+                          </motion.div>
+                        ) : (
+                          <DollarSign className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
+                        )}
                         Estimate Fare
                       </Button>
                       <Button
@@ -725,8 +716,23 @@ export default function BookingPage() {
                             ease: "linear"
                           }}
                         />
-                        <CheckCircle className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
-                        {isLoading ? "Processing..." : "Confirm Booking"}
+                        {isLoading ? (
+                          <>
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                              className="mr-2"
+                            >
+                              <Bus className="h-4 w-4" />
+                            </motion.div>
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
+                            Confirm Booking
+                          </>
+                        )}
                       </Button>
                     </motion.div>
                   </form>
