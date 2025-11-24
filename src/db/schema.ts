@@ -154,3 +154,59 @@ export const verification = sqliteTable("verification", {
     () => new Date(),
   ),
 });
+
+// Add new customer tables at the end
+export const customerProfiles = sqliteTable('customer_profiles', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().unique().references(() => user.id, { onDelete: 'cascade' }),
+  phone: text('phone'),
+  address: text('address'),
+  city: text('city'),
+  state: text('state'),
+  pincode: text('pincode'),
+  emergencyContact: text('emergency_contact'),
+  emergencyContactName: text('emergency_contact_name'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
+export const customerWallets = sqliteTable('customer_wallets', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().unique().references(() => user.id, { onDelete: 'cascade' }),
+  balance: real('balance').notNull().default(0),
+  totalSpent: real('total_spent').notNull().default(0),
+  totalAdded: real('total_added').notNull().default(0),
+  status: text('status').notNull().default('active'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
+export const customerWalletTransactions = sqliteTable('customer_wallet_transactions', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  walletId: integer('wallet_id').notNull().references(() => customerWallets.id, { onDelete: 'cascade' }),
+  type: text('type').notNull(),
+  amount: real('amount').notNull(),
+  balanceBefore: real('balance_before').notNull(),
+  balanceAfter: real('balance_after').notNull(),
+  description: text('description').notNull(),
+  referenceNumber: text('reference_number').notNull().unique(),
+  bookingId: integer('booking_id'),
+  paymentMethod: text('payment_method'),
+  status: text('status').notNull().default('completed'),
+  createdAt: text('created_at').notNull(),
+});
+
+export const customerSettings = sqliteTable('customer_settings', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().unique().references(() => user.id, { onDelete: 'cascade' }),
+  notificationsEnabled: integer('notifications_enabled', { mode: 'boolean' }).notNull().default(true),
+  emailNotifications: integer('email_notifications', { mode: 'boolean' }).notNull().default(true),
+  smsNotifications: integer('sms_notifications', { mode: 'boolean' }).notNull().default(true),
+  rideReminders: integer('ride_reminders', { mode: 'boolean' }).notNull().default(true),
+  promotionalEmails: integer('promotional_emails', { mode: 'boolean' }).notNull().default(false),
+  language: text('language').notNull().default('en'),
+  theme: text('theme').notNull().default('light'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
