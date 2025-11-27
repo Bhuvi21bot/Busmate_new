@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { UserPlus, Wallet, User, Route, Upload, Loader2, Bus, DollarSign, Clock, CreditCard, CheckCircle, FileText, Settings, ArrowUpRight, ArrowDownRight, TrendingUp, Bell, Mail, Smartphone, Shield, Globe, Moon, Sun, Plus, X, Download, Star, MessageSquare } from "lucide-react"
+import { UserPlus, Wallet, User, Route, Upload, Loader2, Bus, DollarSign, Clock, CreditCard, CheckCircle, FileText, Settings, ArrowUpRight, ArrowDownRight, TrendingUp, Bell, Mail, Smartphone, Shield, Globe, Moon, Sun, Plus, X, Download, Star, MessageSquare, LogIn, UserCheck } from "lucide-react"
 import { VscHome, VscCalendar } from "react-icons/vsc"
 import { useSession } from "@/lib/auth-client"
 import Header from "@/components/Header"
@@ -21,6 +21,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
+import Link from "next/link"
 
 interface DriverProfile {
   id: number
@@ -174,12 +175,12 @@ export default function DriverDashboard() {
     }
   }, [tabFromUrl])
 
-  // Protect route - redirect to login if not authenticated
-  useEffect(() => {
-    if (!isPending && !session?.user) {
-      router.push("/login?redirect=/driver-dashboard")
-    }
-  }, [session, isPending, router])
+  // Remove the redirect effect - we'll show login/signup UI instead
+  // useEffect(() => {
+  //   if (!isPending && !session?.user) {
+  //     router.push("/login?redirect=/driver-dashboard")
+  //   }
+  // }, [session, isPending, router])
 
   // Show loading while checking auth
   if (isPending) {
@@ -195,9 +196,145 @@ export default function DriverDashboard() {
     )
   }
 
-  // Don't render if not authenticated
+  // Show login/signup UI if not authenticated
   if (!session?.user) {
-    return null
+    return (
+      <ClickSpark
+        sparkColor="#4ade80"
+        sparkSize={12}
+        sparkRadius={25}
+        sparkCount={12}
+        duration={600}
+      >
+        <div className="min-h-screen bg-background">
+          <Header />
+
+          <section className="py-20 min-h-[80vh] flex items-center">
+            <div className="container mx-auto px-4">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="max-w-4xl mx-auto"
+              >
+                <Card className="border-2 border-primary/20">
+                  <CardContent className="p-12">
+                    <div className="text-center mb-8">
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                        className="inline-block mb-6"
+                      >
+                        <div className="h-24 w-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                          <Bus className="h-12 w-12 text-primary" />
+                        </div>
+                      </motion.div>
+                      
+                      <motion.h1 
+                        className="text-4xl md:text-5xl font-bold mb-4"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                      >
+                        Welcome to Driver Portal
+                      </motion.h1>
+                      
+                      <motion.p 
+                        className="text-xl text-muted-foreground mb-8"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.4 }}
+                      >
+                        Join our network of professional drivers and start earning today
+                      </motion.p>
+                    </div>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 }}
+                      className="grid md:grid-cols-2 gap-6 mb-8"
+                    >
+                      <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/30 hover:border-primary/50 transition-all duration-300">
+                        <CardContent className="p-6">
+                          <UserCheck className="h-8 w-8 text-primary mb-3" />
+                          <h3 className="text-lg font-bold mb-2">Existing Driver?</h3>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Sign in to access your dashboard, manage rides, and track earnings
+                          </p>
+                          <Link href="/login?redirect=/driver-dashboard" className="block">
+                            <Button className="w-full" size="lg">
+                              <LogIn className="h-4 w-4 mr-2" />
+                              Login as Driver
+                            </Button>
+                          </Link>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-gradient-to-br from-green-500/5 to-green-500/10 border-green-500/30 hover:border-green-500/50 transition-all duration-300">
+                        <CardContent className="p-6">
+                          <UserPlus className="h-8 w-8 text-green-500 mb-3" />
+                          <h3 className="text-lg font-bold mb-2">New Driver?</h3>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Create an account and apply to become a verified driver on our platform
+                          </p>
+                          <Link href="/register?redirect=/driver-dashboard" className="block">
+                            <Button className="w-full bg-green-600 hover:bg-green-700" size="lg">
+                              <UserPlus className="h-4 w-4 mr-2" />
+                              Sign Up as Driver
+                            </Button>
+                          </Link>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.6 }}
+                      className="grid md:grid-cols-3 gap-6 pt-8 border-t"
+                    >
+                      <div className="text-center">
+                        <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <Wallet className="h-6 w-6 text-primary" />
+                        </div>
+                        <h4 className="font-semibold mb-2">Flexible Earnings</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Drive on your own schedule and earn competitive rates
+                        </p>
+                      </div>
+
+                      <div className="text-center">
+                        <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <Shield className="h-6 w-6 text-primary" />
+                        </div>
+                        <h4 className="font-semibold mb-2">Safety First</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Verified riders and 24/7 support for your security
+                        </p>
+                      </div>
+
+                      <div className="text-center">
+                        <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <TrendingUp className="h-6 w-6 text-primary" />
+                        </div>
+                        <h4 className="font-semibold mb-2">Grow Your Business</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Access tools and insights to maximize your income
+                        </p>
+                      </div>
+                    </motion.div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+          </section>
+
+          <Footer />
+        </div>
+      </ClickSpark>
+    )
   }
 
   // Fetch profile data

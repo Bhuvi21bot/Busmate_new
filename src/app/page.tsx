@@ -343,6 +343,10 @@ export default function Home() {
                     size="lg" 
                     variant="outline" 
                     className="text-lg px-8 hover:scale-105 transition-transform duration-300 hover:border-primary/50 bg-primary/5"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      window.open('/driver-dashboard', '_blank', 'noopener,noreferrer')
+                    }}
                   >
                     <Users className="h-5 w-5 mr-2" />
                     {t("becomeDriver")}
