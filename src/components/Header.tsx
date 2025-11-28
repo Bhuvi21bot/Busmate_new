@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Menu, X, User, Wallet, MapPin, LogOut, LogIn, UserPlus, Moon, Sun, Languages, Settings, UserCircle } from "lucide-react"
 import { authClient, useSession } from "@/lib/auth-client"
@@ -63,14 +64,28 @@ export default function Header() {
       className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center space-x-2">
+        <Link href="/" className="flex items-center space-x-3">
           <motion.div
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: 1.05, rotate: [0, -5, 5, 0] }}
             whileTap={{ scale: 0.95 }}
-            className="text-2xl font-bold bg-gradient-to-r from-primary to-green-400 bg-clip-text text-transparent"
+            transition={{ duration: 0.3 }}
+            className="relative"
+          >
+            <Image
+              src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/project-uploads/8c6265b3-dd14-45f5-bdd0-5cfed613dbe6/generated_images/modern-minimalist-logo-for-bus-mate-tran-03d50e77-20251128115333.jpg"
+              alt="Bus Mate Logo"
+              width={40}
+              height={40}
+              className="rounded-lg"
+              priority
+            />
+          </motion.div>
+          <motion.span
+            whileHover={{ scale: 1.02 }}
+            className="text-2xl font-bold bg-gradient-to-r from-primary to-green-400 bg-clip-text text-transparent hidden sm:block"
           >
             Bus Mate
-          </motion.div>
+          </motion.span>
         </Link>
 
         {/* Desktop Navigation */}
