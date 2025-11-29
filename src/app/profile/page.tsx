@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
-import { User, Wallet, Settings, Edit, Save, X, Loader2, Bell, Mail, Smartphone, Plus, Download, ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, FileText, Bus } from "lucide-react"
+import { User, Wallet, Settings, Edit, Save, X, Loader2, Bell, Mail, Smartphone, Plus, Download, ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, FileText, Bus, Star, MessageSquare, ThumbsUp } from "lucide-react"
 import { useSession } from "@/lib/auth-client"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
@@ -75,6 +75,29 @@ interface CustomerSettings {
   updatedAt: string
 }
 
+interface CustomerReview {
+  id: number
+  driverId: number
+  rating: number
+  comment: string | null
+  rideId: number | null
+  createdAt: string
+  updatedAt: string
+  driver: {
+    name: string
+    vehicle: string
+    license: string
+  }
+}
+
+interface Driver {
+  id: number
+  name: string
+  vehicle: string
+  license: string
+  rating?: number
+}
+
 export default function ProfilePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -89,6 +112,18 @@ export default function ProfilePage() {
   const [loadingWallet, setLoadingWallet] = useState(false)
   const [loadingTransactions, setLoadingTransactions] = useState(false)
   const [loadingSettings, setLoadingSettings] = useState(false)
+  
+  // Review states
+  const [reviews, setReviews] = useState<CustomerReview[]>([])
+  const [loadingReviews, setLoadingReviews] = useState(false)
+  const [drivers, setDrivers] = useState<Driver[]>([])
+  const [loadingDrivers, setLoadingDrivers] = useState(false)
+  const [reviewForm, setReviewForm] = useState({
+    driverId: "",
+    rating: 5,
+    comment: ""
+  })
+  const [submittingReview, setSubmittingReview] = useState(false)
 
   // Edit mode states
   const [editMode, setEditMode] = useState(false)
@@ -112,7 +147,7 @@ export default function ProfilePage() {
   // Set active tab from URL parameter
   useEffect(() => {
     const tab = searchParams.get('tab')
-    if (tab && ['profile', 'wallet', 'settings'].includes(tab)) {
+    if (tab && ['profile', 'wallet', 'settings', 'reviews'].includes(tab)) {
       setActiveTab(tab)
     }
   }, [searchParams])
@@ -131,6 +166,8 @@ export default function ProfilePage() {
       fetchWallet()
       fetchTransactions()
       fetchSettings()
+      fetchReviews()
+      fetchDrivers()
     }
   }, [session])
 
@@ -251,6 +288,47 @@ export default function ProfilePage() {
     }
   }
 
+  // Fetch customer reviews
+  const fetchReviews = async () => {
+    setLoadingReviews(true)
+    try {
+      const token = localStorage.getItem("bearer_token")
+      const response = await fetch('/api/customers/reviews', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      const data = await response.json()
+      if (response.ok && data.success) {
+        setReviews(data.reviews)
+      } else {
+        console.error("Failed to fetch reviews:", data.error)
+      }
+    } catch (error) {
+      console.error("Failed to fetch reviews:", error)
+    } finally {
+      setLoadingReviews(false)
+    }
+  }
+
+  // Fetch approved drivers
+  const fetchDrivers = async () => {
+    setLoadingDrivers(true)
+    try {
+      const response = await fetch('/api/drivers?status=approved&limit=100')
+      const data = await response.json()
+      if (response.ok && data.success) {
+        setDrivers(data.drivers)
+      } else {
+        console.error("Failed to fetch drivers:", data.error)
+      }
+    } catch (error) {
+      console.error("Failed to fetch drivers:", error)
+    } finally {
+      setLoadingDrivers(false)
+    }
+  }
+
   const handleSaveProfile = async () => {
     setSavingProfile(true)
     try {
@@ -343,6 +421,50 @@ export default function ProfilePage() {
     }
   }
 
+  const handleSubmitReview = async () => {
+    if (!reviewForm.driverId) {
+      toast.error("Please select a driver")
+      return
+    }
+
+    if (reviewForm.rating < 1 || reviewForm.rating > 5) {
+      toast.error("Rating must be between 1 and 5")
+      return
+    }
+
+    setSubmittingReview(true)
+    try {
+      const token = localStorage.getItem("bearer_token")
+      const response = await fetch('/api/drivers/reviews', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          driverId: parseInt(reviewForm.driverId),
+          customerId: session?.user?.id,
+          customerName: session?.user?.name || "Anonymous",
+          rating: reviewForm.rating,
+          comment: reviewForm.comment || null,
+        })
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        toast.success("Review submitted successfully!")
+        setReviewForm({ driverId: "", rating: 5, comment: "" })
+        fetchReviews() // Refresh reviews list
+      } else {
+        toast.error(data.error || "Failed to submit review")
+      }
+    } catch (error) {
+      toast.error("An error occurred while submitting review")
+    } finally {
+      setSubmittingReview(false)
+    }
+  }
+
   const formatCurrency = (amount: number) => {
     return `₹${amount.toFixed(2)}`
   }
@@ -394,6 +516,22 @@ export default function ProfilePage() {
     }
   }
 
+  const renderStars = (rating: number, interactive: boolean = false, onChange?: (rating: number) => void) => {
+    return (
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`h-5 w-5 ${
+              star <= rating ? 'fill-yellow-500 text-yellow-500' : 'text-muted-foreground'
+            } ${interactive ? 'cursor-pointer hover:scale-110 transition-transform' : ''}`}
+            onClick={() => interactive && onChange?.(star)}
+          />
+        ))}
+      </div>
+    )
+  }
+
   return (
     <ClickSpark
       sparkColor="#4ade80"
@@ -436,7 +574,7 @@ export default function ProfilePage() {
 
                 {/* Tabs */}
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="grid w-full grid-cols-3">
+                  <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="profile">
                       <User className="h-4 w-4 mr-2" />
                       Personal Details
@@ -448,6 +586,10 @@ export default function ProfilePage() {
                     <TabsTrigger value="settings">
                       <Settings className="h-4 w-4 mr-2" />
                       Settings
+                    </TabsTrigger>
+                    <TabsTrigger value="reviews">
+                      <Star className="h-4 w-4 mr-2" />
+                      Reviews
                     </TabsTrigger>
                   </TabsList>
 
@@ -819,6 +961,153 @@ export default function ProfilePage() {
                         </Card>
                       </>
                     )}
+                  </TabsContent>
+
+                  {/* Reviews Tab */}
+                  <TabsContent value="reviews" className="space-y-6">
+                    {/* Submit New Review */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Rate a Driver</CardTitle>
+                        <CardDescription>Share your experience with our drivers</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div className="space-y-2">
+                          <Label>Select Driver</Label>
+                          <Select
+                            value={reviewForm.driverId}
+                            onValueChange={(value) => setReviewForm({ ...reviewForm, driverId: value })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choose a driver..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {loadingDrivers ? (
+                                <div className="p-4 text-center">
+                                  <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                                </div>
+                              ) : drivers.length === 0 ? (
+                                <div className="p-4 text-center text-sm text-muted-foreground">
+                                  No drivers available
+                                </div>
+                              ) : (
+                                drivers.map((driver) => (
+                                  <SelectItem key={driver.id} value={driver.id.toString()}>
+                                    {driver.name} - {driver.vehicle}
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Your Rating</Label>
+                          <div className="flex items-center gap-3">
+                            {renderStars(reviewForm.rating, true, (rating) => 
+                              setReviewForm({ ...reviewForm, rating })
+                            )}
+                            <span className="text-sm text-muted-foreground">
+                              ({reviewForm.rating} out of 5 stars)
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Your Review (Optional)</Label>
+                          <Textarea
+                            value={reviewForm.comment}
+                            onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                            placeholder="Share your experience with this driver..."
+                            rows={4}
+                          />
+                        </div>
+
+                        <Button 
+                          onClick={handleSubmitReview} 
+                          disabled={submittingReview || !reviewForm.driverId}
+                          className="w-full"
+                        >
+                          {submittingReview ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Submitting...
+                            </>
+                          ) : (
+                            <>
+                              <ThumbsUp className="h-4 w-4 mr-2" />
+                              Submit Review
+                            </>
+                          )}
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* My Reviews History */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>My Reviews</CardTitle>
+                        <CardDescription>Your previously submitted driver reviews</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {loadingReviews ? (
+                          <div className="text-center py-8">
+                            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+                          </div>
+                        ) : reviews.length === 0 ? (
+                          <div className="text-center py-12">
+                            <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                            <p className="text-muted-foreground">No reviews submitted yet</p>
+                            <p className="text-sm text-muted-foreground mt-2">
+                              Rate a driver above to share your experience
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {reviews.map((review) => (
+                              <div
+                                key={review.id}
+                                className="p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                              >
+                                <div className="flex items-start justify-between mb-3">
+                                  <div className="flex items-center gap-3">
+                                    <Avatar className="h-10 w-10 border-2 border-primary/20">
+                                      <AvatarFallback>
+                                        {review.driver.name.charAt(0)}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                      <h4 className="font-semibold">{review.driver.name}</h4>
+                                      <p className="text-sm text-muted-foreground">
+                                        {review.driver.vehicle}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    {renderStars(review.rating)}
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      {formatDateTime(review.createdAt)}
+                                    </p>
+                                  </div>
+                                </div>
+                                
+                                {review.comment && (
+                                  <div className="bg-muted/30 rounded-lg p-3 mt-3">
+                                    <p className="text-sm italic">"{review.comment}"</p>
+                                  </div>
+                                )}
+                                
+                                {review.rideId && (
+                                  <p className="text-xs text-primary mt-2">
+                                    Ride ID: #{review.rideId}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
                   </TabsContent>
                 </Tabs>
               </div>
