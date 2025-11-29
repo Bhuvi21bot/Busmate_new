@@ -1,10 +1,27 @@
 import { NextRequest, NextResponse } from "next/server"
+import { db } from '@/db';
+import { bookings } from '@/db/schema';
+import { eq, and } from 'drizzle-orm';
+import { auth } from '@/lib/auth';
+
+const VALID_VEHICLE_TYPES = ['government-bus', 'private-bus', 'chartered-bus', 'e-rickshaw'];
+const VALID_STATUSES = ['confirmed', 'cancelled', 'completed'];
+const VALID_PAYMENT_STATUSES = ['paid', 'pending', 'refunded'];
 
 export async function POST(request: NextRequest) {
   try {
+    // Authenticate user
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Authentication required', code: 'UNAUTHORIZED' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json()
     
-    // Validate required fields
+    // Extract and validate required fields
     const { pickup, dropoff, vehicleType, datetime, seats, fare, paymentId, orderId } = body
     
     if (!pickup || !dropoff || !vehicleType || !datetime || !seats || !fare) {
@@ -12,6 +29,40 @@ export async function POST(request: NextRequest) {
         { error: "Missing required fields" },
         { status: 400 }
       )
+    }
+
+    // Validate vehicleType
+    if (!VALID_VEHICLE_TYPES.includes(vehicleType)) {
+      return NextResponse.json(
+        { error: `Invalid vehicle type. Must be one of: ${VALID_VEHICLE_TYPES.join(', ')}`, code: 'INVALID_VEHICLE_TYPE' },
+        { status: 400 }
+      );
+    }
+
+    // Validate seats is array
+    if (!Array.isArray(seats) || seats.length === 0) {
+      return NextResponse.json(
+        { error: 'Seats must be a non-empty array', code: 'INVALID_SEATS' },
+        { status: 400 }
+      );
+    }
+
+    // Validate fare is positive number
+    const fareNum = parseFloat(fare);
+    if (isNaN(fareNum) || fareNum <= 0) {
+      return NextResponse.json(
+        { error: 'Fare must be a positive number', code: 'INVALID_FARE' },
+        { status: 400 }
+      );
+    }
+
+    // Validate passengers
+    const passengers = body.passengers || seats.length;
+    if (isNaN(parseInt(passengers)) || parseInt(passengers) <= 0) {
+      return NextResponse.json(
+        { error: 'Passengers must be a positive integer', code: 'INVALID_PASSENGERS' },
+        { status: 400 }
+      );
     }
 
     // Validate payment information
@@ -22,36 +73,38 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Generate confirmation code (8 character random uppercase alphanumeric)
+    const confirmationCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const now = new Date().toISOString();
+
     // Create booking with payment details
-    const booking = {
-      id: `BM${Date.now()}`,
-      ...body,
-      status: "confirmed",
-      paymentStatus: "paid",
+    const newBooking = await db.insert(bookings).values({
+      userId: session.user.id,
+      pickup: pickup.trim(),
+      dropoff: dropoff.trim(),
+      vehicleType,
+      datetime,
+      passengers: parseInt(passengers),
+      seats: JSON.stringify(seats),
+      fare: fareNum,
       paymentId,
       orderId,
-      bookingDate: new Date().toISOString(),
-      confirmationCode: Math.random().toString(36).substring(2, 10).toUpperCase(),
-    }
-
-    // In a real app, you would:
-    // 1. Store booking in database with payment details
-    // 2. Update seat availability
-    // 3. Send confirmation email/SMS with booking & payment info
-    // 4. Create a transaction record
-
-    // Simulate processing delay
-    await new Promise((resolve) => setTimeout(resolve, 500))
+      status: body.status || 'confirmed',
+      paymentStatus: body.paymentStatus || 'paid',
+      confirmationCode,
+      createdAt: now,
+      updatedAt: now,
+    }).returning();
 
     return NextResponse.json({
       success: true,
-      booking,
+      booking: newBooking[0],
       message: "Booking confirmed successfully! Payment received.",
-    })
+    }, { status: 201 })
   } catch (error) {
     console.error("Booking error:", error)
     return NextResponse.json(
-      { error: "Failed to process booking" },
+      { error: "Failed to process booking: " + (error as Error).message },
       { status: 500 }
     )
   }
@@ -59,27 +112,40 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Get bookings for a user (mock data)
-    const bookings = [
-      {
-        id: "BM1234567890",
-        pickup: "City Center",
-        dropoff: "Airport",
-        vehicleType: "government-bus",
-        datetime: new Date().toISOString(),
-        seats: ["1A", "1B"],
-        fare: 100,
-        status: "confirmed",
-        paymentStatus: "paid",
-        confirmationCode: "ABCD1234",
-      },
-    ]
+    // Authenticate user
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Authentication required', code: 'UNAUTHORIZED' },
+        { status: 401 }
+      );
+    }
 
-    return NextResponse.json({ bookings })
+    const searchParams = request.nextUrl.searchParams;
+    const limit = Math.min(parseInt(searchParams.get('limit') ?? '20'), 100);
+    const offset = parseInt(searchParams.get('offset') ?? '0');
+    const statusFilter = searchParams.get('status');
+
+    let query = db.select().from(bookings).where(eq(bookings.userId, session.user.id));
+
+    // Apply status filter if provided
+    if (statusFilter) {
+      if (!VALID_STATUSES.includes(statusFilter)) {
+        return NextResponse.json(
+          { error: `Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}`, code: 'INVALID_STATUS' },
+          { status: 400 }
+        );
+      }
+      query = query.where(and(eq(bookings.userId, session.user.id), eq(bookings.status, statusFilter)));
+    }
+
+    const results = await query.limit(limit).offset(offset);
+
+    return NextResponse.json({ bookings: results }, { status: 200 })
   } catch (error) {
     console.error("Get bookings error:", error)
     return NextResponse.json(
-      { error: "Failed to fetch bookings" },
+      { error: "Failed to fetch bookings: " + (error as Error).message },
       { status: 500 }
     )
   }

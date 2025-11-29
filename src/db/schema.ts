@@ -210,3 +210,73 @@ export const customerSettings = sqliteTable('customer_settings', {
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 });
+
+// Add new bus booking system tables at the end
+
+export const bookings = sqliteTable('bookings', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  pickup: text('pickup').notNull(),
+  dropoff: text('dropoff').notNull(),
+  vehicleType: text('vehicle_type').notNull(),
+  datetime: text('datetime').notNull(),
+  passengers: integer('passengers').notNull(),
+  seats: text('seats', { mode: 'json' }).notNull(),
+  fare: real('fare').notNull(),
+  paymentId: text('payment_id'),
+  orderId: text('order_id'),
+  status: text('status').notNull().default('confirmed'),
+  paymentStatus: text('payment_status').notNull().default('paid'),
+  confirmationCode: text('confirmation_code').notNull(),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
+export const vehicles = sqliteTable('vehicles', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  vehicleNumber: text('vehicle_number').notNull().unique(),
+  vehicleType: text('vehicle_type').notNull(),
+  capacity: integer('capacity').notNull(),
+  driverId: text('driver_id'),
+  status: text('status').notNull().default('active'),
+  currentRoute: text('current_route'),
+  locationLat: real('location_lat'),
+  locationLng: real('location_lng'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
+export const driversNew = sqliteTable('drivers_new', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().unique().references(() => user.id, { onDelete: 'cascade' }),
+  licenseNumber: text('license_number').notNull().unique(),
+  phone: text('phone').notNull(),
+  experienceYears: integer('experience_years').notNull(),
+  rating: real('rating').notNull().default(0.0),
+  totalTrips: integer('total_trips').notNull().default(0),
+  status: text('status').notNull().default('available'),
+  verificationStatus: text('verification_status').notNull().default('pending'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
+export const walletTransactionsNew = sqliteTable('wallet_transactions_new', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  type: text('type').notNull(),
+  amount: real('amount').notNull(),
+  balanceAfter: real('balance_after').notNull(),
+  description: text('description').notNull(),
+  referenceId: text('reference_id'),
+  createdAt: text('created_at').notNull(),
+});
+
+export const reviews = sqliteTable('reviews', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  driverId: integer('driver_id').references(() => driversNew.id),
+  bookingId: integer('booking_id').notNull().references(() => bookings.id),
+  rating: integer('rating').notNull(),
+  comment: text('comment'),
+  createdAt: text('created_at').notNull(),
+});

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
-import { User, Wallet, Settings, Edit, Save, X, Loader2, Bell, Mail, Smartphone, Plus, Download, ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, FileText, Bus, Star, MessageSquare, ThumbsUp } from "lucide-react"
+import { User, Wallet, Settings, Edit, Save, X, Loader2, Bell, Mail, Smartphone, Plus, Download, ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, FileText, Bus, Star, MessageSquare, ThumbsUp, MapPin, Calendar, Ticket, XCircle } from "lucide-react"
 import { useSession } from "@/lib/auth-client"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
@@ -55,16 +55,11 @@ interface CustomerWallet {
 interface WalletTransaction {
   id: number
   userId: string
-  walletId: number
-  type: 'add_money' | 'ride_payment' | 'refund' | 'bonus'
+  type: string
   amount: number
-  balanceBefore: number
   balanceAfter: number
   description: string
-  referenceNumber: string
-  bookingId: number | null
-  paymentMethod: string | null
-  status: 'pending' | 'completed' | 'failed'
+  referenceId: string | null
   createdAt: string
 }
 
@@ -82,27 +77,33 @@ interface CustomerSettings {
   updatedAt: string
 }
 
-interface CustomerReview {
+interface Booking {
   id: number
-  driverId: number
-  rating: number
-  comment: string | null
-  rideId: number | null
+  userId: string
+  pickup: string
+  dropoff: string
+  vehicleType: string
+  datetime: string
+  passengers: number
+  seats: string[]
+  fare: number
+  paymentId: string | null
+  orderId: string | null
+  status: string
+  paymentStatus: string
+  confirmationCode: string
   createdAt: string
   updatedAt: string
-  driver: {
-    name: string
-    vehicle: string
-    license: string
-  }
 }
 
-interface Driver {
+interface Review {
   id: number
-  name: string
-  vehicle: string
-  license: string
-  rating?: number
+  userId: string
+  driverId: number | null
+  bookingId: number
+  rating: number
+  comment: string | null
+  createdAt: string
 }
 
 export default function ProfilePage() {
@@ -113,19 +114,21 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("profile")
   const [profile, setProfile] = useState<CustomerProfile | null>(null)
   const [wallet, setWallet] = useState<CustomerWallet | null>(null)
+  const [walletBalance, setWalletBalance] = useState<number>(0)
   const [transactions, setTransactions] = useState<WalletTransaction[]>([])
+  const [bookings, setBookings] = useState<Booking[]>([])
   const [settings, setSettings] = useState<CustomerSettings | null>(null)
   const [loadingProfile, setLoadingProfile] = useState(false)
   const [loadingWallet, setLoadingWallet] = useState(false)
   const [loadingTransactions, setLoadingTransactions] = useState(false)
+  const [loadingBookings, setLoadingBookings] = useState(false)
   const [loadingSettings, setLoadingSettings] = useState(false)
   
   // Review states
-  const [reviews, setReviews] = useState<CustomerReview[]>([])
+  const [reviews, setReviews] = useState<Review[]>([])
   const [loadingReviews, setLoadingReviews] = useState(false)
-  const [drivers, setDrivers] = useState<Driver[]>([])
-  const [loadingDrivers, setLoadingDrivers] = useState(false)
   const [reviewForm, setReviewForm] = useState({
+    bookingId: "",
     driverId: "",
     rating: 5,
     comment: ""
@@ -151,10 +154,13 @@ export default function ProfilePage() {
   const [addingMoney, setAddingMoney] = useState(false)
   const [razorpayScriptLoaded, setRazorpayScriptLoaded] = useState(false)
 
+  // Cancel booking state
+  const [cancellingBookingId, setCancellingBookingId] = useState<number | null>(null)
+
   // Set active tab from URL parameter
   useEffect(() => {
     const tab = searchParams.get('tab')
-    if (tab && ['profile', 'wallet', 'settings', 'reviews'].includes(tab)) {
+    if (tab && ['profile', 'wallet', 'bookings', 'settings', 'reviews'].includes(tab)) {
       setActiveTab(tab)
     }
   }, [searchParams])
@@ -191,11 +197,11 @@ export default function ProfilePage() {
   useEffect(() => {
     if (session?.user) {
       fetchProfile()
-      fetchWallet()
+      fetchWalletBalance()
       fetchTransactions()
+      fetchBookings()
       fetchSettings()
       fetchReviews()
-      fetchDrivers()
     }
   }, [session])
 
@@ -243,7 +249,6 @@ export default function ProfilePage() {
         })
       } else {
         if (data.code === 'PROFILE_NOT_FOUND') {
-          // Profile doesn't exist yet - this is okay for new users
           setProfile(null)
         } else {
           toast.error(data.error || "Failed to fetch profile")
@@ -256,21 +261,21 @@ export default function ProfilePage() {
     }
   }
 
-  const fetchWallet = async () => {
+  const fetchWalletBalance = async () => {
     setLoadingWallet(true)
     try {
       const token = localStorage.getItem("bearer_token")
-      const response = await fetch('/api/customers/wallet', {
+      const response = await fetch('/api/wallet-balance', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       })
       const data = await response.json()
       if (response.ok) {
-        setWallet(data)
+        setWalletBalance(data.balance || 0)
       }
     } catch (error) {
-      console.error("Failed to fetch wallet")
+      console.error("Failed to fetch wallet balance")
     } finally {
       setLoadingWallet(false)
     }
@@ -280,19 +285,44 @@ export default function ProfilePage() {
     setLoadingTransactions(true)
     try {
       const token = localStorage.getItem("bearer_token")
-      const response = await fetch('/api/customers/wallet/transactions?limit=50', {
+      const response = await fetch('/api/wallet-transactions?limit=50', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       })
       const data = await response.json()
-      if (response.ok) {
+      if (response.ok && Array.isArray(data)) {
         setTransactions(data)
       }
     } catch (error) {
       console.error("Failed to fetch transactions")
     } finally {
       setLoadingTransactions(false)
+    }
+  }
+
+  const fetchBookings = async () => {
+    setLoadingBookings(true)
+    try {
+      const token = localStorage.getItem("bearer_token")
+      const response = await fetch('/api/bookings?limit=50', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      const data = await response.json()
+      if (response.ok && data.bookings) {
+        // Parse seats from JSON string to array
+        const parsedBookings = data.bookings.map((booking: any) => ({
+          ...booking,
+          seats: typeof booking.seats === 'string' ? JSON.parse(booking.seats) : booking.seats
+        }))
+        setBookings(parsedBookings)
+      }
+    } catch (error) {
+      console.error("Failed to fetch bookings")
+    } finally {
+      setLoadingBookings(false)
     }
   }
 
@@ -316,44 +346,54 @@ export default function ProfilePage() {
     }
   }
 
-  // Fetch customer reviews
   const fetchReviews = async () => {
+    if (!session?.user?.id) return
+    
     setLoadingReviews(true)
     try {
       const token = localStorage.getItem("bearer_token")
-      const response = await fetch('/api/customers/reviews', {
+      const response = await fetch(`/api/reviews?userId=${session.user.id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       })
       const data = await response.json()
-      if (response.ok && data.success) {
-        setReviews(data.reviews)
-      } else {
-        console.error("Failed to fetch reviews:", data.error)
+      if (response.ok && Array.isArray(data)) {
+        setReviews(data)
       }
     } catch (error) {
-      console.error("Failed to fetch reviews:", error)
+      console.error("Failed to fetch reviews")
     } finally {
       setLoadingReviews(false)
     }
   }
 
-  // Fetch approved drivers
-  const fetchDrivers = async () => {
-    setLoadingDrivers(true)
+  const handleCancelBooking = async (bookingId: number) => {
+    if (!confirm("Are you sure you want to cancel this booking? This action cannot be undone.")) {
+      return
+    }
+
+    setCancellingBookingId(bookingId)
     try {
-      const response = await fetch('/api/drivers?status=approved&limit=100')
+      const token = localStorage.getItem("bearer_token")
+      const response = await fetch(`/api/bookings/${bookingId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
       const data = await response.json()
-      if (response.ok && data.success) {
-        setDrivers(data.drivers)
+      if (response.ok) {
+        toast.success("Booking cancelled successfully")
+        fetchBookings() // Refresh bookings list
       } else {
-        console.error("Failed to fetch drivers:", data.error)
+        toast.error(data.error || "Failed to cancel booking")
       }
     } catch (error) {
-      console.error("Failed to fetch drivers:", error)
+      toast.error("An error occurred while cancelling booking")
     } finally {
-      setLoadingDrivers(false)
+      setCancellingBookingId(null)
     }
   }
 
@@ -457,29 +497,39 @@ export default function ProfilePage() {
             const verifyData = await verifyResponse.json()
 
             if (verifyData.success) {
-              // Add money to wallet after successful payment verification
-              const walletResponse = await fetch('/api/customers/wallet/add-money', {
+              // Get current balance first
+              const balanceResponse = await fetch('/api/wallet-balance', {
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              })
+              const balanceData = await balanceResponse.json()
+              const currentBalance = balanceData.balance || 0
+
+              // Add wallet transaction
+              const walletResponse = await fetch('/api/wallet-transactions', {
                 method: 'POST',
                 headers: { 
                   'Content-Type': 'application/json',
                   'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
+                  type: 'credit',
                   amount,
+                  balanceAfter: currentBalance + amount,
                   description: `Added via Razorpay - Payment ID: ${response.razorpay_payment_id}`,
-                  paymentMethod: 'razorpay'
+                  referenceId: response.razorpay_payment_id
                 })
               })
 
-              const walletData = await walletResponse.json()
-              
               if (walletResponse.ok) {
                 toast.success(`₹${amount} added successfully!`)
                 setShowAddMoneyDialog(false)
                 setAddMoneyAmount("")
-                fetchWallet()
+                fetchWalletBalance()
                 fetchTransactions()
               } else {
+                const walletData = await walletResponse.json()
                 toast.error(walletData.error || "Failed to update wallet")
               }
             } else {
@@ -532,8 +582,8 @@ export default function ProfilePage() {
   }
 
   const handleSubmitReview = async () => {
-    if (!reviewForm.driverId) {
-      toast.error("Please select a driver")
+    if (!reviewForm.bookingId) {
+      toast.error("Please select a booking")
       return
     }
 
@@ -545,16 +595,15 @@ export default function ProfilePage() {
     setSubmittingReview(true)
     try {
       const token = localStorage.getItem("bearer_token")
-      const response = await fetch('/api/drivers/reviews', {
+      const response = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          driverId: parseInt(reviewForm.driverId),
-          customerId: session?.user?.id,
-          customerName: session?.user?.name || "Anonymous",
+          bookingId: parseInt(reviewForm.bookingId),
+          driverId: reviewForm.driverId ? parseInt(reviewForm.driverId) : null,
           rating: reviewForm.rating,
           comment: reviewForm.comment || null,
         })
@@ -563,8 +612,8 @@ export default function ProfilePage() {
       const data = await response.json()
       if (response.ok) {
         toast.success("Review submitted successfully!")
-        setReviewForm({ driverId: "", rating: 5, comment: "" })
-        fetchReviews() // Refresh reviews list
+        setReviewForm({ bookingId: "", driverId: "", rating: 5, comment: "" })
+        fetchReviews()
       } else {
         toast.error(data.error || "Failed to submit review")
       }
@@ -599,9 +648,12 @@ export default function ProfilePage() {
 
   const getStatusBadge = (status: string) => {
     const colors = {
+      confirmed: "bg-green-500/20 text-green-500",
+      cancelled: "bg-red-500/20 text-red-500",
+      completed: "bg-blue-500/20 text-blue-500",
       pending: "bg-yellow-500/20 text-yellow-500",
-      completed: "bg-green-500/20 text-green-500",
-      failed: "bg-red-500/20 text-red-500",
+      paid: "bg-green-500/20 text-green-500",
+      refunded: "bg-orange-500/20 text-orange-500",
       active: "bg-green-500/20 text-green-500"
     }
     return (
@@ -613,14 +665,10 @@ export default function ProfilePage() {
 
   const getTransactionIcon = (type: string) => {
     switch (type) {
-      case 'add_money':
+      case 'credit':
         return <ArrowDownRight className="h-4 w-4 text-green-500" />
-      case 'ride_payment':
+      case 'debit':
         return <ArrowUpRight className="h-4 w-4 text-red-500" />
-      case 'refund':
-        return <ArrowDownRight className="h-4 w-4 text-blue-500" />
-      case 'bonus':
-        return <TrendingUp className="h-4 w-4 text-primary" />
       default:
         return <DollarSign className="h-4 w-4" />
     }
@@ -640,6 +688,15 @@ export default function ProfilePage() {
         ))}
       </div>
     )
+  }
+
+  const getVehicleTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      'government-bus': 'Government Bus',
+      'private-bus': 'Private Bus',
+      'chartered-bus': 'Chartered Bus',
+    }
+    return labels[type] || type
   }
 
   return (
@@ -684,22 +741,26 @@ export default function ProfilePage() {
 
                 {/* Tabs */}
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="grid w-full grid-cols-4">
+                  <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="profile">
                       <User className="h-4 w-4 mr-2" />
-                      Personal Details
+                      Profile
+                    </TabsTrigger>
+                    <TabsTrigger value="bookings">
+                      <Ticket className="h-4 w-4 mr-2" />
+                      Bookings
                     </TabsTrigger>
                     <TabsTrigger value="wallet">
                       <Wallet className="h-4 w-4 mr-2" />
-                      My Wallet
-                    </TabsTrigger>
-                    <TabsTrigger value="settings">
-                      <Settings className="h-4 w-4 mr-2" />
-                      Settings
+                      Wallet
                     </TabsTrigger>
                     <TabsTrigger value="reviews">
                       <Star className="h-4 w-4 mr-2" />
                       Reviews
+                    </TabsTrigger>
+                    <TabsTrigger value="settings">
+                      <Settings className="h-4 w-4 mr-2" />
+                      Settings
                     </TabsTrigger>
                   </TabsList>
 
@@ -830,6 +891,117 @@ export default function ProfilePage() {
                     </Card>
                   </TabsContent>
 
+                  {/* Bookings Tab */}
+                  <TabsContent value="bookings" className="space-y-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>My Bookings</CardTitle>
+                        <CardDescription>View and manage your bus bookings</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {loadingBookings ? (
+                          <div className="text-center py-8">
+                            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+                          </div>
+                        ) : bookings.length === 0 ? (
+                          <div className="text-center py-12">
+                            <Ticket className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                            <p className="text-muted-foreground">No bookings yet</p>
+                            <p className="text-sm text-muted-foreground mt-2">
+                              Book your first ride to see it here
+                            </p>
+                            <Button className="mt-4" onClick={() => router.push('/booking')}>
+                              Book Now
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {bookings.map((booking) => (
+                              <Card key={booking.id} className="border-2">
+                                <CardContent className="p-6">
+                                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                                    <div className="flex-1 space-y-3">
+                                      <div className="flex items-start justify-between">
+                                        <div>
+                                          <h3 className="font-bold text-lg mb-1">
+                                            {booking.pickup} → {booking.dropoff}
+                                          </h3>
+                                          <p className="text-sm text-muted-foreground">
+                                            Confirmation Code: <span className="font-mono font-semibold text-primary">{booking.confirmationCode}</span>
+                                          </p>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div className="flex items-center gap-2">
+                                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                                          <span className="text-sm">{formatDateTime(booking.datetime)}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <Bus className="h-4 w-4 text-muted-foreground" />
+                                          <span className="text-sm">{getVehicleTypeLabel(booking.vehicleType)}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <User className="h-4 w-4 text-muted-foreground" />
+                                          <span className="text-sm">{booking.passengers} Passenger{booking.passengers > 1 ? 's' : ''}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <Ticket className="h-4 w-4 text-muted-foreground" />
+                                          <span className="text-sm">Seats: {Array.isArray(booking.seats) ? booking.seats.join(', ') : booking.seats}</span>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="flex items-center gap-3 pt-2">
+                                        {getStatusBadge(booking.status)}
+                                        {getStatusBadge(booking.paymentStatus)}
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="flex flex-col items-end gap-3">
+                                      <div className="text-right">
+                                        <p className="text-sm text-muted-foreground">Total Fare</p>
+                                        <p className="text-2xl font-bold text-primary">{formatCurrency(booking.fare)}</p>
+                                      </div>
+                                      
+                                      {booking.status === 'confirmed' && (
+                                        <Button
+                                          variant="destructive"
+                                          size="sm"
+                                          onClick={() => handleCancelBooking(booking.id)}
+                                          disabled={cancellingBookingId === booking.id}
+                                        >
+                                          {cancellingBookingId === booking.id ? (
+                                            <>
+                                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                              Cancelling...
+                                            </>
+                                          ) : (
+                                            <>
+                                              <XCircle className="h-4 w-4 mr-2" />
+                                              Cancel Booking
+                                            </>
+                                          )}
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </div>
+                                  
+                                  {booking.paymentId && (
+                                    <div className="mt-4 pt-4 border-t">
+                                      <p className="text-xs text-muted-foreground">
+                                        Payment ID: {booking.paymentId} | Order ID: {booking.orderId}
+                                      </p>
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
                   {/* Wallet Tab */}
                   <TabsContent value="wallet" className="space-y-6">
                     {/* Wallet Balance Cards */}
@@ -839,32 +1011,32 @@ export default function ProfilePage() {
                           <CardTitle className="text-sm font-medium text-muted-foreground">Current Balance</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="text-3xl font-bold">{formatCurrency(wallet?.balance || 0)}</div>
+                          <div className="text-3xl font-bold">{formatCurrency(walletBalance)}</div>
                           <p className="text-xs text-muted-foreground mt-2">Available for rides</p>
                         </CardContent>
                       </Card>
 
                       <Card>
                         <CardHeader className="pb-3">
-                          <CardTitle className="text-sm font-medium text-muted-foreground">Total Spent</CardTitle>
+                          <CardTitle className="text-sm font-medium text-muted-foreground">Total Transactions</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="text-3xl font-bold text-orange-500">
-                            {formatCurrency(wallet?.totalSpent || 0)}
+                          <div className="text-3xl font-bold text-blue-500">
+                            {transactions.length}
                           </div>
-                          <p className="text-xs text-muted-foreground mt-2">Lifetime spending</p>
+                          <p className="text-xs text-muted-foreground mt-2">All time</p>
                         </CardContent>
                       </Card>
 
                       <Card>
                         <CardHeader className="pb-3">
-                          <CardTitle className="text-sm font-medium text-muted-foreground">Total Added</CardTitle>
+                          <CardTitle className="text-sm font-medium text-muted-foreground">Total Bookings</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <div className="text-3xl font-bold text-green-500">
-                            {formatCurrency(wallet?.totalAdded || 0)}
+                            {bookings.length}
                           </div>
-                          <p className="text-xs text-muted-foreground mt-2">Lifetime deposits</p>
+                          <p className="text-xs text-muted-foreground mt-2">Lifetime rides</p>
                         </CardContent>
                       </Card>
                     </div>
@@ -908,32 +1080,159 @@ export default function ProfilePage() {
                                     <p className="text-xs text-muted-foreground mt-1">
                                       {formatDateTime(transaction.createdAt)}
                                     </p>
-                                    {transaction.bookingId && (
+                                    {transaction.referenceId && (
                                       <p className="text-xs text-primary mt-1">
-                                        Booking ID: #{transaction.bookingId}
+                                        Ref: {transaction.referenceId}
                                       </p>
                                     )}
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                      Ref: {transaction.referenceNumber}
-                                    </p>
                                   </div>
                                 </div>
                                 <div className="text-right">
                                   <p className={`font-bold ${
-                                    transaction.type === 'add_money' || transaction.type === 'refund' || transaction.type === 'bonus'
+                                    transaction.type === 'credit'
                                       ? 'text-green-500'
                                       : 'text-red-500'
                                   }`}>
-                                    {transaction.type === 'add_money' || transaction.type === 'refund' || transaction.type === 'bonus' ? '+' : '-'}
+                                    {transaction.type === 'credit' ? '+' : '-'}
                                     {formatCurrency(transaction.amount)}
                                   </p>
                                   <p className="text-xs text-muted-foreground mt-1">
                                     Balance: {formatCurrency(transaction.balanceAfter)}
                                   </p>
-                                  {getStatusBadge(transaction.status)}
                                 </div>
                               </div>
                             ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  {/* Reviews Tab */}
+                  <TabsContent value="reviews" className="space-y-6">
+                    {/* Submit New Review */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Rate Your Experience</CardTitle>
+                        <CardDescription>Share your feedback about your recent rides</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div className="space-y-2">
+                          <Label>Select Booking</Label>
+                          <Select
+                            value={reviewForm.bookingId}
+                            onValueChange={(value) => setReviewForm({ ...reviewForm, bookingId: value })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choose a completed booking..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {bookings
+                                .filter(b => b.status === 'completed')
+                                .map((booking) => (
+                                  <SelectItem key={booking.id} value={booking.id.toString()}>
+                                    {booking.pickup} → {booking.dropoff} ({formatDate(booking.datetime)})
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Your Rating</Label>
+                          <div className="flex items-center gap-3">
+                            {renderStars(reviewForm.rating, true, (rating) => 
+                              setReviewForm({ ...reviewForm, rating })
+                            )}
+                            <span className="text-sm text-muted-foreground">
+                              ({reviewForm.rating} out of 5 stars)
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Your Review (Optional)</Label>
+                          <Textarea
+                            value={reviewForm.comment}
+                            onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                            placeholder="Share your experience..."
+                            rows={4}
+                          />
+                        </div>
+
+                        <Button 
+                          onClick={handleSubmitReview} 
+                          disabled={submittingReview || !reviewForm.bookingId}
+                          className="w-full"
+                        >
+                          {submittingReview ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Submitting...
+                            </>
+                          ) : (
+                            <>
+                              <ThumbsUp className="h-4 w-4 mr-2" />
+                              Submit Review
+                            </>
+                          )}
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* My Reviews History */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>My Reviews</CardTitle>
+                        <CardDescription>Your previously submitted reviews</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {loadingReviews ? (
+                          <div className="text-center py-8">
+                            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+                          </div>
+                        ) : reviews.length === 0 ? (
+                          <div className="text-center py-12">
+                            <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                            <p className="text-muted-foreground">No reviews submitted yet</p>
+                            <p className="text-sm text-muted-foreground mt-2">
+                              Complete a ride to leave a review
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {reviews.map((review) => {
+                              const booking = bookings.find(b => b.id === review.bookingId)
+                              return (
+                                <div
+                                  key={review.id}
+                                  className="p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                                >
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div>
+                                      <h4 className="font-semibold">
+                                        {booking ? `${booking.pickup} → ${booking.dropoff}` : 'Booking'}
+                                      </h4>
+                                      <p className="text-sm text-muted-foreground">
+                                        Booking #{review.bookingId}
+                                      </p>
+                                    </div>
+                                    <div className="text-right">
+                                      {renderStars(review.rating)}
+                                      <p className="text-xs text-muted-foreground mt-1">
+                                        {formatDateTime(review.createdAt)}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  
+                                  {review.comment && (
+                                    <div className="bg-muted/30 rounded-lg p-3 mt-3">
+                                      <p className="text-sm italic">"{review.comment}"</p>
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            })}
                           </div>
                         )}
                       </CardContent>
@@ -1071,153 +1370,6 @@ export default function ProfilePage() {
                         </Card>
                       </>
                     )}
-                  </TabsContent>
-
-                  {/* Reviews Tab */}
-                  <TabsContent value="reviews" className="space-y-6">
-                    {/* Submit New Review */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Rate a Driver</CardTitle>
-                        <CardDescription>Share your experience with our drivers</CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-6">
-                        <div className="space-y-2">
-                          <Label>Select Driver</Label>
-                          <Select
-                            value={reviewForm.driverId}
-                            onValueChange={(value) => setReviewForm({ ...reviewForm, driverId: value })}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Choose a driver..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {loadingDrivers ? (
-                                <div className="p-4 text-center">
-                                  <Loader2 className="h-4 w-4 animate-spin mx-auto" />
-                                </div>
-                              ) : drivers.length === 0 ? (
-                                <div className="p-4 text-center text-sm text-muted-foreground">
-                                  No drivers available
-                                </div>
-                              ) : (
-                                drivers.map((driver) => (
-                                  <SelectItem key={driver.id} value={driver.id.toString()}>
-                                    {driver.name} - {driver.vehicle}
-                                  </SelectItem>
-                                ))
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label>Your Rating</Label>
-                          <div className="flex items-center gap-3">
-                            {renderStars(reviewForm.rating, true, (rating) => 
-                              setReviewForm({ ...reviewForm, rating })
-                            )}
-                            <span className="text-sm text-muted-foreground">
-                              ({reviewForm.rating} out of 5 stars)
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label>Your Review (Optional)</Label>
-                          <Textarea
-                            value={reviewForm.comment}
-                            onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
-                            placeholder="Share your experience with this driver..."
-                            rows={4}
-                          />
-                        </div>
-
-                        <Button 
-                          onClick={handleSubmitReview} 
-                          disabled={submittingReview || !reviewForm.driverId}
-                          className="w-full"
-                        >
-                          {submittingReview ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Submitting...
-                            </>
-                          ) : (
-                            <>
-                              <ThumbsUp className="h-4 w-4 mr-2" />
-                              Submit Review
-                            </>
-                          )}
-                        </Button>
-                      </CardContent>
-                    </Card>
-
-                    {/* My Reviews History */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>My Reviews</CardTitle>
-                        <CardDescription>Your previously submitted driver reviews</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        {loadingReviews ? (
-                          <div className="text-center py-8">
-                            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-                          </div>
-                        ) : reviews.length === 0 ? (
-                          <div className="text-center py-12">
-                            <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                            <p className="text-muted-foreground">No reviews submitted yet</p>
-                            <p className="text-sm text-muted-foreground mt-2">
-                              Rate a driver above to share your experience
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="space-y-4">
-                            {reviews.map((review) => (
-                              <div
-                                key={review.id}
-                                className="p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                              >
-                                <div className="flex items-start justify-between mb-3">
-                                  <div className="flex items-center gap-3">
-                                    <Avatar className="h-10 w-10 border-2 border-primary/20">
-                                      <AvatarFallback>
-                                        {review.driver.name.charAt(0)}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                      <h4 className="font-semibold">{review.driver.name}</h4>
-                                      <p className="text-sm text-muted-foreground">
-                                        {review.driver.vehicle}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    {renderStars(review.rating)}
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                      {formatDateTime(review.createdAt)}
-                                    </p>
-                                  </div>
-                                </div>
-                                
-                                {review.comment && (
-                                  <div className="bg-muted/30 rounded-lg p-3 mt-3">
-                                    <p className="text-sm italic">"{review.comment}"</p>
-                                  </div>
-                                )}
-                                
-                                {review.rideId && (
-                                  <p className="text-xs text-primary mt-2">
-                                    Ride ID: #{review.rideId}
-                                  </p>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
                   </TabsContent>
                 </Tabs>
               </div>
