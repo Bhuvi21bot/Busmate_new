@@ -20,6 +20,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { toast } from "sonner"
 
+// Razorpay types
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 interface CustomerProfile {
   id: number
   userId: string
@@ -141,8 +148,8 @@ export default function ProfilePage() {
   // Add money dialog state
   const [showAddMoneyDialog, setShowAddMoneyDialog] = useState(false)
   const [addMoneyAmount, setAddMoneyAmount] = useState("")
-  const [paymentMethod, setPaymentMethod] = useState("upi")
   const [addingMoney, setAddingMoney] = useState(false)
+  const [razorpayScriptLoaded, setRazorpayScriptLoaded] = useState(false)
 
   // Set active tab from URL parameter
   useEffect(() => {
@@ -158,6 +165,27 @@ export default function ProfilePage() {
       router.push("/login?redirect=/profile")
     }
   }, [session, isPending, router])
+
+  // Load Razorpay checkout script
+  useEffect(() => {
+    const script = document.createElement("script")
+    script.src = "https://checkout.razorpay.com/v1/checkout.js"
+    script.async = true
+    script.onload = () => {
+      setRazorpayScriptLoaded(true)
+    }
+    script.onerror = () => {
+      toast.error("Failed to load payment gateway")
+    }
+    document.body.appendChild(script)
+
+    return () => {
+      const existingScript = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]')
+      if (existingScript) {
+        document.body.removeChild(existingScript)
+      }
+    }
+  }, [])
 
   // Fetch all data when session is ready
   useEffect(() => {
@@ -364,35 +392,117 @@ export default function ProfilePage() {
       return
     }
 
+    if (!razorpayScriptLoaded) {
+      toast.error("Payment gateway is loading. Please try again.")
+      return
+    }
+
     setAddingMoney(true)
     try {
       const token = localStorage.getItem("bearer_token")
-      const response = await fetch('/api/customers/wallet/add-money', {
+      
+      // Create Razorpay order
+      const orderResponse = await fetch('/api/razorpay/orders', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           amount,
-          description: `Added money via ${paymentMethod.toUpperCase()}`,
-          paymentMethod
+          currency: 'INR',
+          notes: {
+            userId: session?.user?.id,
+            description: 'Wallet recharge'
+          }
         })
       })
 
-      const data = await response.json()
-      if (response.ok) {
-        toast.success(`₹${amount} added successfully!`)
-        setShowAddMoneyDialog(false)
-        setAddMoneyAmount("")
-        fetchWallet()
-        fetchTransactions()
-      } else {
-        toast.error(data.error || "Failed to add money")
+      const orderData = await orderResponse.json()
+      
+      if (!orderResponse.ok || !orderData.success) {
+        toast.error(orderData.error || "Failed to create payment order")
+        setAddingMoney(false)
+        return
       }
+
+      // Configure Razorpay checkout
+      const options = {
+        key: orderData.keyId,
+        order_id: orderData.orderId,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Bus Mate",
+        description: "Add money to wallet",
+        image: "/logo.png",
+        prefill: {
+          name: session?.user?.name || "",
+          email: session?.user?.email || "",
+        },
+        theme: {
+          color: "#4ade80"
+        },
+        handler: async (response: any) => {
+          try {
+            // Verify payment on backend
+            const verifyResponse = await fetch('/api/razorpay/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              })
+            })
+
+            const verifyData = await verifyResponse.json()
+
+            if (verifyData.success) {
+              // Add money to wallet after successful payment verification
+              const walletResponse = await fetch('/api/customers/wallet/add-money', {
+                method: 'POST',
+                headers: { 
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                  amount,
+                  description: `Added via Razorpay - Payment ID: ${response.razorpay_payment_id}`,
+                  paymentMethod: 'razorpay'
+                })
+              })
+
+              const walletData = await walletResponse.json()
+              
+              if (walletResponse.ok) {
+                toast.success(`₹${amount} added successfully!`)
+                setShowAddMoneyDialog(false)
+                setAddMoneyAmount("")
+                fetchWallet()
+                fetchTransactions()
+              } else {
+                toast.error(walletData.error || "Failed to update wallet")
+              }
+            } else {
+              toast.error("Payment verification failed")
+            }
+          } catch (error) {
+            toast.error("An error occurred while processing payment")
+          } finally {
+            setAddingMoney(false)
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            toast.error("Payment cancelled")
+            setAddingMoney(false)
+          }
+        }
+      }
+
+      const rzp = new window.Razorpay(options)
+      rzp.open()
     } catch (error) {
-      toast.error("An error occurred while adding money")
-    } finally {
+      toast.error("An error occurred while initiating payment")
       setAddingMoney(false)
     }
   }
@@ -1120,7 +1230,9 @@ export default function ProfilePage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add Money to Wallet</DialogTitle>
-              <DialogDescription>Enter the amount you want to add to your wallet</DialogDescription>
+              <DialogDescription>
+                Enter the amount you want to add. Payment will be processed securely via Razorpay.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
@@ -1132,35 +1244,49 @@ export default function ProfilePage() {
                   value={addMoneyAmount}
                   onChange={(e) => setAddMoneyAmount(e.target.value)}
                   min="100"
+                  disabled={addingMoney}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Minimum amount: ₹100
+                </p>
               </div>
-              <div className="space-y-2">
-                <Label>Payment Method</Label>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="upi">UPI</SelectItem>
-                    <SelectItem value="card">Credit/Debit Card</SelectItem>
-                    <SelectItem value="netbanking">Net Banking</SelectItem>
-                    <SelectItem value="wallet">Wallet</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="bg-muted/50 p-3 rounded-lg space-y-2">
+                <p className="text-sm font-medium">Payment Methods Available:</p>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p>✓ UPI (Google Pay, PhonePe, Paytm)</p>
+                  <p>✓ Credit/Debit Cards</p>
+                  <p>✓ Net Banking</p>
+                  <p>✓ Wallets</p>
+                </div>
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowAddMoneyDialog(false)}>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowAddMoneyDialog(false)
+                  setAddMoneyAmount("")
+                }}
+                disabled={addingMoney}
+              >
                 Cancel
               </Button>
-              <Button onClick={handleAddMoney} disabled={addingMoney}>
+              <Button 
+                onClick={handleAddMoney} 
+                disabled={addingMoney || !razorpayScriptLoaded}
+              >
                 {addingMoney ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Processing...
                   </>
+                ) : !razorpayScriptLoaded ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading Gateway...
+                  </>
                 ) : (
-                  "Add Money"
+                  "Proceed to Pay"
                 )}
               </Button>
             </DialogFooter>
