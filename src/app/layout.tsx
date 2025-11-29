@@ -12,6 +12,20 @@ import { LanguageProvider } from "@/providers/LanguageProvider";
 export const metadata: Metadata = {
   title: "Bus Mate - Smart Travel Solutions",
   description: "Book buses, track rides, and travel smart with Bus Mate. Affordable, reliable, and eco-friendly transportation for everyone.",
+  icons: {
+    icon: [
+      {
+        url: "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/project-uploads/8c6265b3-dd14-45f5-bdd0-5cfed613dbe6/generated_images/modern-minimalist-bus-icon-favicon-logo--1876d471-20251129161333.jpg",
+        type: "image/jpeg",
+      },
+    ],
+    apple: [
+      {
+        url: "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/project-uploads/8c6265b3-dd14-45f5-bdd0-5cfed613dbe6/generated_images/modern-minimalist-bus-icon-favicon-logo--1876d471-20251129161333.jpg",
+        type: "image/jpeg",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
