@@ -10,21 +10,11 @@ import { ThemeProvider } from "@/providers/ThemeProvider";
 import { LanguageProvider } from "@/providers/LanguageProvider";
 
 export const metadata: Metadata = {
-  title: "Bus Mate - Smart Travel Solutions",
-  description: "Book buses, track rides, and travel smart with Bus Mate. Affordable, reliable, and eco-friendly transportation for everyone.",
+  title: "Bus Mate - Smart Bus Booking Platform",
+  description: "Book government, private, and chartered buses with ease. Real-time tracking, verified drivers, and seamless connectivity.",
   icons: {
-    icon: [
-      {
-        url: "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/project-uploads/8c6265b3-dd14-45f5-bdd0-5cfed613dbe6/generated_images/modern-minimalist-bus-icon-favicon-logo--1876d471-20251129161333.jpg",
-        type: "image/jpeg",
-      },
-    ],
-    apple: [
-      {
-        url: "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/project-uploads/8c6265b3-dd14-45f5-bdd0-5cfed613dbe6/generated_images/modern-minimalist-bus-icon-favicon-logo--1876d471-20251129161333.jpg",
-        type: "image/jpeg",
-      },
-    ],
+    icon: "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/project-uploads/8c6265b3-dd14-45f5-bdd0-5cfed613dbe6/generated_images/modern-minimalist-bus-icon-in-side-view--4f84148e-20251129161557.jpg",
+    apple: "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/project-uploads/8c6265b3-dd14-45f5-bdd0-5cfed613dbe6/generated_images/modern-minimalist-bus-icon-in-side-view--4f84148e-20251129161557.jpg",
   },
 };
 
@@ -34,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="dark">
       <body className="antialiased">
         <ErrorReporter />
         <Script
@@ -47,7 +37,7 @@ export default function RootLayout({
           data-debug="true"
           data-custom-data='{"appName": "YourApp", "version": "1.0.0", "greeting": "hi"}'
         />
-        <ThemeProvider>
+        <ThemeProvider defaultTheme="dark">
           <LanguageProvider>
             <CustomAutumnProvider>
               {children}
