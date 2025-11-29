@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   title: "Bus Mate - Smart Bus Booking Platform",
   description: "Book government, private, and chartered buses with ease. Real-time tracking, verified drivers, and seamless connectivity.",
   icons: {
-    icon: "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/project-uploads/8c6265b3-dd14-45f5-bdd0-5cfed613dbe6/generated_images/modern-minimalist-bus-icon-in-side-view--4f84148e-20251129161557.jpg",
-    apple: "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/project-uploads/8c6265b3-dd14-45f5-bdd0-5cfed613dbe6/generated_images/modern-minimalist-bus-icon-in-side-view--4f84148e-20251129161557.jpg",
+    icon: "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/project-uploads/8c6265b3-dd14-45f5-bdd0-5cfed613dbe6/generated_images/modern-minimalist-bus-icon-in-detailed-s-e88a1fc0-20251129163551.jpg",
+    apple: "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/project-uploads/8c6265b3-dd14-45f5-bdd0-5cfed613dbe6/generated_images/modern-minimalist-bus-icon-in-detailed-s-e88a1fc0-20251129163551.jpg",
   },
 };
 
