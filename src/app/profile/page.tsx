@@ -19,6 +19,7 @@ import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { toast } from "sonner"
+import PageLoader from "@/components/PageLoader"
 
 // Razorpay types
 declare global {
@@ -207,16 +208,7 @@ export default function ProfilePage() {
 
   // Show loading while checking auth
   if (isPending) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-        >
-          <Bus className="h-8 w-8 text-primary" />
-        </motion.div>
-      </div>
-    )
+    return <PageLoader />
   }
 
   // Don't render if not authenticated

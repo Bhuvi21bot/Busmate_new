@@ -12,7 +12,7 @@ import Dock from "@/components/Dock"
 import ClickSpark from "@/components/ClickSpark"
 import BusTracker from "@/components/BusTracker"
 import GoogleMapTracker from "@/components/GoogleMapTracker"
-import ShinyText from "@/components/ShinyText"
+import PageLoader from "@/components/PageLoader"
 
 export default function TrackingPage() {
   const router = useRouter()
@@ -34,39 +34,7 @@ export default function TrackingPage() {
 
   // Show loading while checking auth
   if (isPending) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-        <div className="relative">
-          {/* Simplified loading animation */}
-          <motion.div
-            className="absolute inset-0 flex items-center justify-center"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          >
-            <div className="w-20 h-20 border-2 border-primary/30 border-t-primary rounded-full" />
-          </motion.div>
-
-          {/* Pulsing bus icon in center */}
-          <motion.div
-            className="relative z-10 flex items-center justify-center w-20 h-20"
-            animate={{ 
-              scale: [1, 1.1, 1],
-            }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <Bus className="h-10 w-10 text-primary" />
-          </motion.div>
-        </div>
-
-        <div className="mt-8">
-          <ShinyText 
-            text="please wait.." 
-            speed={3}
-            className="text-2xl font-semibold"
-          />
-        </div>
-      </div>
-    )
+    return <PageLoader />
   }
 
   // Don't render if not authenticated

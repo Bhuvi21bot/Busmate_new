@@ -22,6 +22,7 @@ import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import Link from "next/link"
+import PageLoader from "@/components/PageLoader"
 
 interface DriverProfile {
   id: number
@@ -184,16 +185,7 @@ export default function DriverDashboard() {
 
   // Show loading while checking auth
   if (isPending) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-        >
-          <Bus className="h-8 w-8 text-primary" />
-        </motion.div>
-      </div>
-    )
+    return <PageLoader />
   }
 
   // Show login/signup UI if not authenticated
@@ -774,7 +766,6 @@ export default function DriverDashboard() {
                                 <SelectItem value="Government Bus">Government Bus</SelectItem>
                                 <SelectItem value="Private Bus">Private Bus</SelectItem>
                                 <SelectItem value="Chartered Bus">Chartered Bus</SelectItem>
-                                <SelectItem value="E-Rickshaw">E-Rickshaw</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>

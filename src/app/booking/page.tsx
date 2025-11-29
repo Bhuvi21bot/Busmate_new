@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import Script from "next/script"
+import PageLoader from "@/components/PageLoader"
 
 // Indian cities list
 const INDIAN_CITIES = [
@@ -87,16 +88,7 @@ export default function BookingPage() {
 
   // Show loading while checking auth
   if (isPending) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-        >
-          <Bus className="h-8 w-8 text-primary" />
-        </motion.div>
-      </div>
-    )
+    return <PageLoader />
   }
 
   // Don't render if not authenticated
