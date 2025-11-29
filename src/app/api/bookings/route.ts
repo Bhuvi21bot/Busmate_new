@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     
     // Validate required fields
-    const { pickup, dropoff, vehicleType, datetime, seats, fare } = body
+    const { pickup, dropoff, vehicleType, datetime, seats, fare, paymentId, orderId } = body
     
     if (!pickup || !dropoff || !vehicleType || !datetime || !seats || !fare) {
       return NextResponse.json(
@@ -14,29 +14,39 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Simulate booking creation
+    // Validate payment information
+    if (!paymentId || !orderId) {
+      return NextResponse.json(
+        { error: "Payment information is required. Please complete payment first." },
+        { status: 400 }
+      )
+    }
+
+    // Create booking with payment details
     const booking = {
       id: `BM${Date.now()}`,
       ...body,
       status: "confirmed",
+      paymentStatus: "paid",
+      paymentId,
+      orderId,
       bookingDate: new Date().toISOString(),
       confirmationCode: Math.random().toString(36).substring(2, 10).toUpperCase(),
     }
 
     // In a real app, you would:
-    // 1. Validate seat availability
-    // 2. Process payment
-    // 3. Store booking in database
-    // 4. Send confirmation email/SMS
-    // 5. Update seat availability
+    // 1. Store booking in database with payment details
+    // 2. Update seat availability
+    // 3. Send confirmation email/SMS with booking & payment info
+    // 4. Create a transaction record
 
     // Simulate processing delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
     return NextResponse.json({
       success: true,
       booking,
-      message: "Booking confirmed successfully!",
+      message: "Booking confirmed successfully! Payment received.",
     })
   } catch (error) {
     console.error("Booking error:", error)
@@ -60,6 +70,7 @@ export async function GET(request: NextRequest) {
         seats: ["1A", "1B"],
         fare: 100,
         status: "confirmed",
+        paymentStatus: "paid",
         confirmationCode: "ABCD1234",
       },
     ]
