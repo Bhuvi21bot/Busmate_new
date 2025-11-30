@@ -313,14 +313,14 @@ export default function Home() {
       sparkCount={12}
       duration={600}
     >
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-black">
         <Header />
 
         {/* Hero Section with Side View Layout */}
         <section className="relative overflow-hidden py-20 md:py-32">
           {/* Animated background */}
           <div className="absolute inset-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-background" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-black to-black" />
             <div className="absolute top-0 -left-4 w-72 h-72 bg-primary/30 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
             <div className="absolute top-0 -right-4 w-72 h-72 bg-green-500/30 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
             <div className="absolute -bottom-8 left-20 w-72 h-72 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000" />
@@ -344,7 +344,7 @@ export default function Home() {
                   </h1>
                 </motion.div>
                 <motion.p
-                  className="text-lg md:text-xl text-muted-foreground mb-8"
+                  className="text-lg md:text-xl text-gray-300 mb-8"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4 }}
@@ -360,17 +360,27 @@ export default function Home() {
                   <Link href="/vehicles">
                     <Button 
                       size="lg" 
-                      className="bg-primary hover:bg-primary/90 text-lg px-8 hover:scale-105 transition-transform duration-300 shadow-lg shadow-primary/50"
+                      className="bg-primary hover:bg-primary/90 text-black text-lg px-8 hover:scale-105 transition-transform duration-300 shadow-lg shadow-primary/50"
                     >
                       <ArrowRight className="h-5 w-5 mr-2" />
                       {t("startJourney")}
+                    </Button>
+                  </Link>
+                  <Link href="/driver-dashboard">
+                    <Button 
+                      size="lg" 
+                      variant="outline" 
+                      className="text-lg px-8 hover:scale-105 transition-transform duration-300 border-primary/40 text-white hover:bg-primary/10 hover:border-primary/60"
+                    >
+                      <Users className="h-5 w-5 mr-2" />
+                      Driver Dashboard
                     </Button>
                   </Link>
                   <Link href="/pricing">
                     <Button 
                       size="lg" 
                       variant="outline" 
-                      className="text-lg px-8 hover:scale-105 transition-transform duration-300 hover:border-primary/50 border-primary/30"
+                      className="text-lg px-8 hover:scale-105 transition-transform duration-300 border-primary/40 text-white hover:bg-primary/10 hover:border-primary/60"
                     >
                       {t("viewPricing")}
                     </Button>
@@ -397,7 +407,7 @@ export default function Home() {
                     exit={{ opacity: 0, x: -100 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <Card className="relative bg-card/80 backdrop-blur-xl border-primary/20 shadow-2xl shadow-primary/20 h-full">
+                    <Card className="relative bg-zinc-900/80 backdrop-blur-xl border-primary/20 shadow-2xl shadow-primary/20 h-full">
                       <CardContent className="p-6 h-full flex flex-col justify-between">
                         <div>
                           <div className="flex items-center gap-3 mb-5">
@@ -405,8 +415,8 @@ export default function Home() {
                               <currentCard.icon className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                              <h3 className="text-lg font-bold text-heading">{currentCard.title}</h3>
-                              <p className="text-xs text-muted-foreground">{currentCard.subtitle}</p>
+                              <h3 className="text-lg font-bold text-white">{currentCard.title}</h3>
+                              <p className="text-xs text-gray-400">{currentCard.subtitle}</p>
                             </div>
                           </div>
 
@@ -423,14 +433,14 @@ export default function Home() {
                                       : 'border-2 border-muted/50'
                                   }`} />
                                   <div className="flex-1">
-                                    <p className="text-sm font-medium">{stop.location}</p>
-                                    <p className="text-xs text-muted-foreground">
+                                    <p className="text-sm font-medium text-white">{stop.location}</p>
+                                    <p className="text-xs text-gray-400">
                                       {stop.status === 'current' ? 'Current Location' : 
                                        stop.status === 'next' ? 'Next Stop' : 'Destination'}
                                     </p>
                                   </div>
                                   <span className={`text-xs font-medium ${
-                                    stop.status === 'current' ? 'text-primary' : 'text-muted-foreground'
+                                    stop.status === 'current' ? 'text-primary' : 'text-gray-400'
                                   }`}>
                                     {stop.time}
                                   </span>
@@ -446,18 +456,18 @@ export default function Home() {
                         </div>
 
                         {/* Stats */}
-                        <div className="grid grid-cols-3 gap-3 pt-4 border-t border-border/50">
+                        <div className="grid grid-cols-3 gap-3 pt-4 border-t border-zinc-800">
                           <div>
                             <p className="text-xl font-bold text-primary">{currentCard.stats.rating}</p>
-                            <p className="text-xs text-muted-foreground">Rating</p>
+                            <p className="text-xs text-gray-400">Rating</p>
                           </div>
                           <div>
                             <p className="text-xl font-bold text-primary">{currentCard.stats.buses}</p>
-                            <p className="text-xs text-muted-foreground">Buses</p>
+                            <p className="text-xs text-gray-400">Buses</p>
                           </div>
                           <div>
                             <p className="text-xl font-bold text-primary">{currentCard.stats.onTime}</p>
-                            <p className="text-xs text-muted-foreground">On-Time</p>
+                            <p className="text-xs text-gray-400">On-Time</p>
                           </div>
                         </div>
                       </CardContent>
@@ -470,7 +480,7 @@ export default function Home() {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={prevCard}
-                      className="pointer-events-auto h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-primary-foreground shadow-lg flex items-center justify-center backdrop-blur-sm transition-all duration-300"
+                      className="pointer-events-auto h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-black shadow-lg flex items-center justify-center backdrop-blur-sm transition-all duration-300"
                     >
                       <ChevronLeft className="h-5 w-5" />
                     </motion.button>
@@ -478,7 +488,7 @@ export default function Home() {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={nextCard}
-                      className="pointer-events-auto h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-primary-foreground shadow-lg flex items-center justify-center backdrop-blur-sm transition-all duration-300"
+                      className="pointer-events-auto h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-black shadow-lg flex items-center justify-center backdrop-blur-sm transition-all duration-300"
                     >
                       <ChevronRight className="h-5 w-5" />
                     </motion.button>
@@ -524,7 +534,7 @@ export default function Home() {
                     scale: 1.08,
                     transition: { type: "spring", stiffness: 400 }
                   }}
-                  className="bg-card/50 backdrop-blur-sm border border-primary/20 rounded-xl p-6 text-center relative overflow-hidden group"
+                  className="bg-zinc-900/50 backdrop-blur-sm border border-primary/20 rounded-xl p-6 text-center relative overflow-hidden group"
                 >
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
@@ -539,8 +549,8 @@ export default function Home() {
                   >
                     <stat.icon className="h-8 w-8 mx-auto mb-3 text-primary" />
                   </motion.div>
-                  <div className="text-3xl font-bold text-heading mb-1">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
+                  <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
+                  <div className="text-sm text-gray-400">{stat.label}</div>
                 </motion.div>
               ))}
             </motion.div>
@@ -548,7 +558,7 @@ export default function Home() {
         </section>
 
         {/* About Section */}
-        <section id="about" className="py-20 bg-card/30 backdrop-blur-sm border-y border-border/50">
+        <section id="about" className="py-20 bg-zinc-950 border-y border-zinc-800">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0 }}
@@ -558,7 +568,7 @@ export default function Home() {
               className="text-center mb-12"
             >
               <motion.h2 
-                className="text-3xl md:text-5xl font-bold mb-4"
+                className="text-3xl md:text-5xl font-bold mb-4 text-white"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -566,7 +576,7 @@ export default function Home() {
                 {t("aboutBusMate")}
               </motion.h2>
               <motion.p 
-                className="text-xl text-muted-foreground"
+                className="text-xl text-gray-300"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
@@ -593,15 +603,15 @@ export default function Home() {
                     transition: { type: "spring", stiffness: 400 }
                   }}
                 >
-                  <Card className="h-full bg-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group shadow-lg shadow-primary/5">
+                  <Card className="h-full bg-zinc-900/50 backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group shadow-lg shadow-primary/5">
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     />
                     
                     <CardContent className="p-6 relative z-10">
                       <feature.icon className="h-12 w-12 text-primary mb-4" />
-                      <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                      <p className="text-muted-foreground">{feature.description}</p>
+                      <h3 className="text-xl font-bold mb-3 text-white">{feature.title}</h3>
+                      <p className="text-gray-400">{feature.description}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -611,8 +621,8 @@ export default function Home() {
         </section>
 
         {/* Services Section */}
-        <section className="py-20 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background opacity-50" />
+        <section className="py-20 relative overflow-hidden bg-black">
+          <div className="absolute inset-0 bg-gradient-to-b from-black via-primary/5 to-black opacity-50" />
           
           <div className="container mx-auto px-4 relative z-10">
             <motion.div
@@ -622,7 +632,7 @@ export default function Home() {
               className="text-center mb-12"
             >
               <motion.h2 
-                className="text-3xl md:text-5xl font-bold mb-4"
+                className="text-3xl md:text-5xl font-bold mb-4 text-white"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -630,7 +640,7 @@ export default function Home() {
                 {t("ourServices")}
               </motion.h2>
               <motion.p 
-                className="text-xl text-muted-foreground"
+                className="text-xl text-gray-300"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
@@ -640,7 +650,7 @@ export default function Home() {
               </motion.p>
             </motion.div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
               {services.map((service, index) => (
                 <motion.div
                   key={service.title}
@@ -658,11 +668,20 @@ export default function Home() {
                     transition: { type: "spring", stiffness: 400 }
                   }}
                 >
-                  <Card className="h-full bg-gradient-to-br from-card to-card/50 border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group shadow-lg shadow-primary/5">
-                    <CardContent className="p-6 text-center relative z-10">
-                      <service.icon className="h-16 w-16 mx-auto mb-4 text-primary" />
-                      <h3 className="text-xl font-bold mb-3">{service.title}</h3>
-                      <p className="text-sm text-muted-foreground">{service.description}</p>
+                  <Card className="h-full bg-gradient-to-br from-zinc-900/90 to-zinc-900/50 backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group shadow-xl shadow-primary/10">
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                    />
+                    <CardContent className="p-8 text-center relative z-10">
+                      <motion.div
+                        whileHover={{ scale: 1.15, rotate: 5 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                        className="mb-6"
+                      >
+                        <service.icon className="h-16 w-16 mx-auto text-primary drop-shadow-[0_0_15px_rgba(74,222,128,0.5)]" />
+                      </motion.div>
+                      <h3 className="text-2xl font-bold mb-4 text-white">{service.title}</h3>
+                      <p className="text-sm text-gray-300 leading-relaxed">{service.description}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
