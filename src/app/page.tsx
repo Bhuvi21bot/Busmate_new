@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { Bus, Users, Zap, TrendingUp, CheckCircle2, Lightbulb, Trophy, ArrowRight, Wallet, Search, MapPin, Star, Verified, Settings, Ticket, User } from "lucide-react"
+import { Bus, Users, Zap, TrendingUp, CheckCircle2, Lightbulb, Trophy, ArrowRight, Wallet, Search, MapPin, Star, Verified, Settings, Ticket, User, ChevronLeft, ChevronRight } from "lucide-react"
 import { VscHome, VscCalendar } from "react-icons/vsc"
 import { useLanguage } from "@/providers/LanguageProvider"
 import Header from "@/components/Header"
@@ -26,17 +26,75 @@ export default function Home() {
   const [availableDrivers, setAvailableDrivers] = useState<any[]>([])
   const [loadingDrivers, setLoadingDrivers] = useState(false)
   const [driversError, setDriversError] = useState<string | null>(null)
+  const [currentTrackingCard, setCurrentTrackingCard] = useState(0)
+
+  // Tracking card options
+  const trackingCards = [
+    {
+      id: 1,
+      title: "Live Tracking",
+      subtitle: "Real-time bus location",
+      icon: Bus,
+      route: [
+        { location: "ABES Institute", status: "current", time: "Now" },
+        { location: "City Center", status: "next", time: "5 min" },
+        { location: "Railway Station", status: "destination", time: "15 min" }
+      ],
+      stats: { rating: "4.8", buses: "850+", onTime: "98%" }
+    },
+    {
+      id: 2,
+      title: "Route Planning",
+      subtitle: "Optimize your journey",
+      icon: MapPin,
+      route: [
+        { location: "Your Location", status: "current", time: "Now" },
+        { location: "Shopping Mall", status: "next", time: "8 min" },
+        { location: "Airport", status: "destination", time: "25 min" }
+      ],
+      stats: { rating: "4.9", buses: "650+", onTime: "96%" }
+    },
+    {
+      id: 3,
+      title: "Express Service",
+      subtitle: "Fastest routes available",
+      icon: Zap,
+      route: [
+        { location: "Tech Park", status: "current", time: "Now" },
+        { location: "Metro Station", status: "next", time: "3 min" },
+        { location: "Business District", status: "destination", time: "12 min" }
+      ],
+      stats: { rating: "4.7", buses: "450+", onTime: "99%" }
+    },
+    {
+      id: 4,
+      title: "Night Service",
+      subtitle: "24/7 availability",
+      icon: Bus,
+      route: [
+        { location: "Hospital", status: "current", time: "Now" },
+        { location: "University", status: "next", time: "6 min" },
+        { location: "Residential Area", status: "destination", time: "18 min" }
+      ],
+      stats: { rating: "4.6", buses: "320+", onTime: "97%" }
+    }
+  ]
+
+  const nextCard = () => {
+    setCurrentTrackingCard((prev) => (prev + 1) % trackingCards.length)
+  }
+
+  const prevCard = () => {
+    setCurrentTrackingCard((prev) => (prev - 1 + trackingCards.length) % trackingCards.length)
+  }
 
   useEffect(() => {
-    // Simulate page load
     const timer = setTimeout(() => {
       setIsLoading(false)
-    }, 1500) // 1.5 seconds loading time
-
+    }, 1500)
     return () => clearTimeout(timer)
   }, [])
 
-  // Fetch available drivers
   useEffect(() => {
     const fetchDrivers = async () => {
       setLoadingDrivers(true)
@@ -49,7 +107,6 @@ export default function Home() {
           setAvailableDrivers(data.drivers)
         } else {
           setDriversError(data.error || 'Failed to fetch drivers')
-          // Fallback to static data if API fails
           setAvailableDrivers([
             {
               id: 1,
@@ -75,17 +132,6 @@ export default function Home() {
             },
             {
               id: 3,
-              name: "Suresh Yadav",
-              vehicle: "E-Rickshaw",
-              image: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=200",
-              rating: 4.7,
-              trips: 2340,
-              distance: "0.5 km away",
-              verified: true,
-              available: true,
-            },
-            {
-              id: 4,
               name: "Ramesh Gupta",
               vehicle: "Chartered Bus (45 Seater)",
               image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200",
@@ -100,7 +146,6 @@ export default function Home() {
       } catch (error) {
         console.error('Error fetching drivers:', error)
         setDriversError('Network error')
-        // Fallback to static data
         setAvailableDrivers([
           {
             id: 1,
@@ -126,17 +171,6 @@ export default function Home() {
           },
           {
             id: 3,
-            name: "Suresh Yadav",
-            vehicle: "E-Rickshaw",
-            image: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=200",
-            rating: 4.7,
-            trips: 2340,
-            distance: "0.5 km away",
-            verified: true,
-            available: true,
-          },
-          {
-            id: 4,
             name: "Ramesh Gupta",
             vehicle: "Chartered Bus (45 Seater)",
             image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200",
@@ -157,7 +191,6 @@ export default function Home() {
     }
   }, [isLoading])
 
-  // Dock items configuration
   const dockItems = [
     { icon: <VscHome size={20} />, label: 'Home', onClick: () => router.push('/') },
     { icon: <Ticket size={20} />, label: 'Book Ticket', onClick: () => router.push('/booking') },
@@ -188,11 +221,6 @@ export default function Home() {
       description: "Tailored transportation for groups, events, and special occasions with flexible scheduling.",
       icon: Bus,
     },
-    {
-      title: "E-Rickshaw",
-      description: "Eco-friendly electric transport for short distances, zero emissions, affordable rates.",
-      icon: Zap,
-    },
   ]
 
   const features = [
@@ -218,7 +246,7 @@ export default function Home() {
       number: "01",
       icon: Search,
       title: "Search Your Route",
-      description: "Enter your pickup and drop location to find available buses and e-rickshaws on your route.",
+      description: "Enter your pickup and drop location to find available buses on your route.",
     },
     {
       number: "02",
@@ -267,14 +295,15 @@ export default function Home() {
       role: "Freelancer",
       image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200",
       rating: 5,
-      review: "E-rickshaw booking feature is a game changer! Quick, eco-friendly, and perfect for short distances. Love the convenience!",
+      review: "The booking system is incredibly convenient and the buses are always on time. Perfect for my flexible work schedule!",
     },
   ]
 
-  // Show loading state
   if (isLoading) {
     return <PageLoader />
   }
+
+  const currentCard = trackingCards[currentTrackingCard]
 
   return (
     <ClickSpark
@@ -287,74 +316,193 @@ export default function Home() {
       <div className="min-h-screen bg-background">
         <Header />
 
-        {/* Hero Section */}
+        {/* Hero Section with Side View Layout */}
         <section className="relative overflow-hidden py-20 md:py-32">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-background" />
+          {/* Animated background */}
+          <div className="absolute inset-0">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-background" />
+            <div className="absolute top-0 -left-4 w-72 h-72 bg-primary/30 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
+            <div className="absolute top-0 -right-4 w-72 h-72 bg-green-500/30 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
+            <div className="absolute -bottom-8 left-20 w-72 h-72 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000" />
+          </div>
 
           <div className="container mx-auto px-4 relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-center max-w-4xl mx-auto"
-            >
-              <motion.h1
-                className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-green-400 to-primary bg-clip-text text-transparent"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                {t("innovativeTravel")}
-              </motion.h1>
-              <motion.p
-                className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-              >
-                {t("heroDescription")}
-              </motion.p>
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Left side - Content */}
               <motion.div
-                className="flex flex-col sm:flex-row gap-4 justify-center"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
               >
-                <Link href="/vehicles">
-                  <Button 
-                    size="lg" 
-                    className="bg-primary hover:bg-primary/90 text-lg px-8 hover:scale-105 transition-transform duration-300"
-                  >
-                    <ArrowRight className="h-5 w-5 mr-2" />
-                    {t("startJourney")}
-                  </Button>
-                </Link>
-                <Link href="/pricing">
-                  <Button 
-                    size="lg" 
-                    variant="outline" 
-                    className="text-lg px-8 hover:scale-105 transition-transform duration-300 hover:border-primary/50"
-                  >
-                    {t("viewPricing")}
-                  </Button>
-                </Link>
-                <Link href="/driver-dashboard">
-                  <Button 
-                    size="lg" 
-                    variant="outline" 
-                    className="text-lg px-8 hover:scale-105 transition-transform duration-300 hover:border-primary/50 bg-primary/5"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      window.open('/driver-dashboard', '_blank', 'noopener,noreferrer')
-                    }}
-                  >
-                    <Users className="h-5 w-5 mr-2" />
-                    {t("becomeDriver")}
-                  </Button>
-                </Link>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                  <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-green-400 to-primary bg-clip-text text-transparent leading-tight">
+                    {t("innovativeTravel")}
+                  </h1>
+                </motion.div>
+                <motion.p
+                  className="text-lg md:text-xl text-muted-foreground mb-8"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  {t("heroDescription")}
+                </motion.p>
+                <motion.div
+                  className="flex flex-col sm:flex-row gap-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <Link href="/vehicles">
+                    <Button 
+                      size="lg" 
+                      className="bg-primary hover:bg-primary/90 text-lg px-8 hover:scale-105 transition-transform duration-300 shadow-lg shadow-primary/50"
+                    >
+                      <ArrowRight className="h-5 w-5 mr-2" />
+                      {t("startJourney")}
+                    </Button>
+                  </Link>
+                  <Link href="/pricing">
+                    <Button 
+                      size="lg" 
+                      variant="outline" 
+                      className="text-lg px-8 hover:scale-105 transition-transform duration-300 hover:border-primary/50 border-primary/30"
+                    >
+                      {t("viewPricing")}
+                    </Button>
+                  </Link>
+                </motion.div>
               </motion.div>
-            </motion.div>
 
+              {/* Right side - Visual with Navigation */}
+              <motion.div
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="relative"
+              >
+                <div className="relative aspect-square lg:aspect-auto lg:h-[450px]">
+                  {/* Glowing card effect */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-green-500/20 rounded-3xl blur-2xl" />
+                  
+                  {/* Main card with animation */}
+                  <motion.div
+                    key={currentCard.id}
+                    initial={{ opacity: 0, x: 100 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -100 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Card className="relative bg-card/80 backdrop-blur-xl border-primary/20 shadow-2xl shadow-primary/20 h-full">
+                      <CardContent className="p-6 h-full flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center gap-3 mb-5">
+                            <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
+                              <currentCard.icon className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-bold text-heading">{currentCard.title}</h3>
+                              <p className="text-xs text-muted-foreground">{currentCard.subtitle}</p>
+                            </div>
+                          </div>
+
+                          {/* Mock bus route */}
+                          <div className="space-y-3 mb-5">
+                            {currentCard.route.map((stop, index) => (
+                              <div key={index}>
+                                <div className="flex items-center gap-3">
+                                  <div className={`h-2.5 w-2.5 rounded-full ${
+                                    stop.status === 'current' 
+                                      ? 'bg-primary ring-4 ring-primary/20' 
+                                      : stop.status === 'next'
+                                      ? 'border-2 border-primary/50'
+                                      : 'border-2 border-muted/50'
+                                  }`} />
+                                  <div className="flex-1">
+                                    <p className="text-sm font-medium">{stop.location}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {stop.status === 'current' ? 'Current Location' : 
+                                       stop.status === 'next' ? 'Next Stop' : 'Destination'}
+                                    </p>
+                                  </div>
+                                  <span className={`text-xs font-medium ${
+                                    stop.status === 'current' ? 'text-primary' : 'text-muted-foreground'
+                                  }`}>
+                                    {stop.time}
+                                  </span>
+                                </div>
+                                {index < currentCard.route.length - 1 && (
+                                  <div className={`ml-1 border-l-2 border-dashed h-8 ${
+                                    index === 0 ? 'border-primary/30' : 'border-muted/30'
+                                  }`} />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Stats */}
+                        <div className="grid grid-cols-3 gap-3 pt-4 border-t border-border/50">
+                          <div>
+                            <p className="text-xl font-bold text-primary">{currentCard.stats.rating}</p>
+                            <p className="text-xs text-muted-foreground">Rating</p>
+                          </div>
+                          <div>
+                            <p className="text-xl font-bold text-primary">{currentCard.stats.buses}</p>
+                            <p className="text-xs text-muted-foreground">Buses</p>
+                          </div>
+                          <div>
+                            <p className="text-xl font-bold text-primary">{currentCard.stats.onTime}</p>
+                            <p className="text-xs text-muted-foreground">On-Time</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+
+                  {/* Navigation buttons */}
+                  <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 flex justify-between px-2 pointer-events-none">
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={prevCard}
+                      className="pointer-events-auto h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-primary-foreground shadow-lg flex items-center justify-center backdrop-blur-sm transition-all duration-300"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={nextCard}
+                      className="pointer-events-auto h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-primary-foreground shadow-lg flex items-center justify-center backdrop-blur-sm transition-all duration-300"
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </motion.button>
+                  </div>
+
+                  {/* Card indicators */}
+                  <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+                    {trackingCards.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentTrackingCard(index)}
+                        className={`h-2 rounded-full transition-all duration-300 ${
+                          index === currentTrackingCard 
+                            ? 'w-8 bg-primary' 
+                            : 'w-2 bg-primary/30 hover:bg-primary/50'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Stats Grid */}
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
@@ -376,10 +524,10 @@ export default function Home() {
                     scale: 1.08,
                     transition: { type: "spring", stiffness: 400 }
                   }}
-                  className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center relative overflow-hidden group"
+                  className="bg-card/50 backdrop-blur-sm border border-primary/20 rounded-xl p-6 text-center relative overflow-hidden group"
                 >
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
                     initial={{ x: "-100%" }}
                     whileHover={{ x: "100%" }}
                     transition={{ duration: 0.6 }}
@@ -400,7 +548,7 @@ export default function Home() {
         </section>
 
         {/* About Section */}
-        <section id="about" className="py-20 bg-card/30 backdrop-blur-sm">
+        <section id="about" className="py-20 bg-card/30 backdrop-blur-sm border-y border-border/50">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0 }}
@@ -445,9 +593,9 @@ export default function Home() {
                     transition: { type: "spring", stiffness: 400 }
                   }}
                 >
-                  <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
+                  <Card className="h-full bg-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group shadow-lg shadow-primary/5">
                     <motion.div
-                      className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     />
                     
                     <CardContent className="p-6 relative z-10">
@@ -510,7 +658,7 @@ export default function Home() {
                     transition: { type: "spring", stiffness: 400 }
                   }}
                 >
-                  <Card className="h-full bg-gradient-to-br from-card to-card/50 border-border/50 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
+                  <Card className="h-full bg-gradient-to-br from-card to-card/50 border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group shadow-lg shadow-primary/5">
                     <CardContent className="p-6 text-center relative z-10">
                       <service.icon className="h-16 w-16 mx-auto mb-4 text-primary" />
                       <h3 className="text-xl font-bold mb-3">{service.title}</h3>
@@ -695,18 +843,18 @@ export default function Home() {
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
                 {[1, 2, 3, 4].map((i) => (
                   <Card key={i} className="h-full bg-card/50 backdrop-blur-sm border-border/50 animate-pulse">
-                    <CardContent className="p-6">
+                    <CardContent className="p-5">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="h-16 w-16 rounded-full bg-muted" />
-                        <div className="h-6 w-6 rounded-full bg-muted" />
+                        <div className="h-14 w-14 rounded-full bg-muted" />
+                        <div className="h-5 w-5 rounded-full bg-muted" />
                       </div>
-                      <div className="h-6 w-32 bg-muted rounded mb-2" />
+                      <div className="h-5 w-28 bg-muted rounded mb-2" />
                       <div className="h-4 w-full bg-muted rounded mb-4" />
                       <div className="space-y-2 mb-4">
-                        <div className="h-4 w-28 bg-muted rounded" />
                         <div className="h-4 w-24 bg-muted rounded" />
+                        <div className="h-4 w-20 bg-muted rounded" />
                       </div>
-                      <div className="h-10 w-full bg-muted rounded" />
+                      <div className="h-9 w-full bg-muted rounded" />
                     </CardContent>
                   </Card>
                 ))}
@@ -731,9 +879,9 @@ export default function Home() {
                     }}
                   >
                     <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <Avatar className="h-16 w-16 border-2 border-primary/20">
+                      <CardContent className="p-5">
+                        <div className="flex items-start justify-between mb-3">
+                          <Avatar className="h-14 w-14 border-2 border-primary/20">
                             <AvatarImage src={driver.image} alt={driver.name} />
                             <AvatarFallback>{driver.name.charAt(0)}</AvatarFallback>
                           </Avatar>
@@ -744,10 +892,10 @@ export default function Home() {
                           )}
                         </div>
                         
-                        <h3 className="text-lg font-bold mb-1">{driver.name}</h3>
+                        <h3 className="text-base font-bold mb-1">{driver.name}</h3>
                         <p className="text-sm text-muted-foreground mb-3">{driver.vehicle}</p>
                         
-                        <div className="space-y-2 mb-4">
+                        <div className="space-y-2 mb-3">
                           <div className="flex items-center gap-2 text-sm">
                             <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
                             <span className="font-semibold">{driver.rating}</span>
