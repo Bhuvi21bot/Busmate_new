@@ -12,11 +12,14 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 import PageLoader from "@/components/PageLoader"
+import { OTPVerification } from "@/components/OTPVerification"
 
 export default function RegisterPage() {
   const router = useRouter()
   const { data: session, isPending } = useSession()
   const [isLoading, setIsLoading] = useState(false)
+  const [showOTPVerification, setShowOTPVerification] = useState(false)
+  const [registeredEmail, setRegisteredEmail] = useState("")
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -61,21 +64,61 @@ export default function RegisterPage() {
         password: formData.password
       })
 
-      if (error?.code) {
+      // Handle any error response
+      if (error) {
         const errorMap: Record<string, string> = {
-          USER_ALREADY_EXISTS: "Email already registered. Please log in instead."
+          USER_ALREADY_EXISTS: "This email is already registered. Please log in instead or use a different email."
         }
-        toast.error(errorMap[error.code] || "Registration failed. Please try again.")
+        
+        // Check if error has a code property
+        if (error.code) {
+          toast.error(errorMap[error.code] || "Registration failed. Please try again.")
+        } else if (error.message) {
+          // Handle error with message
+          toast.error(error.message.includes("already") 
+            ? "This email is already registered. Please log in instead or use a different email."
+            : error.message)
+        } else {
+          // Generic error
+          toast.error("Registration failed. This email may already be in use. Please try a different email or log in.")
+        }
+        
         setIsLoading(false)
         return
       }
 
-      toast.success("Account created successfully!")
-      router.push("/login?registered=true")
+      // Send OTP for email verification
+      const otpResponse = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email }),
+      })
+
+      if (!otpResponse.ok) {
+        toast.error("Failed to send verification code. Please try again.")
+        setIsLoading(false)
+        return
+      }
+
+      toast.success("Account created! Please verify your email.")
+      setRegisteredEmail(formData.email)
+      setShowOTPVerification(true)
+      setIsLoading(false)
     } catch (error) {
+      console.error("Registration error:", error)
       toast.error("An unexpected error occurred. Please try again.")
       setIsLoading(false)
     }
+  }
+
+  const handleOTPSuccess = () => {
+    toast.success("Email verified successfully!")
+    router.push("/login?verified=true")
+  }
+
+  const handleBackToSignUp = () => {
+    setShowOTPVerification(false)
+    setRegisteredEmail("")
   }
 
   if (isPending) {
@@ -86,6 +129,22 @@ export default function RegisterPage() {
     return null
   }
 
+  // Show OTP verification screen
+  if (showOTPVerification && registeredEmail) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 via-background to-background p-4">
+        <div className="w-full max-w-md">
+          <OTPVerification
+            email={registeredEmail}
+            onSuccess={handleOTPSuccess}
+            onBack={handleBackToSignUp}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  // Show registration form
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 via-background to-background p-4">
       <motion.div
