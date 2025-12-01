@@ -1,12 +1,19 @@
 import { db } from "@/db"
 import { verification, user } from "@/db/schema"
-import { Resend } from "resend"
+import nodemailer from "nodemailer"
 import { render } from "@react-email/components"
 import { OTPTemplate } from "@/lib/emails/OTPTemplate"
 import crypto from "crypto"
-import { eq, and, gt } from "drizzle-orm"
+import { eq, and } from "drizzle-orm"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Create Gmail SMTP transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+})
 
 /**
  * Generate 6-digit cryptographically secure OTP
@@ -45,22 +52,20 @@ export async function sendOTP(email: string) {
       updatedAt: new Date(),
     })
 
-    // Render email template (await the promise)
+    // Render email template
     const emailHtml = await render(OTPTemplate({ email, otp }))
 
-    // Send via Resend
-    const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM || "Bus Mate <onboarding@resend.dev>",
+    // Send via Gmail SMTP
+    const result = await transporter.sendMail({
+      from: process.env.EMAIL_FROM || "Bus Mate <bhuvaneshpaaraashar@gmail.com>",
       to: email,
       subject: "Verify your email - Bus Mate",
       html: emailHtml,
     })
 
-    if (result.error) {
-      throw new Error(`Resend error: ${result.error.message}`)
-    }
+    console.log("OTP email sent successfully:", result.messageId)
 
-    return { success: true, messageId: result.data?.id }
+    return { success: true, messageId: result.messageId }
   } catch (error) {
     console.error("OTP send error:", error)
     throw error
