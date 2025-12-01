@@ -313,14 +313,14 @@ export default function Home() {
       sparkCount={12}
       duration={600}
     >
-      <div className="min-h-screen bg-black">
+      <div className="min-h-screen bg-background">
         <Header />
 
         {/* Hero Section with Side View Layout */}
-        <section className="relative overflow-hidden py-20 md:py-32 bg-black">
+        <section className="relative overflow-hidden py-20 md:py-32 bg-background">
           {/* Animated background */}
           <div className="absolute inset-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-black to-black" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-background" />
             <div className="absolute top-0 -left-4 w-72 h-72 bg-primary/30 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
             <div className="absolute top-0 -right-4 w-72 h-72 bg-green-500/30 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
             <div className="absolute -bottom-8 left-20 w-72 h-72 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000" />
@@ -344,7 +344,7 @@ export default function Home() {
                   </h1>
                 </motion.div>
                 <motion.p
-                  className="text-lg md:text-xl text-white mb-8"
+                  className="text-lg md:text-xl text-foreground mb-8"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4 }}
@@ -360,7 +360,7 @@ export default function Home() {
                   <Link href="/vehicles">
                     <Button 
                       size="lg" 
-                      className="bg-primary hover:bg-primary/90 text-black text-lg px-8 hover:scale-105 transition-transform duration-300 shadow-lg shadow-primary/50"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 hover:scale-105 transition-transform duration-300 shadow-lg shadow-primary/50"
                     >
                       <ArrowRight className="h-5 w-5 mr-2" />
                       {t("startJourney")}
@@ -370,7 +370,7 @@ export default function Home() {
                     <Button 
                       size="lg" 
                       variant="outline" 
-                      className="text-lg px-8 hover:scale-105 transition-transform duration-300 border-primary/40 text-white hover:bg-primary/10 hover:border-primary/60"
+                      className="text-lg px-8 hover:scale-105 transition-transform duration-300 border-primary/40 text-foreground hover:bg-primary/10 hover:border-primary/60"
                     >
                       <Users className="h-5 w-5 mr-2" />
                       Driver Dashboard
@@ -380,7 +380,7 @@ export default function Home() {
                     <Button 
                       size="lg" 
                       variant="outline" 
-                      className="text-lg px-8 hover:scale-105 transition-transform duration-300 border-primary/40 text-white hover:bg-primary/10 hover:border-primary/60"
+                      className="text-lg px-8 hover:scale-105 transition-transform duration-300 border-primary/40 text-foreground hover:bg-primary/10 hover:border-primary/60"
                     >
                       {t("viewPricing")}
                     </Button>
@@ -407,7 +407,7 @@ export default function Home() {
                     exit={{ opacity: 0, x: -100 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <Card className="relative bg-zinc-900/80 backdrop-blur-xl border-primary/20 shadow-2xl shadow-primary/20 h-full">
+                    <Card className="relative bg-card backdrop-blur-xl border-primary/20 shadow-2xl shadow-primary/20 h-full">
                       <CardContent className="p-6 h-full flex flex-col justify-between">
                         <div>
                           <div className="flex items-center gap-3 mb-5">
@@ -415,8 +415,8 @@ export default function Home() {
                               <currentCard.icon className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                              <h3 className="text-lg font-bold text-white">{currentCard.title}</h3>
-                              <p className="text-xs text-gray-400">{currentCard.subtitle}</p>
+                              <h3 className="text-lg font-bold text-card-foreground">{currentCard.title}</h3>
+                              <p className="text-xs text-muted-foreground">{currentCard.subtitle}</p>
                             </div>
                           </div>
 
@@ -433,14 +433,14 @@ export default function Home() {
                                       : 'border-2 border-muted/50'
                                   }`} />
                                   <div className="flex-1">
-                                    <p className="text-sm font-medium text-white">{stop.location}</p>
-                                    <p className="text-xs text-gray-400">
+                                    <p className="text-sm font-medium text-card-foreground">{stop.location}</p>
+                                    <p className="text-xs text-muted-foreground">
                                       {stop.status === 'current' ? 'Current Location' : 
                                        stop.status === 'next' ? 'Next Stop' : 'Destination'}
                                     </p>
                                   </div>
                                   <span className={`text-xs font-medium ${
-                                    stop.status === 'current' ? 'text-primary' : 'text-gray-400'
+                                    stop.status === 'current' ? 'text-primary' : 'text-muted-foreground'
                                   }`}>
                                     {stop.time}
                                   </span>
@@ -457,18 +457,18 @@ export default function Home() {
 
                         {/* Stats and Navigation */}
                         <div>
-                          <div className="grid grid-cols-3 gap-3 pt-4 border-t border-zinc-800 mb-4">
+                          <div className="grid grid-cols-3 gap-3 pt-4 border-t border-border mb-4">
                             <div>
                               <p className="text-xl font-bold text-primary">{currentCard.stats.rating}</p>
-                              <p className="text-xs text-gray-400">Rating</p>
+                              <p className="text-xs text-muted-foreground">Rating</p>
                             </div>
                             <div>
                               <p className="text-xl font-bold text-primary">{currentCard.stats.buses}</p>
-                              <p className="text-xs text-gray-400">Buses</p>
+                              <p className="text-xs text-muted-foreground">Buses</p>
                             </div>
                             <div>
                               <p className="text-xl font-bold text-primary">{currentCard.stats.onTime}</p>
-                              <p className="text-xs text-gray-400">On-Time</p>
+                              <p className="text-xs text-muted-foreground">On-Time</p>
                             </div>
                           </div>
 
@@ -478,7 +478,7 @@ export default function Home() {
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
                               onClick={prevCard}
-                              className="h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-black shadow-lg flex items-center justify-center backdrop-blur-sm transition-all duration-300"
+                              className="h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-primary-foreground shadow-lg flex items-center justify-center backdrop-blur-sm transition-all duration-300"
                             >
                               <ChevronLeft className="h-5 w-5" />
                             </motion.button>
@@ -502,7 +502,7 @@ export default function Home() {
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
                               onClick={nextCard}
-                              className="h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-black shadow-lg flex items-center justify-center backdrop-blur-sm transition-all duration-300"
+                              className="h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-primary-foreground shadow-lg flex items-center justify-center backdrop-blur-sm transition-all duration-300"
                             >
                               <ChevronRight className="h-5 w-5" />
                             </motion.button>
@@ -537,7 +537,7 @@ export default function Home() {
                     scale: 1.08,
                     transition: { type: "spring", stiffness: 400 }
                   }}
-                  className="bg-zinc-900/50 backdrop-blur-sm border border-primary/20 rounded-xl p-6 text-center relative overflow-hidden group"
+                  className="bg-card backdrop-blur-sm border border-primary/20 rounded-xl p-6 text-center relative overflow-hidden group"
                 >
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
@@ -552,8 +552,8 @@ export default function Home() {
                   >
                     <stat.icon className="h-8 w-8 mx-auto mb-3 text-primary" />
                   </motion.div>
-                  <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
-                  <div className="text-sm text-gray-400">{stat.label}</div>
+                  <div className="text-3xl font-bold text-foreground mb-1">{stat.value}</div>
+                  <div className="text-sm text-muted-foreground">{stat.label}</div>
                 </motion.div>
               ))}
             </motion.div>
@@ -561,7 +561,7 @@ export default function Home() {
         </section>
 
         {/* About Section */}
-        <section id="about" className="py-20 bg-zinc-950 border-y border-zinc-800">
+        <section id="about" className="py-20 bg-surface border-y border-border">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0 }}
@@ -571,7 +571,7 @@ export default function Home() {
               className="text-center mb-12"
             >
               <motion.h2 
-                className="text-3xl md:text-5xl font-bold mb-4 text-white"
+                className="text-3xl md:text-5xl font-bold mb-4 text-heading"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -579,7 +579,7 @@ export default function Home() {
                 {t("aboutBusMate")}
               </motion.h2>
               <motion.p 
-                className="text-xl text-gray-300"
+                className="text-xl text-foreground"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
@@ -606,15 +606,15 @@ export default function Home() {
                     transition: { type: "spring", stiffness: 400 }
                   }}
                 >
-                  <Card className="h-full bg-zinc-900/50 backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group shadow-lg shadow-primary/5">
+                  <Card className="h-full bg-card backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group shadow-lg shadow-primary/5">
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     />
                     
                     <CardContent className="p-6 relative z-10">
                       <feature.icon className="h-12 w-12 text-primary mb-4" />
-                      <h3 className="text-xl font-bold mb-3 text-white">{feature.title}</h3>
-                      <p className="text-gray-400">{feature.description}</p>
+                      <h3 className="text-xl font-bold mb-3 text-card-foreground">{feature.title}</h3>
+                      <p className="text-muted-foreground">{feature.description}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -624,8 +624,8 @@ export default function Home() {
         </section>
 
         {/* Services Section */}
-        <section className="py-20 relative overflow-hidden bg-black">
-          <div className="absolute inset-0 bg-gradient-to-b from-black via-primary/5 to-black opacity-50" />
+        <section className="py-20 relative overflow-hidden bg-background">
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background opacity-50" />
           
           <div className="container mx-auto px-4 relative z-10">
             <motion.div
@@ -635,7 +635,7 @@ export default function Home() {
               className="text-center mb-12"
             >
               <motion.h2 
-                className="text-3xl md:text-5xl font-bold mb-4 text-white"
+                className="text-3xl md:text-5xl font-bold mb-4 text-heading"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -643,7 +643,7 @@ export default function Home() {
                 {t("ourServices")}
               </motion.h2>
               <motion.p 
-                className="text-xl text-gray-300"
+                className="text-xl text-foreground"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
@@ -671,7 +671,7 @@ export default function Home() {
                     transition: { type: "spring", stiffness: 400 }
                   }}
                 >
-                  <Card className="h-full bg-gradient-to-br from-zinc-900/90 to-zinc-900/50 backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group shadow-xl shadow-primary/10">
+                  <Card className="h-full bg-card backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group shadow-xl shadow-primary/10">
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                     />
@@ -683,8 +683,8 @@ export default function Home() {
                       >
                         <service.icon className="h-16 w-16 mx-auto text-primary drop-shadow-[0_0_15px_rgba(74,222,128,0.5)]" />
                       </motion.div>
-                      <h3 className="text-2xl font-bold mb-4 text-white">{service.title}</h3>
-                      <p className="text-sm text-gray-300 leading-relaxed">{service.description}</p>
+                      <h3 className="text-2xl font-bold mb-4 text-card-foreground">{service.title}</h3>
+                      <p className="text-sm text-foreground leading-relaxed">{service.description}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -694,7 +694,7 @@ export default function Home() {
         </section>
 
         {/* Booking Steps Section */}
-        <section className="py-20 bg-black">
+        <section className="py-20 bg-background">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0 }}
@@ -703,7 +703,7 @@ export default function Home() {
               className="text-center mb-12"
             >
               <motion.h2 
-                className="text-3xl md:text-5xl font-bold mb-4 text-white"
+                className="text-3xl md:text-5xl font-bold mb-4 text-heading"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -711,7 +711,7 @@ export default function Home() {
                 {t("howToBook")}
               </motion.h2>
               <motion.p 
-                className="text-xl text-gray-300"
+                className="text-xl text-foreground"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
@@ -738,7 +738,7 @@ export default function Home() {
                     transition: { type: "spring", stiffness: 400 }
                   }}
                 >
-                  <Card className="h-full bg-zinc-900/50 backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
+                  <Card className="h-full bg-card backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
                     <CardContent className="p-6 relative z-10">
                       <div className="flex items-start gap-4 mb-4">
                         <span className="text-5xl font-bold text-primary/20">{step.number}</span>
@@ -746,8 +746,8 @@ export default function Home() {
                           <step.icon className="h-6 w-6 text-primary" />
                         </div>
                       </div>
-                      <h3 className="text-xl font-bold mb-3 text-white">{step.title}</h3>
-                      <p className="text-sm text-gray-300">{step.description}</p>
+                      <h3 className="text-xl font-bold mb-3 text-card-foreground">{step.title}</h3>
+                      <p className="text-sm text-foreground">{step.description}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -757,8 +757,8 @@ export default function Home() {
         </section>
 
         {/* Customer Reviews Section */}
-        <section className="py-20 relative overflow-hidden bg-zinc-950 border-y border-zinc-800">
-          <div className="absolute inset-0 bg-gradient-to-b from-black via-primary/5 to-black opacity-50" />
+        <section className="py-20 relative overflow-hidden bg-surface border-y border-border">
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background opacity-50" />
           
           <div className="container mx-auto px-4 relative z-10">
             <motion.div
@@ -768,7 +768,7 @@ export default function Home() {
               className="text-center mb-12"
             >
               <motion.h2 
-                className="text-3xl md:text-5xl font-bold mb-4 text-white"
+                className="text-3xl md:text-5xl font-bold mb-4 text-heading"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -776,7 +776,7 @@ export default function Home() {
                 {t("customerReviews")}
               </motion.h2>
               <motion.p 
-                className="text-xl text-gray-300"
+                className="text-xl text-foreground"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
@@ -803,7 +803,7 @@ export default function Home() {
                     transition: { type: "spring", stiffness: 400 }
                   }}
                 >
-                  <Card className="h-full bg-zinc-900/50 backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
+                  <Card className="h-full bg-card backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
                     <CardContent className="p-6 flex flex-col h-full">
                       <div className="flex items-center gap-1 mb-4">
                         {[...Array(testimonial.rating)].map((_, i) => (
@@ -811,7 +811,7 @@ export default function Home() {
                         ))}
                       </div>
                       
-                      <p className="text-sm text-gray-300 mb-6 flex-grow italic">
+                      <p className="text-sm text-foreground mb-6 flex-grow italic">
                         "{testimonial.review}"
                       </p>
                       
@@ -821,8 +821,8 @@ export default function Home() {
                           <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <h4 className="font-semibold text-sm text-white">{testimonial.name}</h4>
-                          <p className="text-xs text-gray-400">{testimonial.role}</p>
+                          <h4 className="font-semibold text-sm text-card-foreground">{testimonial.name}</h4>
+                          <p className="text-xs text-muted-foreground">{testimonial.role}</p>
                         </div>
                       </div>
                     </CardContent>
@@ -834,7 +834,7 @@ export default function Home() {
         </section>
 
         {/* Available Drivers Section */}
-        <section className="py-20 bg-black">
+        <section className="py-20 bg-background">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0 }}
@@ -843,7 +843,7 @@ export default function Home() {
               className="text-center mb-12"
             >
               <motion.h2 
-                className="text-3xl md:text-5xl font-bold mb-4 text-white"
+                className="text-3xl md:text-5xl font-bold mb-4 text-heading"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -851,7 +851,7 @@ export default function Home() {
                 {t("availableDrivers")}
               </motion.h2>
               <motion.p 
-                className="text-xl text-gray-300"
+                className="text-xl text-foreground"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
@@ -864,7 +864,7 @@ export default function Home() {
             {loadingDrivers ? (
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
                 {[1, 2, 3, 4].map((i) => (
-                  <Card key={i} className="h-full bg-zinc-900/50 backdrop-blur-sm border-primary/20 animate-pulse">
+                  <Card key={i} className="h-full bg-card backdrop-blur-sm border-primary/20 animate-pulse">
                     <CardContent className="p-5">
                       <div className="flex items-start justify-between mb-4">
                         <div className="h-14 w-14 rounded-full bg-muted" />
@@ -900,7 +900,7 @@ export default function Home() {
                       transition: { type: "spring", stiffness: 400 }
                     }}
                   >
-                    <Card className="h-full bg-zinc-900/50 backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
+                    <Card className="h-full bg-card backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
                       <CardContent className="p-5">
                         <div className="flex items-start justify-between mb-3">
                           <Avatar className="h-14 w-14 border-2 border-primary/20">
@@ -914,23 +914,23 @@ export default function Home() {
                           )}
                         </div>
                         
-                        <h3 className="text-base font-bold mb-1 text-white">{driver.name}</h3>
-                        <p className="text-sm text-gray-300 mb-3">{driver.vehicle}</p>
+                        <h3 className="text-base font-bold mb-1 text-card-foreground">{driver.name}</h3>
+                        <p className="text-sm text-foreground mb-3">{driver.vehicle}</p>
                         
                         <div className="space-y-2 mb-3">
                           <div className="flex items-center gap-2 text-sm">
                             <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                            <span className="font-semibold text-white">{driver.rating}</span>
-                            <span className="text-gray-400">({driver.trips} trips)</span>
+                            <span className="font-semibold text-foreground">{driver.rating}</span>
+                            <span className="text-muted-foreground">({driver.trips} trips)</span>
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-300">
+                          <div className="flex items-center gap-2 text-sm text-foreground">
                             <MapPin className="h-4 w-4 text-primary" />
                             <span>{driver.distance}</span>
                           </div>
                         </div>
                         
                         <Link href="/booking">
-                          <Button className="w-full bg-primary hover:bg-primary/90 hover:scale-[1.02] transition-all duration-300 text-black">
+                          <Button className="w-full bg-primary hover:bg-primary/90 hover:scale-[1.02] transition-all duration-300 text-primary-foreground">
                             <ArrowRight className="h-4 w-4 mr-2" />
                             {t("bookNow")}
                           </Button>
@@ -946,9 +946,9 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 className="text-center py-12"
               >
-                <Bus className="h-16 w-16 mx-auto mb-4 text-gray-500" />
-                <p className="text-xl text-gray-300 mb-2">No drivers available at the moment</p>
-                <p className="text-sm text-gray-400">Please check back later or try refreshing the page</p>
+                <Bus className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-xl text-foreground mb-2">No drivers available at the moment</p>
+                <p className="text-sm text-muted-foreground">Please check back later or try refreshing the page</p>
               </motion.div>
             )}
 
@@ -964,7 +964,7 @@ export default function Home() {
                   <Button 
                     size="lg" 
                     variant="outline" 
-                    className="hover:scale-105 transition-all duration-300 hover:border-primary/50 text-white border-primary/40 hover:bg-primary/10"
+                    className="hover:scale-105 transition-all duration-300 hover:border-primary/50 text-foreground border-primary/40 hover:bg-primary/10"
                   >
                     View All Available Drivers
                     <ArrowRight className="h-4 w-4 ml-2" />
@@ -976,7 +976,7 @@ export default function Home() {
         </section>
 
         {/* CTA Section */}
-        <section id="contact" className="py-20 bg-gradient-to-br from-primary/20 to-black relative overflow-hidden border-t border-zinc-800">
+        <section id="contact" className="py-20 bg-gradient-to-br from-primary/20 to-background relative overflow-hidden border-t border-border">
           <div className="container mx-auto px-4 text-center relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -985,7 +985,7 @@ export default function Home() {
               transition={{ duration: 0.8 }}
             >
               <motion.h2 
-                className="text-3xl md:text-5xl font-bold mb-6 text-white"
+                className="text-3xl md:text-5xl font-bold mb-6 text-heading"
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
@@ -993,7 +993,7 @@ export default function Home() {
                 {t("readyToStart")}
               </motion.h2>
               <motion.p 
-                className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto"
+                className="text-xl text-foreground mb-8 max-w-2xl mx-auto"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
@@ -1011,7 +1011,7 @@ export default function Home() {
                 <Link href="/booking">
                   <Button 
                     size="lg" 
-                    className="bg-primary hover:bg-primary/90 text-black text-lg px-12 hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-primary/50"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-12 hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-primary/50"
                   >
                     <ArrowRight className="h-5 w-5 mr-2" />
                     {t("bookYourRide")}
@@ -1021,7 +1021,7 @@ export default function Home() {
                   <Button 
                     size="lg" 
                     variant="outline" 
-                    className="text-lg px-12 hover:scale-105 transition-all duration-300 hover:border-primary/50 text-white border-primary/40 hover:bg-primary/10"
+                    className="text-lg px-12 hover:scale-105 transition-all duration-300 hover:border-primary/50 text-foreground border-primary/40 hover:bg-primary/10"
                   >
                     {t("viewPlans")}
                   </Button>

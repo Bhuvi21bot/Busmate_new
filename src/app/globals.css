@@ -1,3 +1,7 @@
+/* Updated: 2025-12-01T11:22:13.805Z */
+/* Updated: 2025-12-01T11:13:21.225Z */
+/* Updated: 2025-12-01T11:02:20.120Z */
+/* Updated: 2025-11-30T10:42:36.316Z */
 /* Updated: 2025-11-29T16:12:49.537Z */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
@@ -7,27 +11,27 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  /* Dark theme as default */
-  --color-background: oklch(0.08 0.01 170);
-  --color-foreground: oklch(0.95 0.01 170);
-  --color-card: oklch(0.12 0.015 170);
-  --color-card-foreground: oklch(0.98 0.01 170);
-  --color-popover: oklch(0.1 0.015 170);
-  --color-popover-foreground: oklch(0.98 0.01 170);
+  /* Dark black background with normal green text */
+  --color-background: oklch(0 0 0);
+  --color-foreground: oklch(0.65 0.15 145);
+  --color-card: oklch(0.05 0.01 145);
+  --color-card-foreground: oklch(0.65 0.15 145);
+  --color-popover: oklch(0.05 0.01 145);
+  --color-popover-foreground: oklch(0.65 0.15 145);
   --color-primary: oklch(0.7 0.2 155);
   --color-primary-foreground: oklch(0.05 0.01 170);
-  --color-secondary: oklch(0.15 0.015 170);
-  --color-secondary-foreground: oklch(0.98 0.01 170);
-  --color-muted: oklch(0.18 0.015 170);
-  --color-muted-foreground: oklch(0.7 0.01 170);
-  --color-accent: oklch(0.2 0.02 155);
-  --color-accent-foreground: oklch(0.98 0.01 170);
+  --color-secondary: oklch(0.08 0.015 145);
+  --color-secondary-foreground: oklch(0.65 0.15 145);
+  --color-muted: oklch(0.12 0.015 145);
+  --color-muted-foreground: oklch(0.55 0.12 145);
+  --color-accent: oklch(0.15 0.02 155);
+  --color-accent-foreground: oklch(0.65 0.15 145);
   --color-destructive: oklch(0.58 0.24 27);
-  --color-border: oklch(0.25 0.02 170);
-  --color-input: oklch(0.2 0.02 170);
+  --color-border: oklch(0.18 0.02 145);
+  --color-input: oklch(0.12 0.02 145);
   --color-ring: oklch(0.7 0.2 155);
-  --color-surface: oklch(0.1 0.015 170);
-  --color-heading: oklch(0.98 0.01 170);
+  --color-surface: oklch(0.05 0.015 145);
+  --color-heading: oklch(0.7 0.18 145);
   --radius-lg: 0.75rem;
   --radius-md: 0.625rem;
   --radius-sm: 0.5rem;
@@ -68,6 +72,34 @@
     --color-input: oklch(0.15 0 0 / 15%);
     --color-surface: oklch(0.97 0 0);
     --color-heading: oklch(0.1 0 0);
+  }
+
+  /* Blob animation */
+  @keyframes blob {
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+      transform: translate(30px, -50px) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
+  }
+
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-4000 {
+    animation-delay: 4s;
   }
 }
 
