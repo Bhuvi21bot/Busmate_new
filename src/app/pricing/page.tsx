@@ -1,162 +1,176 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "@/lib/auth-client"
-import { useCustomer } from "autumn-js/react"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
-import { PricingTable } from "@/components/autumn/pricing-table"
-import { Check, Zap, Shield, Clock, Star, Users, Gift, Phone } from "lucide-react"
+import { Check, Zap, Shield, Clock, Star } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import RazorpayCheckoutDialog from "@/components/autumn/razorpay-checkout-dialog"
+import { toast } from "sonner"
+
+interface PricingPlan {
+  id: string
+  name: string
+  price: number
+  description: string
+  features: string[]
+  recommended?: boolean
+}
 
 export default function PricingPage() {
-  const { data: session } = useSession()
+  const { data: session, isPending } = useSession()
   const router = useRouter()
-  const { customer, isLoading } = useCustomer()
+  const [activeSubscription, setActiveSubscription] = useState<string | null>(null)
+  const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false)
+  const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(null)
+  const [loadingSubscription, setLoadingSubscription] = useState(true)
 
-  // Redirect authenticated users with plan selection
-  useEffect(() => {
-    if (session && window.location.search.includes('plan=')) {
-      const planRedirect = new URLSearchParams(window.location.search).get('redirect')
-      if (!planRedirect) {
-        // User is authenticated and trying to select a plan
-        // Let them proceed
-      }
-    }
-  }, [session, router])
-
-  const productDetails = [
+  const pricingPlans: PricingPlan[] = [
     {
       id: "free",
+      name: "Free",
+      price: 0,
       description: "Perfect for occasional travelers testing our platform",
-      items: [
-        {
-          featureId: "bookings",
-          primaryText: "10 bookings per month",
-          secondaryText: "Book your rides with ease",
-        },
-        {
-          primaryText: "Standard route search",
-          secondaryText: "Find buses across all routes",
-        },
-        {
-          primaryText: "View schedules & fares",
-          secondaryText: "Real-time schedule information",
-        },
-        {
-          primaryText: "Email support",
-          secondaryText: "24-hour response time",
-        },
+      features: [
+        "10 bookings per month",
+        "Standard route search",
+        "View schedules & fares",
+        "Email support",
       ],
     },
     {
       id: "premium",
+      name: "Premium",
+      price: 1249,
       description: "Best for regular commuters who value convenience",
-      recommendText: "Most Popular",
-      price: {
-        primaryText: "₹1,249/month",
-        secondaryText: "billed monthly",
-      },
-      items: [
-        {
-          featureId: "bookings",
-          primaryText: "25 bookings per month",
-          secondaryText: "More trips for regular commuters",
-        },
-        {
-          featureId: "seat_selection",
-          primaryText: "Seat choice available",
-          secondaryText: "Choose your preferred seat",
-        },
-        {
-          featureId: "third_booking_discount",
-          primaryText: "10% discount on every 3rd booking",
-          secondaryText: "Save money on frequent trips",
-        },
-        {
-          featureId: "ad_free",
-          primaryText: "Ad-free experience",
-          secondaryText: "Clean, distraction-free interface",
-        },
-        {
-          featureId: "priority_booking",
-          primaryText: "Priority booking",
-          secondaryText: "Book before other passengers",
-        },
-        {
-          featureId: "real_time_tracking",
-          primaryText: "Real-time bus tracking",
-          secondaryText: "Live location updates",
-        },
-        {
-          featureId: "live_chat",
-          primaryText: "Live chat support",
-          secondaryText: "Instant help when you need it",
-        },
+      features: [
+        "25 bookings per month",
+        "Seat choice available",
+        "10% discount on every 3rd booking",
+        "Ad-free experience",
+        "Priority booking",
+        "Real-time bus tracking",
+        "Live chat support",
       ],
+      recommended: true,
     },
     {
       id: "super_premium",
+      name: "Super Premium",
+      price: 2499,
       description: "For frequent travelers who demand the best experience",
-      price: {
-        primaryText: "₹2,499/month",
-        secondaryText: "billed monthly",
-      },
-      items: [
-        {
-          featureId: "bookings",
-          primaryText: "Unlimited bookings",
-          secondaryText: "No monthly limits",
-        },
-        {
-          featureId: "multi_passenger",
-          primaryText: "Multiple bookings at a time",
-          secondaryText: "Book for up to 10 passengers",
-        },
-        {
-          featureId: "express_checkin",
-          primaryText: "Express check-in & fast boarding",
-          secondaryText: "Skip lines, save time",
-        },
-        {
-          primaryText: "Everything in Premium, plus:",
-          secondaryText: "",
-        },
-        {
-          featureId: "early_route_access",
-          primaryText: "Early access to new routes",
-          secondaryText: "Be the first to try new routes",
-        },
-        {
-          featureId: "concierge_service",
-          primaryText: "Concierge booking service",
-          secondaryText: "Personal booking assistance",
-        },
-        {
-          featureId: "loyalty_rewards",
-          primaryText: "Loyalty rewards & points",
-          secondaryText: "Earn rewards on every trip",
-        },
-        {
-          featureId: "flexible_cancellation",
-          primaryText: "Flexible cancellation",
-          secondaryText: "Full refund on cancellations",
-        },
-        {
-          featureId: "priority_phone",
-          primaryText: "Priority phone support",
-          secondaryText: "Direct line to our team",
-        },
-        {
-          featureId: "travel_insurance",
-          primaryText: "Travel insurance included",
-          secondaryText: "Peace of mind on every trip",
-        },
+      features: [
+        "Unlimited bookings",
+        "Multiple bookings at a time",
+        "Express check-in & fast boarding",
+        "Early access to new routes",
+        "Concierge booking service",
+        "Loyalty rewards & points",
+        "Flexible cancellation",
+        "Priority phone support",
+        "Travel insurance included",
       ],
     },
   ]
+
+  // Fetch active subscription
+  useEffect(() => {
+    const fetchActiveSubscription = async () => {
+      if (!session?.user) {
+        setLoadingSubscription(false)
+        return
+      }
+
+      try {
+        const token = localStorage.getItem("bearer_token")
+        const response = await fetch("/api/razorpay/subscriptions", {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          if (data.subscriptions && data.subscriptions.length > 0) {
+            // Get the most recent active subscription
+            setActiveSubscription(data.subscriptions[0].productId)
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch subscription:", error)
+      } finally {
+        setLoadingSubscription(false)
+      }
+    }
+
+    fetchActiveSubscription()
+  }, [session])
+
+  const handleSelectPlan = (plan: PricingPlan) => {
+    // Check authentication
+    if (!session?.user) {
+      if (!isPending) {
+        router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`)
+      }
+      return
+    }
+
+    // Free plan - no payment needed
+    if (plan.id === "free") {
+      toast.info("You're already on the Free plan!")
+      return
+    }
+
+    // Already subscribed
+    if (activeSubscription === plan.id) {
+      toast.info(`You're already subscribed to the ${plan.name} plan`)
+      return
+    }
+
+    // Open checkout dialog
+    setSelectedPlan(plan)
+    setCheckoutDialogOpen(true)
+  }
+
+  const handleManageBilling = async () => {
+    if (!session?.user) {
+      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`)
+      return
+    }
+
+    const token = localStorage.getItem("bearer_token")
+    try {
+      const res = await fetch("/api/billing-portal", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          returnUrl: window.location.href,
+        }),
+      })
+      const data = await res.json()
+      if (data?.url) {
+        const isInIframe = window.self !== window.top
+        if (isInIframe) {
+          window.parent?.postMessage({ type: "OPEN_EXTERNAL_URL", data: { url: data.url } }, "*")
+        } else {
+          window.open(data.url, "_blank", "noopener,noreferrer")
+        }
+      } else {
+        toast.info("Manage your subscription from your profile page")
+        router.push("/profile")
+      }
+    } catch (e) {
+      console.error(e)
+      toast.error("Failed to open billing portal")
+    }
+  }
 
   const features = [
     {
@@ -212,7 +226,7 @@ export default function PricingPage() {
               Flexible pricing for every traveler. Start free, upgrade anytime.
             </motion.p>
 
-            {!isLoading && session && (
+            {!loadingSubscription && session && activeSubscription && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -221,7 +235,7 @@ export default function PricingPage() {
               >
                 <Zap className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium text-white">
-                  Current Plan: <span className="text-primary">{customer?.products?.at(-1)?.name || "Free"}</span>
+                  Current Plan: <span className="text-primary">{pricingPlans.find(p => p.id === activeSubscription)?.name || "Free"}</span>
                 </span>
               </motion.div>
             )}
@@ -229,10 +243,68 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Pricing Table Section */}
+      {/* Pricing Cards Section */}
       <section className="py-12 bg-black">
         <div className="container mx-auto px-4">
-          <PricingTable productDetails={productDetails} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+            {pricingPlans.map((plan, index) => (
+              <motion.div
+                key={plan.id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className={`relative ${plan.recommended ? 'lg:-translate-y-6' : ''}`}
+              >
+                {plan.recommended && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+                    <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
+                      Most Popular
+                    </div>
+                  </div>
+                )}
+                <Card className={`h-full bg-zinc-900/80 backdrop-blur-sm border-zinc-800 hover:border-primary/50 transition-all duration-300 ${plan.recommended ? 'border-primary/50 shadow-lg shadow-primary/10' : ''}`}>
+                  <CardContent className="p-6 flex flex-col h-full">
+                    <div className="mb-4">
+                      <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
+                      <p className="text-sm text-gray-400 mb-4">{plan.description}</p>
+                      <div className="flex items-baseline gap-1 mb-4">
+                        <span className="text-4xl font-bold text-primary">₹{plan.price}</span>
+                        {plan.price > 0 && <span className="text-gray-400">/month</span>}
+                      </div>
+                    </div>
+
+                    <div className="flex-grow mb-6">
+                      <ul className="space-y-3">
+                        {plan.features.map((feature, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                            <span className="text-sm text-gray-300">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <Button
+                      onClick={() => 
+                        activeSubscription === plan.id 
+                          ? handleManageBilling() 
+                          : handleSelectPlan(plan)
+                      }
+                      variant={plan.recommended ? "default" : "outline"}
+                      disabled={loadingSubscription}
+                      className={`w-full ${plan.recommended ? 'bg-primary hover:bg-primary/90' : 'border-zinc-700 hover:border-primary/50 hover:bg-primary/10'}`}
+                    >
+                      {activeSubscription === plan.id
+                        ? "Manage Billing"
+                        : plan.id === "free"
+                        ? "Current Plan"
+                        : `Get ${plan.name}`}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -305,7 +377,7 @@ export default function PricingPage() {
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold mb-2 text-white">What payment methods do you accept?</h3>
                 <p className="text-gray-400">
-                  We accept all major credit cards, debit cards, and digital wallets through our secure payment processor.
+                  We accept all major credit cards, debit cards, UPI, and digital wallets through Razorpay.
                 </p>
               </CardContent>
             </Card>
@@ -332,6 +404,22 @@ export default function PricingPage() {
       </section>
 
       <Footer />
+
+      {/* Razorpay Checkout Dialog */}
+      {selectedPlan && (
+        <RazorpayCheckoutDialog
+          open={checkoutDialogOpen}
+          setOpen={setCheckoutDialogOpen}
+          productId={selectedPlan.id}
+          productName={selectedPlan.name}
+          amount={selectedPlan.price}
+          description={selectedPlan.description}
+          features={selectedPlan.features}
+          onSuccess={() => {
+            setActiveSubscription(selectedPlan.id)
+          }}
+        />
+      )}
     </div>
   )
 }
