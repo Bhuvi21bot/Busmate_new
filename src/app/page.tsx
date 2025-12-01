@@ -455,59 +455,62 @@ export default function Home() {
                           </div>
                         </div>
 
-                        {/* Stats */}
-                        <div className="grid grid-cols-3 gap-3 pt-4 border-t border-zinc-800">
-                          <div>
-                            <p className="text-xl font-bold text-primary">{currentCard.stats.rating}</p>
-                            <p className="text-xs text-gray-400">Rating</p>
+                        {/* Stats and Navigation */}
+                        <div>
+                          <div className="grid grid-cols-3 gap-3 pt-4 border-t border-zinc-800 mb-4">
+                            <div>
+                              <p className="text-xl font-bold text-primary">{currentCard.stats.rating}</p>
+                              <p className="text-xs text-gray-400">Rating</p>
+                            </div>
+                            <div>
+                              <p className="text-xl font-bold text-primary">{currentCard.stats.buses}</p>
+                              <p className="text-xs text-gray-400">Buses</p>
+                            </div>
+                            <div>
+                              <p className="text-xl font-bold text-primary">{currentCard.stats.onTime}</p>
+                              <p className="text-xs text-gray-400">On-Time</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-xl font-bold text-primary">{currentCard.stats.buses}</p>
-                            <p className="text-xs text-gray-400">Buses</p>
-                          </div>
-                          <div>
-                            <p className="text-xl font-bold text-primary">{currentCard.stats.onTime}</p>
-                            <p className="text-xs text-gray-400">On-Time</p>
+
+                          {/* Navigation buttons at bottom */}
+                          <div className="flex justify-between items-center gap-4">
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={prevCard}
+                              className="h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-black shadow-lg flex items-center justify-center backdrop-blur-sm transition-all duration-300"
+                            >
+                              <ChevronLeft className="h-5 w-5" />
+                            </motion.button>
+
+                            {/* Card indicators */}
+                            <div className="flex gap-2">
+                              {trackingCards.map((_, index) => (
+                                <button
+                                  key={index}
+                                  onClick={() => setCurrentTrackingCard(index)}
+                                  className={`h-2 rounded-full transition-all duration-300 ${
+                                    index === currentTrackingCard 
+                                      ? 'w-8 bg-primary' 
+                                      : 'w-2 bg-primary/30 hover:bg-primary/50'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={nextCard}
+                              className="h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-black shadow-lg flex items-center justify-center backdrop-blur-sm transition-all duration-300"
+                            >
+                              <ChevronRight className="h-5 w-5" />
+                            </motion.button>
                           </div>
                         </div>
                       </CardContent>
                     </Card>
                   </motion.div>
-
-                  {/* Navigation buttons */}
-                  <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 flex justify-between px-2 pointer-events-none">
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={prevCard}
-                      className="pointer-events-auto h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-black shadow-lg flex items-center justify-center backdrop-blur-sm transition-all duration-300"
-                    >
-                      <ChevronLeft className="h-5 w-5" />
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={nextCard}
-                      className="pointer-events-auto h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-black shadow-lg flex items-center justify-center backdrop-blur-sm transition-all duration-300"
-                    >
-                      <ChevronRight className="h-5 w-5" />
-                    </motion.button>
-                  </div>
-
-                  {/* Card indicators */}
-                  <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-                    {trackingCards.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentTrackingCard(index)}
-                        className={`h-2 rounded-full transition-all duration-300 ${
-                          index === currentTrackingCard 
-                            ? 'w-8 bg-primary' 
-                            : 'w-2 bg-primary/30 hover:bg-primary/50'
-                        }`}
-                      />
-                    ))}
-                  </div>
                 </div>
               </motion.div>
             </div>
