@@ -58,49 +58,27 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
-      const { error } = await authClient.signUp.email({
-        email: formData.email,
-        name: formData.name,
-        password: formData.password
-      })
-
-      // Handle any error response
-      if (error) {
-        const errorMap: Record<string, string> = {
-          USER_ALREADY_EXISTS: "This email is already registered. Please log in instead or use a different email."
-        }
-        
-        // Check if error has a code property
-        if (error.code) {
-          toast.error(errorMap[error.code] || "Registration failed. Please try again.")
-        } else if (error.message) {
-          // Handle error with message
-          toast.error(error.message.includes("already") 
-            ? "This email is already registered. Please log in instead or use a different email."
-            : error.message)
-        } else {
-          // Generic error
-          toast.error("Registration failed. This email may already be in use. Please try a different email or log in.")
-        }
-        
-        setIsLoading(false)
-        return
-      }
-
-      // Send OTP for email verification
+      // First, send OTP for email verification
       const otpResponse = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email }),
+        body: JSON.stringify({ email: formData.email, type: "register" }),
       })
 
-      if (!otpResponse.ok) {
-        toast.error("Failed to send verification code. Please try again.")
+      const otpData = await otpResponse.json()
+
+      if (!otpResponse.ok || !otpData.success) {
+        toast.error(otpData.error || "Failed to send verification code. Please try again.")
         setIsLoading(false)
         return
       }
 
-      toast.success("Account created! Please verify your email.")
+      // Show dev OTP in development
+      if (otpData.devOtp && process.env.NODE_ENV === 'development') {
+        toast.info(`Dev OTP: ${otpData.devOtp}`, { duration: 10000 })
+      }
+
+      toast.success("Verification code sent! Please check your email.")
       setRegisteredEmail(formData.email)
       setShowOTPVerification(true)
       setIsLoading(false)
@@ -111,9 +89,43 @@ export default function RegisterPage() {
     }
   }
 
-  const handleOTPSuccess = () => {
-    toast.success("Email verified successfully!")
-    router.push("/login?verified=true")
+  const handleOTPSuccess = async () => {
+    setIsLoading(true)
+    
+    try {
+      // After OTP verification, create the account
+      const { error } = await authClient.signUp.email({
+        email: formData.email,
+        name: formData.name,
+        password: formData.password
+      })
+
+      if (error) {
+        const errorMap: Record<string, string> = {
+          USER_ALREADY_EXISTS: "This email is already registered. Please log in instead."
+        }
+        
+        if (error.code) {
+          toast.error(errorMap[error.code] || "Registration failed. Please try again.")
+        } else if (error.message) {
+          toast.error(error.message.includes("already") 
+            ? "This email is already registered. Please log in instead."
+            : error.message)
+        } else {
+          toast.error("Registration failed. Please try logging in.")
+        }
+        
+        setIsLoading(false)
+        return
+      }
+
+      toast.success("Account created successfully!")
+      router.push("/login?registered=true")
+    } catch (error) {
+      console.error("Account creation error:", error)
+      toast.error("Failed to create account. Please try again.")
+      setIsLoading(false)
+    }
   }
 
   const handleBackToSignUp = () => {
@@ -136,6 +148,7 @@ export default function RegisterPage() {
         <div className="w-full max-w-md">
           <OTPVerification
             email={registeredEmail}
+            type="register"
             onSuccess={handleOTPSuccess}
             onBack={handleBackToSignUp}
           />
@@ -269,10 +282,10 @@ export default function RegisterPage() {
                 disabled={isLoading || !passwordMatch}
               >
                 {isLoading ? (
-                  "Creating account..."
+                  "Sending verification code..."
                 ) : (
                   <>
-                    Create Account
+                    Continue
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </>
                 )}

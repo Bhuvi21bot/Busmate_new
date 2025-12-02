@@ -1,282 +1,171 @@
-import { sqliteTable, integer, text, real } from 'drizzle-orm/sqlite-core';
+// Complete MySQL schema migration
+import { mysqlTable, int, varchar, text, timestamp, decimal, boolean, index } from 'drizzle-orm/mysql-core';
 
-// Add new tables for driver dashboard system
-export const drivers = sqliteTable('drivers', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  name: text('name').notNull(),
-  contact: text('contact').notNull(),
-  address: text('address').notNull(),
-  city: text('city').notNull(),
-  district: text('district').notNull(),
-  license: text('license').notNull().unique(),
-  vehicle: text('vehicle').notNull(),
-  bloodGroup: text('blood_group').notNull(),
-  email: text('email'),
-  fileName: text('file_name').notNull(),
-  fileType: text('file_type').notNull(),
-  status: text('status').notNull().default('pending'),
-  applicationNumber: text('application_number').notNull().unique(),
-  appliedDate: text('applied_date').notNull(),
-  approvedDate: text('approved_date'),
-  createdAt: text('created_at').notNull(),
-  updatedAt: text('updated_at').notNull(),
-});
-
-export const driverWallets = sqliteTable('driver_wallets', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  driverId: integer('driver_id').notNull().references(() => drivers.id),
-  totalEarnings: real('total_earnings').notNull().default(0),
-  pendingPayouts: real('pending_payouts').notNull().default(0),
-  lastPayoutAmount: real('last_payout_amount'),
-  lastPayoutDate: text('last_payout_date'),
-  status: text('status').notNull().default('active'),
-  createdAt: text('created_at').notNull(),
-  updatedAt: text('updated_at').notNull(),
-});
-
-export const driverRides = sqliteTable('driver_rides', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  driverId: integer('driver_id').notNull().references(() => drivers.id),
-  rideNumber: text('ride_number').notNull().unique(),
-  date: text('date').notNull(),
-  route: text('route').notNull(),
-  fare: real('fare').notNull(),
-  passengerCount: integer('passenger_count').notNull().default(1),
-  status: text('status').notNull().default('completed'),
-  createdAt: text('created_at').notNull(),
-});
-
-// Add new wallet_transactions table
-export const walletTransactions = sqliteTable('wallet_transactions', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  driverId: integer('driver_id').notNull().references(() => drivers.id),
-  walletId: integer('wallet_id').notNull().references(() => driverWallets.id),
-  type: text('type').notNull(),
-  amount: real('amount').notNull(),
-  balanceAfter: real('balance_after').notNull(),
-  description: text('description').notNull(),
-  referenceNumber: text('reference_number').unique(),
-  rideId: integer('ride_id').references(() => driverRides.id),
-  status: text('status').notNull().default('completed'),
-  createdAt: text('created_at').notNull(),
-});
-
-// Add new driver_settings table
-export const driverSettings = sqliteTable('driver_settings', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  driverId: integer('driver_id').notNull().unique().references(() => drivers.id),
-  notificationsEnabled: integer('notifications_enabled', { mode: 'boolean' }).default(true),
-  emailNotifications: integer('email_notifications', { mode: 'boolean' }).default(true),
-  smsNotifications: integer('sms_notifications', { mode: 'boolean' }).default(true),
-  autoAcceptRides: integer('auto_accept_rides', { mode: 'boolean' }).default(false),
-  availabilityStatus: text('availability_status').notNull().default('available'),
-  preferredRoutes: text('preferred_routes', { mode: 'json' }),
-  language: text('language').notNull().default('en'),
-  theme: text('theme').notNull().default('light'),
-  createdAt: text('created_at').notNull(),
-  updatedAt: text('updated_at').notNull(),
-});
-
-// Modify driver_reviews table to remove foreign key constraint on customer_id
-export const driverReviews = sqliteTable('driver_reviews', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  driverId: integer('driver_id').notNull().references(() => drivers.id),
-  customerId: text('customer_id').notNull(),
-  customerName: text('customer_name').notNull(),
-  rating: integer('rating').notNull(),
-  comment: text('comment'),
-  rideId: integer('ride_id').references(() => driverRides.id),
-  createdAt: text('created_at').notNull(),
-  updatedAt: text('updated_at').notNull(),
-});
-
-// Auth tables for better-auth
-export const user = sqliteTable("user", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  emailVerified: integer("email_verified", { mode: "boolean" })
-    .$defaultFn(() => false)
-    .notNull(),
+// Auth tables for better-auth (MySQL format)
+export const user = mysqlTable("user", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .$defaultFn(() => new Date())
-    .notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .$defaultFn(() => new Date())
-    .notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
 });
 
-export const session = sqliteTable("session", {
-  id: text("id").primaryKey(),
-  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-  token: text("token").notNull().unique(),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
-  ipAddress: text("ip_address"),
+export const session = mysqlTable("session", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  expiresAt: timestamp("expires_at").notNull(),
+  token: varchar("token", { length: 255 }).notNull().unique(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+  ipAddress: varchar("ip_address", { length: 45 }),
   userAgent: text("user_agent"),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+  userId: varchar("user_id", { length: 255 }).notNull().references(() => user.id, { onDelete: "cascade" }),
 });
 
-export const account = sqliteTable("account", {
-  id: text("id").primaryKey(),
-  accountId: text("account_id").notNull(),
-  providerId: text("provider_id").notNull(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+export const account = mysqlTable("account", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  accountId: varchar("account_id", { length: 255 }).notNull(),
+  providerId: varchar("provider_id", { length: 255 }).notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull().references(() => user.id, { onDelete: "cascade" }),
   accessToken: text("access_token"),
   refreshToken: text("refresh_token"),
   idToken: text("id_token"),
-  accessTokenExpiresAt: integer("access_token_expires_at", {
-    mode: "timestamp",
-  }),
-  refreshTokenExpiresAt: integer("refresh_token_expires_at", {
-    mode: "timestamp",
-  }),
+  accessTokenExpiresAt: timestamp("access_token_expires_at"),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
   scope: text("scope"),
   password: text("password"),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
 });
 
-export const verification = sqliteTable("verification", {
-  id: text("id").primaryKey(),
-  identifier: text("identifier").notNull(),
+export const verification = mysqlTable("verification", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  identifier: varchar("identifier", { length: 255 }).notNull(),
   value: text("value").notNull(),
-  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
-    () => new Date(),
-  ),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(
-    () => new Date(),
-  ),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
 });
 
-// Add new customer tables at the end
-export const customerProfiles = sqliteTable('customer_profiles', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: text('user_id').notNull().unique().references(() => user.id, { onDelete: 'cascade' }),
-  phone: text('phone'),
-  address: text('address'),
-  city: text('city'),
-  state: text('state'),
-  pincode: text('pincode'),
-  emergencyContact: text('emergency_contact'),
-  emergencyContactName: text('emergency_contact_name'),
-  createdAt: text('created_at').notNull(),
-  updatedAt: text('updated_at').notNull(),
-});
+// OTP verification table
+export const otpVerification = mysqlTable("otp_verification", {
+  id: int("id").primaryKey().autoincrement(),
+  email: varchar("email", { length: 255 }).notNull(),
+  otpCode: varchar("otp_code", { length: 6 }).notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  verified: boolean("verified").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  emailIdx: index("email_idx").on(table.email),
+}));
 
-export const customerWallets = sqliteTable('customer_wallets', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: text('user_id').notNull().unique().references(() => user.id, { onDelete: 'cascade' }),
-  balance: real('balance').notNull().default(0),
-  totalSpent: real('total_spent').notNull().default(0),
-  totalAdded: real('total_added').notNull().default(0),
-  status: text('status').notNull().default('active'),
-  createdAt: text('created_at').notNull(),
-  updatedAt: text('updated_at').notNull(),
-});
+// Drivers table (comprehensive)
+export const drivers = mysqlTable("drivers", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: varchar("user_id", { length: 255 }).notNull().unique().references(() => user.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }),
+  phone: varchar("phone", { length: 20 }).notNull(),
+  vehicleType: varchar("vehicle_type", { length: 50 }).notNull(),
+  vehicleNumber: varchar("vehicle_number", { length: 50 }).notNull().unique(),
+  licenseNumber: varchar("license_number", { length: 100 }).notNull().unique(),
+  licenseImage: text("license_image"),
+  vehicleImage: text("vehicle_image"),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  rating: decimal("rating", { precision: 3, scale: 2 }).default("0.00"),
+  totalRides: int("total_rides").notNull().default(0),
+  verificationStatus: varchar("verification_status", { length: 20 }).notNull().default("pending"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+}, (table) => ({
+  userIdIdx: index("user_id_idx").on(table.userId),
+  statusIdx: index("status_idx").on(table.status),
+}));
 
-export const customerWalletTransactions = sqliteTable('customer_wallet_transactions', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
-  walletId: integer('wallet_id').notNull().references(() => customerWallets.id, { onDelete: 'cascade' }),
-  type: text('type').notNull(),
-  amount: real('amount').notNull(),
-  balanceBefore: real('balance_before').notNull(),
-  balanceAfter: real('balance_after').notNull(),
-  description: text('description').notNull(),
-  referenceNumber: text('reference_number').notNull().unique(),
-  bookingId: integer('booking_id'),
-  paymentMethod: text('payment_method'),
-  status: text('status').notNull().default('completed'),
-  createdAt: text('created_at').notNull(),
-});
+// Bookings table
+export const bookings = mysqlTable("bookings", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: varchar("user_id", { length: 255 }).notNull().references(() => user.id, { onDelete: "cascade" }),
+  driverId: int("driver_id").references(() => drivers.id),
+  pickupLocation: varchar("pickup_location", { length: 500 }).notNull(),
+  dropLocation: varchar("drop_location", { length: 500 }).notNull(),
+  pickupTime: timestamp("pickup_time").notNull(),
+  fare: decimal("fare", { precision: 10, scale: 2 }).notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  seats: int("seats").notNull().default(1),
+  paymentStatus: varchar("payment_status", { length: 20 }).notNull().default("pending"),
+  paymentId: varchar("payment_id", { length: 255 }),
+  orderId: varchar("order_id", { length: 255 }),
+  confirmationCode: varchar("confirmation_code", { length: 50 }),
+  vehicleType: varchar("vehicle_type", { length: 50 }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+}, (table) => ({
+  userIdIdx: index("user_id_idx").on(table.userId),
+  driverIdIdx: index("driver_id_idx").on(table.driverId),
+  statusIdx: index("status_idx").on(table.status),
+}));
 
-export const customerSettings = sqliteTable('customer_settings', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: text('user_id').notNull().unique().references(() => user.id, { onDelete: 'cascade' }),
-  notificationsEnabled: integer('notifications_enabled', { mode: 'boolean' }).notNull().default(true),
-  emailNotifications: integer('email_notifications', { mode: 'boolean' }).notNull().default(true),
-  smsNotifications: integer('sms_notifications', { mode: 'boolean' }).notNull().default(true),
-  rideReminders: integer('ride_reminders', { mode: 'boolean' }).notNull().default(true),
-  promotionalEmails: integer('promotional_emails', { mode: 'boolean' }).notNull().default(false),
-  language: text('language').notNull().default('en'),
-  theme: text('theme').notNull().default('light'),
-  createdAt: text('created_at').notNull(),
-  updatedAt: text('updated_at').notNull(),
-});
+// Vehicles table
+export const vehicles = mysqlTable("vehicles", {
+  id: int("id").primaryKey().autoincrement(),
+  driverId: int("driver_id").notNull().references(() => drivers.id, { onDelete: "cascade" }),
+  type: varchar("type", { length: 50 }).notNull(),
+  number: varchar("number", { length: 50 }).notNull().unique(),
+  model: varchar("model", { length: 100 }).notNull(),
+  capacity: int("capacity").notNull(),
+  image: text("image"),
+  status: varchar("status", { length: 20 }).notNull().default("available"),
+  locationLat: decimal("location_lat", { precision: 10, scale: 7 }),
+  locationLng: decimal("location_lng", { precision: 10, scale: 7 }),
+  currentRoute: varchar("current_route", { length: 255 }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+}, (table) => ({
+  driverIdIdx: index("driver_id_idx").on(table.driverId),
+  statusIdx: index("status_idx").on(table.status),
+}));
 
-// Add new bus booking system tables at the end
+// Wallet table
+export const wallets = mysqlTable("wallets", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: varchar("user_id", { length: 255 }).notNull().unique().references(() => user.id, { onDelete: "cascade" }),
+  balance: decimal("balance", { precision: 10, scale: 2 }).notNull().default("0.00"),
+  currency: varchar("currency", { length: 3 }).notNull().default("INR"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+}, (table) => ({
+  userIdIdx: index("user_id_idx").on(table.userId),
+}));
 
-export const bookings = sqliteTable('bookings', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
-  pickup: text('pickup').notNull(),
-  dropoff: text('dropoff').notNull(),
-  vehicleType: text('vehicle_type').notNull(),
-  datetime: text('datetime').notNull(),
-  passengers: integer('passengers').notNull(),
-  seats: text('seats', { mode: 'json' }).notNull(),
-  fare: real('fare').notNull(),
-  paymentId: text('payment_id'),
-  orderId: text('order_id'),
-  status: text('status').notNull().default('confirmed'),
-  paymentStatus: text('payment_status').notNull().default('paid'),
-  confirmationCode: text('confirmation_code').notNull(),
-  createdAt: text('created_at').notNull(),
-  updatedAt: text('updated_at').notNull(),
-});
+// Wallet transactions table
+export const walletTransactions = mysqlTable("wallet_transactions", {
+  id: int("id").primaryKey().autoincrement(),
+  walletId: int("wallet_id").notNull().references(() => wallets.id, { onDelete: "cascade" }),
+  userId: varchar("user_id", { length: 255 }).notNull().references(() => user.id, { onDelete: "cascade" }),
+  type: varchar("type", { length: 20 }).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  balanceAfter: decimal("balance_after", { precision: 10, scale: 2 }).notNull(),
+  description: text("description").notNull(),
+  referenceId: varchar("reference_id", { length: 255 }),
+  status: varchar("status", { length: 20 }).notNull().default("completed"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  walletIdIdx: index("wallet_id_idx").on(table.walletId),
+  userIdIdx: index("user_id_idx").on(table.userId),
+}));
 
-export const vehicles = sqliteTable('vehicles', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  vehicleNumber: text('vehicle_number').notNull().unique(),
-  vehicleType: text('vehicle_type').notNull(),
-  capacity: integer('capacity').notNull(),
-  driverId: text('driver_id'),
-  status: text('status').notNull().default('active'),
-  currentRoute: text('current_route'),
-  locationLat: real('location_lat'),
-  locationLng: real('location_lng'),
-  createdAt: text('created_at').notNull(),
-  updatedAt: text('updated_at').notNull(),
-});
-
-export const driversNew = sqliteTable('drivers_new', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: text('user_id').notNull().unique().references(() => user.id, { onDelete: 'cascade' }),
-  licenseNumber: text('license_number').notNull().unique(),
-  phone: text('phone').notNull(),
-  experienceYears: integer('experience_years').notNull(),
-  rating: real('rating').notNull().default(0.0),
-  totalTrips: integer('total_trips').notNull().default(0),
-  status: text('status').notNull().default('available'),
-  verificationStatus: text('verification_status').notNull().default('pending'),
-  createdAt: text('created_at').notNull(),
-  updatedAt: text('updated_at').notNull(),
-});
-
-export const walletTransactionsNew = sqliteTable('wallet_transactions_new', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
-  type: text('type').notNull(),
-  amount: real('amount').notNull(),
-  balanceAfter: real('balance_after').notNull(),
-  description: text('description').notNull(),
-  referenceId: text('reference_id'),
-  createdAt: text('created_at').notNull(),
-});
-
-export const reviews = sqliteTable('reviews', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
-  driverId: integer('driver_id').references(() => driversNew.id),
-  bookingId: integer('booking_id').notNull().references(() => bookings.id),
-  rating: integer('rating').notNull(),
-  comment: text('comment'),
-  createdAt: text('created_at').notNull(),
-});
+// Reviews table
+export const reviews = mysqlTable("reviews", {
+  id: int("id").primaryKey().autoincrement(),
+  bookingId: int("booking_id").notNull().references(() => bookings.id, { onDelete: "cascade" }),
+  userId: varchar("user_id", { length: 255 }).notNull().references(() => user.id, { onDelete: "cascade" }),
+  driverId: int("driver_id").references(() => drivers.id),
+  rating: int("rating").notNull(),
+  comment: text("comment"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  bookingIdIdx: index("booking_id_idx").on(table.bookingId),
+  driverIdIdx: index("driver_id_idx").on(table.driverId),
+}));

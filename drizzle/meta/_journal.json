@@ -50,6 +50,13 @@
       "when": 1764395471555,
       "tag": "0006_quiet_pandemic",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1764673961937,
+      "tag": "0007_simple_orphan",
+      "breakpoints": true
     }
   ]
 }
