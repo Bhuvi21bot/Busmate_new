@@ -57,17 +57,23 @@ export default function LoginPage() {
         callbackURL: redirect
       })
 
-      if (error) {
-        toast.error("Invalid email or password. Please try again.")
+      if (error?.code) {
+        toast.error("Invalid email or password. Please make sure you have registered and try again.")
+        setIsLoading(false)
         return
       }
 
       toast.success("Login successful!")
       router.push(redirect)
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error)
-      toast.error("An unexpected error occurred. Please try again.")
-    } finally {
+      
+      // Check if it's a network/server error
+      if (error.message?.includes('fetch') || error.message?.includes('network')) {
+        toast.error("Unable to connect to server. Please check your connection and try again.")
+      } else {
+        toast.error("Login failed. Please check your credentials and try again.")
+      }
       setIsLoading(false)
     }
   }
