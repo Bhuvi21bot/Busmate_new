@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { otpVerification } from '@/db/schema';
-import { eq, and, gt } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
+import { sendOTPEmail } from '@/lib/emails/send-email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,19 +46,37 @@ export async function POST(request: NextRequest) {
       verified: false,
     });
 
-    // TODO: Send email with OTP using a service like Resend, SendGrid, etc.
-    // For now, we'll just log it (in production, remove this and send actual email)
-    console.log(`OTP for ${email}: ${otpCode}`);
+    // Send email with OTP
+    try {
+      await sendOTPEmail({
+        to: email,
+        otpCode,
+        type,
+      });
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: `OTP sent to ${email}. Please check your email.`,
-        // Remove this in production:
-        devOtp: process.env.NODE_ENV === 'development' ? otpCode : undefined,
-      },
-      { status: 200 }
-    );
+      return NextResponse.json(
+        {
+          success: true,
+          message: `Verification code sent to ${email}. Please check your email.`,
+          // Only show OTP in development mode
+          devOtp: process.env.NODE_ENV === 'development' ? otpCode : undefined,
+        },
+        { status: 200 }
+      );
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      
+      // Still return success but with dev OTP for development
+      return NextResponse.json(
+        {
+          success: true,
+          message: 'Verification code generated. Check console in development.',
+          devOtp: process.env.NODE_ENV === 'development' ? otpCode : undefined,
+          emailWarning: 'Email service unavailable. Using fallback method.',
+        },
+        { status: 200 }
+      );
+    }
   } catch (error) {
     console.error('Send OTP error:', error);
     return NextResponse.json(

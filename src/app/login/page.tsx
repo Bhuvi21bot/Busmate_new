@@ -33,10 +33,13 @@ export default function LoginPage() {
     }
   }, [session, isPending, router, searchParams])
 
-  // Show registration success message
+  // Show success messages
   useEffect(() => {
     if (searchParams.get("registered") === "true") {
       toast.success("Account created successfully! Please log in.")
+    }
+    if (searchParams.get("verified") === "true") {
+      toast.success("Email verified successfully! You can now log in.")
     }
   }, [searchParams])
 
@@ -54,16 +57,17 @@ export default function LoginPage() {
         callbackURL: redirect
       })
 
-      if (error?.code) {
-        toast.error("Invalid email or password. Please make sure you have already registered an account and try again.")
-        setIsLoading(false)
+      if (error) {
+        toast.error("Invalid email or password. Please try again.")
         return
       }
 
       toast.success("Login successful!")
       router.push(redirect)
     } catch (error) {
+      console.error("Login error:", error)
       toast.error("An unexpected error occurred. Please try again.")
+    } finally {
       setIsLoading(false)
     }
   }
