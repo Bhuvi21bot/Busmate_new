@@ -132,7 +132,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const handleSetLanguage = (lang: Language) => {
     setLanguage(lang)
-    localStorage.setItem("language", lang)
+    if (mounted) {
+      localStorage.setItem("language", lang)
+    }
   }
 
   const toggleLanguage = () => {
@@ -142,11 +144,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const t = (key: string): string => {
     return translations[language][key] || key
-  }
-
-  // Prevent flash during hydration
-  if (!mounted) {
-    return <>{children}</>
   }
 
   return (

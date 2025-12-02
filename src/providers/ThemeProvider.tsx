@@ -37,7 +37,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const handleSetTheme = (newTheme: Theme) => {
     setTheme(newTheme)
-    localStorage.setItem("theme", newTheme)
+    if (mounted) {
+      localStorage.setItem("theme", newTheme)
+    }
     
     // Apply theme class to document
     if (newTheme === "dark") {
@@ -52,11 +54,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark"
     handleSetTheme(newTheme)
-  }
-
-  // Prevent flash of wrong theme
-  if (!mounted) {
-    return <>{children}</>
   }
 
   return (
