@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body className="antialiased">
         <ErrorReporter />
         <Script
@@ -37,7 +37,7 @@ export default function RootLayout({
           data-debug="true"
           data-custom-data='{"appName": "YourApp", "version": "1.0.0", "greeting": "hi"}'
         />
-        <ThemeProvider defaultTheme="dark">
+        <ThemeProvider>
           <LanguageProvider>
             <CustomAutumnProvider>
               {children}

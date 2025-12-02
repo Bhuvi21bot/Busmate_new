@@ -118,8 +118,12 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>("en")
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+    
+    // Read saved language from localStorage
     const savedLang = localStorage.getItem("language") as Language | null
     if (savedLang) {
       setLanguage(savedLang)
@@ -138,6 +142,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const t = (key: string): string => {
     return translations[language][key] || key
+  }
+
+  // Prevent flash during hydration
+  if (!mounted) {
+    return <>{children}</>
   }
 
   return (
