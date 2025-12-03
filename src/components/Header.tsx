@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { Menu, X, User, Wallet, MapPin, LogOut, LogIn, UserPlus, Moon, Sun, Languages, Settings, UserCircle } from "lucide-react"
-import { authClient, useSession } from "@/lib/auth-client"
+import { Menu, X, User, Wallet, MapPin, Moon, Sun, Languages, Settings, UserCircle } from "lucide-react"
+import { useSession } from "@/lib/auth-client"
 import { useTheme } from "@/providers/ThemeProvider"
 import { useLanguage } from "@/providers/LanguageProvider"
 import { Button } from "@/components/ui/button"
@@ -18,11 +18,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { toast } from "sonner"
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { data: session, isPending, refetch } = useSession()
+  const { data: session, isPending } = useSession()
   const { theme, toggleTheme } = useTheme()
   const { language, toggleLanguage, t } = useLanguage()
   const router = useRouter()
@@ -34,27 +33,6 @@ export default function Header() {
     { label: t("liveTracking"), href: "/tracking" },
     { label: t("contact"), href: "/#contact" },
   ]
-
-  const handleSignOut = async () => {
-    const token = localStorage.getItem("bearer_token")
-
-    const { error } = await authClient.signOut({
-      fetchOptions: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    })
-
-    if (error?.code) {
-      toast.error("Failed to sign out. Please try again.")
-    } else {
-      localStorage.removeItem("bearer_token")
-      refetch()
-      toast.success("Signed out successfully")
-      router.push("/")
-    }
-  }
 
   return (
     <motion.header
@@ -197,11 +175,6 @@ export default function Header() {
                       {t("trackMyRide")}
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive focus:text-destructive">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    {t("signOut")}
-                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -211,22 +184,7 @@ export default function Header() {
                 </Button>
               </Link>
             </>
-          ) : (
-            <>
-              <Link href="/login">
-                <Button variant="ghost" size="sm">
-                  <LogIn className="mr-2 h-4 w-4" />
-                  {t("login")}
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button className="bg-primary hover:bg-primary/90" size="sm">
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  {t("signUp")}
-                </Button>
-              </Link>
-            </>
-          )}
+          ) : null}
         </div>
 
         {/* Mobile Menu Button */}
@@ -333,34 +291,8 @@ export default function Header() {
                   <Link href="/booking" onClick={() => setMobileMenuOpen(false)}>
                     <Button className="w-full bg-primary">{t("bookNow")}</Button>
                   </Link>
-                  <Button 
-                    variant="destructive" 
-                    className="w-full"
-                    onClick={() => {
-                      setMobileMenuOpen(false)
-                      handleSignOut()
-                    }}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    {t("signOut")}
-                  </Button>
                 </>
-              ) : (
-                <>
-                  <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="outline" className="w-full">
-                      <LogIn className="mr-2 h-4 w-4" />
-                      {t("login")}
-                    </Button>
-                  </Link>
-                  <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
-                    <Button className="w-full bg-primary">
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      {t("signUp")}
-                    </Button>
-                  </Link>
-                </>
-              )}
+              ) : null}
             </nav>
           </motion.div>
         )}
