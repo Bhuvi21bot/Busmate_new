@@ -12,14 +12,11 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 import PageLoader from "@/components/PageLoader"
-import { OTPVerification } from "@/components/OTPVerification"
 
 export default function RegisterPage() {
   const router = useRouter()
   const { data: session, isPending } = useSession()
   const [isLoading, setIsLoading] = useState(false)
-  const [showOTPVerification, setShowOTPVerification] = useState(false)
-  const [registeredEmail, setRegisteredEmail] = useState("")
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -58,42 +55,6 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
-      // First, send OTP for email verification
-      const otpResponse = await fetch("/api/auth/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email, type: "register" }),
-      })
-
-      const otpData = await otpResponse.json()
-
-      if (!otpResponse.ok || !otpData.success) {
-        toast.error(otpData.error || "Failed to send verification code. Please try again.")
-        setIsLoading(false)
-        return
-      }
-
-      // Show dev OTP in development
-      if (otpData.devOtp && process.env.NODE_ENV === 'development') {
-        toast.info(`Dev OTP: ${otpData.devOtp}`, { duration: 10000 })
-      }
-
-      toast.success("Verification code sent! Please check your email.")
-      setRegisteredEmail(formData.email)
-      setShowOTPVerification(true)
-      setIsLoading(false)
-    } catch (error) {
-      console.error("Registration error:", error)
-      toast.error("An unexpected error occurred. Please try again.")
-      setIsLoading(false)
-    }
-  }
-
-  const handleOTPSuccess = async () => {
-    setIsLoading(true)
-    
-    try {
-      // After OTP verification, create the account
       const { error } = await authClient.signUp.email({
         email: formData.email,
         name: formData.name,
@@ -101,20 +62,11 @@ export default function RegisterPage() {
       })
 
       if (error) {
-        const errorMap: Record<string, string> = {
-          USER_ALREADY_EXISTS: "This email is already registered. Please log in instead."
-        }
-        
-        if (error.code) {
-          toast.error(errorMap[error.code] || "Registration failed. Please try again.")
-        } else if (error.message) {
-          toast.error(error.message.includes("already") 
-            ? "This email is already registered. Please log in instead."
-            : error.message)
+        if (error.message?.includes("already")) {
+          toast.error("This email is already registered. Please log in instead.")
         } else {
-          toast.error("Registration failed. Please try logging in.")
+          toast.error("Registration failed. Please try again.")
         }
-        
         setIsLoading(false)
         return
       }
@@ -122,15 +74,10 @@ export default function RegisterPage() {
       toast.success("Account created successfully!")
       router.push("/login?registered=true")
     } catch (error) {
-      console.error("Account creation error:", error)
-      toast.error("Failed to create account. Please try again.")
+      console.error("Registration error:", error)
+      toast.error("An unexpected error occurred. Please try again.")
       setIsLoading(false)
     }
-  }
-
-  const handleBackToSignUp = () => {
-    setShowOTPVerification(false)
-    setRegisteredEmail("")
   }
 
   if (isPending) {
@@ -141,23 +88,6 @@ export default function RegisterPage() {
     return null
   }
 
-  // Show OTP verification screen
-  if (showOTPVerification && registeredEmail) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 via-background to-background p-4">
-        <div className="w-full max-w-md">
-          <OTPVerification
-            email={registeredEmail}
-            type="register"
-            onSuccess={handleOTPSuccess}
-            onBack={handleBackToSignUp}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  // Show registration form
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 via-background to-background p-4">
       <motion.div
@@ -282,10 +212,10 @@ export default function RegisterPage() {
                 disabled={isLoading || !passwordMatch}
               >
                 {isLoading ? (
-                  "Sending verification code..."
+                  "Creating account..."
                 ) : (
                   <>
-                    Continue
+                    Create Account
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </>
                 )}
