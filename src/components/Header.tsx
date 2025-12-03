@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { Menu, X, User, Wallet, MapPin, Moon, Sun, Languages, Settings, UserCircle } from "lucide-react"
+import { Menu, X, User, Wallet, MapPin, Moon, Sun, Languages, Settings, UserCircle, Star } from "lucide-react"
 import { useSession } from "@/lib/auth-client"
 import { useTheme } from "@/providers/ThemeProvider"
 import { useLanguage } from "@/providers/LanguageProvider"
@@ -120,71 +120,59 @@ export default function Header() {
             </span>
           </Button>
 
-          {isPending ? (
-            <div className="h-9 w-24 bg-muted/50 animate-pulse rounded-md" />
-          ) : session?.user ? (
-            <>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative">
-                    <UserCircle className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64">
-                  <DropdownMenuLabel>
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{session.user.name}</p>
-                      <p className="text-xs text-muted-foreground leading-none">{session.user.email}</p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground uppercase">
-                    {t("myAccount")}
-                  </DropdownMenuLabel>
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      {t("personalDetails")}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile?tab=wallet" className="cursor-pointer">
-                      <Wallet className="mr-2 h-4 w-4" />
-                      {t("myWallet")}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile?tab=settings" className="cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" />
-                      {t("settings")}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground uppercase">
-                    Quick Links
-                  </DropdownMenuLabel>
-                  <DropdownMenuItem asChild>
-                    <Link href="/driver-dashboard" className="cursor-pointer">
-                      <MapPin className="mr-2 h-4 w-4" />
-                      {t("driverDashboard")}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/tracking" className="cursor-pointer">
-                      <MapPin className="mr-2 h-4 w-4" />
-                      {t("trackMyRide")}
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+          {/* Profile/Account Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative hover:bg-accent">
+                <UserCircle className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">
+                    {session?.user?.name || "Guest User"}
+                  </p>
+                  {session?.user?.email && (
+                    <p className="text-xs text-muted-foreground leading-none">
+                      {session.user.email}
+                    </p>
+                  )}
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/profile?tab=settings" className="cursor-pointer">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/profile?tab=reviews" className="cursor-pointer">
+                  <Star className="mr-2 h-4 w-4" />
+                  Reviews
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/profile?tab=wallet" className="cursor-pointer">
+                  <Wallet className="mr-2 h-4 w-4" />
+                  My Wallet
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/profile" className="cursor-pointer">
+                  <User className="mr-2 h-4 w-4" />
+                  My Info
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-              <Link href="/booking">
-                <Button className="bg-primary hover:bg-primary/90">
-                  {t("bookNow")}
-                </Button>
-              </Link>
-            </>
-          ) : null}
+          <Link href="/booking">
+            <Button className="bg-primary hover:bg-primary/90">
+              {t("bookNow")}
+            </Button>
+          </Link>
         </div>
 
         {/* Mobile Menu Button */}
@@ -248,51 +236,53 @@ export default function Header() {
                 </Button>
               </div>
               
-              {isPending ? (
-                <div className="h-9 w-full bg-muted/50 animate-pulse rounded-md" />
-              ) : session?.user ? (
-                <>
-                  <div className="pt-2 border-t border-border/40">
-                    <p className="text-xs text-muted-foreground mb-1">Signed in as</p>
-                    <p className="text-sm font-medium">{session.user.name}</p>
-                    <p className="text-xs text-muted-foreground">{session.user.email}</p>
-                  </div>
-                  
-                  <div className="pt-2 border-t border-border/40">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">{t("myAccount")}</p>
-                    <div className="space-y-2">
-                      <Link href="/profile" onClick={() => setMobileMenuOpen(false)}>
-                        <Button variant="outline" className="w-full justify-start">
-                          <User className="mr-2 h-4 w-4" />
-                          {t("personalDetails")}
-                        </Button>
-                      </Link>
-                      <Link href="/profile?tab=wallet" onClick={() => setMobileMenuOpen(false)}>
-                        <Button variant="outline" className="w-full justify-start">
-                          <Wallet className="mr-2 h-4 w-4" />
-                          {t("myWallet")}
-                        </Button>
-                      </Link>
-                      <Link href="/profile?tab=settings" onClick={() => setMobileMenuOpen(false)}>
-                        <Button variant="outline" className="w-full justify-start">
-                          <Settings className="mr-2 h-4 w-4" />
-                          {t("settings")}
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-
-                  <Link href="/driver-dashboard" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="outline" className="w-full">
-                      <MapPin className="mr-2 h-4 w-4" />
-                      {t("driverDashboard")}
+              <div className="pt-2 border-t border-border/40">
+                <p className="text-xs text-muted-foreground mb-1">Account</p>
+                <p className="text-sm font-medium">{session?.user?.name || "Guest User"}</p>
+                {session?.user?.email && (
+                  <p className="text-xs text-muted-foreground">{session.user.email}</p>
+                )}
+              </div>
+              
+              <div className="pt-2 border-t border-border/40">
+                <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">My Account</p>
+                <div className="space-y-2">
+                  <Link href="/profile?tab=settings" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
                     </Button>
                   </Link>
-                  <Link href="/booking" onClick={() => setMobileMenuOpen(false)}>
-                    <Button className="w-full bg-primary">{t("bookNow")}</Button>
+                  <Link href="/profile?tab=reviews" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Star className="mr-2 h-4 w-4" />
+                      Reviews
+                    </Button>
                   </Link>
-                </>
-              ) : null}
+                  <Link href="/profile?tab=wallet" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Wallet className="mr-2 h-4 w-4" />
+                      My Wallet
+                    </Button>
+                  </Link>
+                  <Link href="/profile" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full justify-start">
+                      <User className="mr-2 h-4 w-4" />
+                      My Info
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              <Link href="/driver-dashboard" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="outline" className="w-full">
+                  <MapPin className="mr-2 h-4 w-4" />
+                  {t("driverDashboard")}
+                </Button>
+              </Link>
+              <Link href="/booking" onClick={() => setMobileMenuOpen(false)}>
+                <Button className="w-full bg-primary">{t("bookNow")}</Button>
+              </Link>
             </nav>
           </motion.div>
         )}
