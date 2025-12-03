@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { walletTransactionsNew } from '@/db/schema';
+import { walletTransactions } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 
@@ -21,9 +21,9 @@ export async function GET(request: NextRequest) {
 
     const transactions = await db
       .select()
-      .from(walletTransactionsNew)
-      .where(eq(walletTransactionsNew.userId, userId))
-      .orderBy(desc(walletTransactionsNew.createdAt));
+      .from(walletTransactions)
+      .where(eq(walletTransactions.userId, userId))
+      .orderBy(desc(walletTransactions.createdAt));
 
     if (transactions.length === 0) {
       return NextResponse.json({

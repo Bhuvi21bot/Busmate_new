@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { reviews, bookings, driversNew } from '@/db/schema';
+import { reviews, bookings, drivers } from '@/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 
@@ -155,8 +155,8 @@ export async function POST(request: NextRequest) {
       // Verify driver exists
       const driver = await db
         .select()
-        .from(driversNew)
-        .where(eq(driversNew.id, driverIdNum))
+        .from(drivers)
+        .where(eq(drivers.id, driverIdNum))
         .limit(1);
 
       if (driver.length === 0) {

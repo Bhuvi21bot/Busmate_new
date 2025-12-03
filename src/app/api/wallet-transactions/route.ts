@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { walletTransactionsNew } from '@/db/schema';
+import { walletTransactions } from '@/db/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 
@@ -21,22 +21,22 @@ export async function GET(request: NextRequest) {
     const typeFilter = searchParams.get('type');
 
     let query = db.select()
-      .from(walletTransactionsNew)
-      .where(eq(walletTransactionsNew.userId, session.user.id))
-      .orderBy(desc(walletTransactionsNew.createdAt))
+      .from(walletTransactions)
+      .where(eq(walletTransactions.userId, session.user.id))
+      .orderBy(desc(walletTransactions.createdAt))
       .limit(limit)
       .offset(offset);
 
     if (typeFilter && (typeFilter === 'credit' || typeFilter === 'debit')) {
       query = db.select()
-        .from(walletTransactionsNew)
+        .from(walletTransactions)
         .where(
           and(
-            eq(walletTransactionsNew.userId, session.user.id),
-            eq(walletTransactionsNew.type, typeFilter)
+            eq(walletTransactions.userId, session.user.id),
+            eq(walletTransactions.type, typeFilter)
           )
         )
-        .orderBy(desc(walletTransactionsNew.createdAt))
+        .orderBy(desc(walletTransactions.createdAt))
         .limit(limit)
         .offset(offset);
     }
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const newTransaction = await db.insert(walletTransactionsNew)
+    const newTransaction = await db.insert(walletTransactions)
       .values({
         userId: session.user.id,
         type,
