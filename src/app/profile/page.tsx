@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
 import { User, Wallet, Settings, Edit, Save, X, Loader2, Bell, Mail, Smartphone, Plus, Download, ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, FileText, Bus, Star, MessageSquare, ThumbsUp, MapPin, Calendar, Ticket, XCircle } from "lucide-react"
-import { useSession } from "@/lib/auth-client"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import ClickSpark from "@/components/ClickSpark"
@@ -19,7 +18,6 @@ import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { toast } from "sonner"
-import PageLoader from "@/components/PageLoader"
 
 // Razorpay types
 declare global {
@@ -110,7 +108,6 @@ interface Review {
 export default function ProfilePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { data: session, isPending } = useSession()
 
   const [activeTab, setActiveTab] = useState("profile")
   const [profile, setProfile] = useState<CustomerProfile | null>(null)
@@ -166,13 +163,6 @@ export default function ProfilePage() {
     }
   }, [searchParams])
 
-  // Protect route - redirect to login if not authenticated
-  useEffect(() => {
-    if (!isPending && !session?.user) {
-      router.push("/login?redirect=/profile")
-    }
-  }, [session, isPending, router])
-
   // Load Razorpay checkout script
   useEffect(() => {
     const script = document.createElement("script")
@@ -194,27 +184,15 @@ export default function ProfilePage() {
     }
   }, [])
 
-  // Fetch all data when session is ready
+  // Fetch data on component mount (no auth required)
   useEffect(() => {
-    if (session?.user) {
-      fetchProfile()
-      fetchWalletBalance()
-      fetchTransactions()
-      fetchBookings()
-      fetchSettings()
-      fetchReviews()
-    }
-  }, [session])
-
-  // Show loading while checking auth
-  if (isPending) {
-    return <PageLoader />
-  }
-
-  // Don't render if not authenticated
-  if (!session?.user) {
-    return null
-  }
+    fetchProfile()
+    fetchWalletBalance()
+    fetchTransactions()
+    fetchBookings()
+    fetchSettings()
+    fetchReviews()
+  }, [])
 
   // Fetch profile data
   const fetchProfile = async () => {
@@ -223,7 +201,7 @@ export default function ProfilePage() {
       const token = localStorage.getItem("bearer_token")
       const response = await fetch('/api/customers/profile', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token || ''}`
         }
       })
       const data = await response.json()
@@ -239,15 +217,9 @@ export default function ProfilePage() {
           emergencyContact: data.emergencyContact || "",
           emergencyContactName: data.emergencyContactName || ""
         })
-      } else {
-        if (data.code === 'PROFILE_NOT_FOUND') {
-          setProfile(null)
-        } else {
-          toast.error(data.error || "Failed to fetch profile")
-        }
       }
     } catch (error) {
-      toast.error("Failed to fetch profile")
+      console.error("Failed to fetch profile")
     } finally {
       setLoadingProfile(false)
     }
@@ -259,7 +231,7 @@ export default function ProfilePage() {
       const token = localStorage.getItem("bearer_token")
       const response = await fetch('/api/wallet-balance', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token || ''}`
         }
       })
       const data = await response.json()
@@ -279,7 +251,7 @@ export default function ProfilePage() {
       const token = localStorage.getItem("bearer_token")
       const response = await fetch('/api/wallet-transactions?limit=50', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token || ''}`
         }
       })
       const data = await response.json()
@@ -299,12 +271,11 @@ export default function ProfilePage() {
       const token = localStorage.getItem("bearer_token")
       const response = await fetch('/api/bookings?limit=50', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token || ''}`
         }
       })
       const data = await response.json()
       if (response.ok && data.bookings) {
-        // Parse seats from JSON string to array
         const parsedBookings = data.bookings.map((booking: any) => ({
           ...booking,
           seats: typeof booking.seats === 'string' ? JSON.parse(booking.seats) : booking.seats
@@ -324,7 +295,7 @@ export default function ProfilePage() {
       const token = localStorage.getItem("bearer_token")
       const response = await fetch('/api/customers/settings', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token || ''}`
         }
       })
       const data = await response.json()
@@ -339,14 +310,12 @@ export default function ProfilePage() {
   }
 
   const fetchReviews = async () => {
-    if (!session?.user?.id) return
-    
     setLoadingReviews(true)
     try {
       const token = localStorage.getItem("bearer_token")
-      const response = await fetch(`/api/reviews?userId=${session.user.id}`, {
+      const response = await fetch(`/api/reviews`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token || ''}`
         }
       })
       const data = await response.json()
@@ -371,14 +340,14 @@ export default function ProfilePage() {
       const response = await fetch(`/api/bookings/${bookingId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token || ''}`
         }
       })
 
       const data = await response.json()
       if (response.ok) {
         toast.success("Booking cancelled successfully")
-        fetchBookings() // Refresh bookings list
+        fetchBookings()
       } else {
         toast.error(data.error || "Failed to cancel booking")
       }
@@ -397,7 +366,7 @@ export default function ProfilePage() {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token || ''}`
         },
         body: JSON.stringify(profileForm)
       })
@@ -433,7 +402,6 @@ export default function ProfilePage() {
     try {
       const token = localStorage.getItem("bearer_token")
       
-      // Create Razorpay order
       const orderResponse = await fetch('/api/razorpay/orders', {
         method: 'POST',
         headers: { 
@@ -443,7 +411,6 @@ export default function ProfilePage() {
           amount,
           currency: 'INR',
           notes: {
-            userId: session?.user?.id,
             description: 'Wallet recharge'
           }
         })
@@ -457,7 +424,6 @@ export default function ProfilePage() {
         return
       }
 
-      // Configure Razorpay checkout
       const options = {
         key: orderData.keyId,
         order_id: orderData.orderId,
@@ -467,15 +433,14 @@ export default function ProfilePage() {
         description: "Add money to wallet",
         image: "/logo.png",
         prefill: {
-          name: session?.user?.name || "",
-          email: session?.user?.email || "",
+          name: "Guest User",
+          email: "guest@example.com",
         },
         theme: {
           color: "#4ade80"
         },
         handler: async (response: any) => {
           try {
-            // Verify payment on backend
             const verifyResponse = await fetch('/api/razorpay/verify', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -489,21 +454,19 @@ export default function ProfilePage() {
             const verifyData = await verifyResponse.json()
 
             if (verifyData.success) {
-              // Get current balance first
               const balanceResponse = await fetch('/api/wallet-balance', {
                 headers: {
-                  'Authorization': `Bearer ${token}`
+                  'Authorization': `Bearer ${token || ''}`
                 }
               })
               const balanceData = await balanceResponse.json()
               const currentBalance = balanceData.balance || 0
 
-              // Add wallet transaction
               const walletResponse = await fetch('/api/wallet-transactions', {
                 method: 'POST',
                 headers: { 
                   'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`
+                  'Authorization': `Bearer ${token || ''}`
                 },
                 body: JSON.stringify({
                   type: 'credit',
@@ -556,7 +519,7 @@ export default function ProfilePage() {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token || ''}`
         },
         body: JSON.stringify(updatedSettings)
       })
@@ -591,7 +554,7 @@ export default function ProfilePage() {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token || ''}`
         },
         body: JSON.stringify({
           bookingId: parseInt(reviewForm.bookingId),
@@ -712,26 +675,21 @@ export default function ProfilePage() {
               <h1 className="text-4xl md:text-5xl font-bold mb-8 text-center">My Account</h1>
 
               <div className="space-y-6">
-                {/* Profile Header Card */}
                 <Card>
                   <CardContent className="pt-6">
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                       <Avatar className="h-24 w-24 border-4 border-primary/20">
-                        <AvatarImage src={session.user.image || `https://api.dicebear.com/7.x/initials/svg?seed=${session.user.name}`} />
-                        <AvatarFallback className="text-2xl">{session.user.name?.charAt(0) || 'U'}</AvatarFallback>
+                        <AvatarImage src="https://api.dicebear.com/7.x/initials/svg?seed=Guest" />
+                        <AvatarFallback className="text-2xl">G</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 text-center md:text-left">
-                        <h2 className="text-3xl font-bold mb-2">{session.user.name}</h2>
-                        <p className="text-muted-foreground mb-1">{session.user.email}</p>
-                        {profile?.phone && (
-                          <p className="text-sm text-muted-foreground">{profile.phone}</p>
-                        )}
+                        <h2 className="text-3xl font-bold mb-2">Guest User</h2>
+                        <p className="text-muted-foreground mb-1">guest@example.com</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Tabs */}
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="profile">
@@ -807,11 +765,11 @@ export default function ProfilePage() {
                           <div className="grid md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                               <Label>Full Name</Label>
-                              <Input value={session.user.name || ""} disabled />
+                              <Input value="Guest User" disabled />
                             </div>
                             <div className="space-y-2">
                               <Label>Email</Label>
-                              <Input value={session.user.email || ""} disabled />
+                              <Input value="guest@example.com" disabled />
                             </div>
                             <div className="space-y-2">
                               <Label>Phone Number</Label>
