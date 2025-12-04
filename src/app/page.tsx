@@ -318,12 +318,12 @@ export default function Home() {
 
         {/* Hero Section with Side View Layout */}
         <section className="relative overflow-hidden py-20 md:py-32 bg-background">
-          {/* Animated background */}
+          {/* Animated background - reduced opacity */}
           <div className="absolute inset-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-background" />
-            <div className="absolute top-0 -left-4 w-72 h-72 bg-primary/30 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
-            <div className="absolute top-0 -right-4 w-72 h-72 bg-green-500/30 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
-            <div className="absolute -bottom-8 left-20 w-72 h-72 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background" />
+            <div className="absolute top-0 -left-4 w-72 h-72 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob" />
+            <div className="absolute top-0 -right-4 w-72 h-72 bg-green-500/10 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000" />
+            <div className="absolute -bottom-8 left-20 w-72 h-72 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-4000" />
           </div>
 
           <div className="container mx-auto px-4 relative z-10">
@@ -360,7 +360,7 @@ export default function Home() {
                   <Link href="/vehicles">
                     <Button 
                       size="lg" 
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 hover:scale-105 transition-transform duration-300 shadow-lg shadow-primary/50"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 hover:scale-105 transition-transform duration-300"
                     >
                       <ArrowRight className="h-5 w-5 mr-2" />
                       {t("startJourney")}
@@ -388,7 +388,7 @@ export default function Home() {
                 </motion.div>
               </motion.div>
 
-              {/* Right side - Visual with Navigation */}
+              {/* Right side - Visual with Navigation - reduced glow */}
               <motion.div
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -396,8 +396,8 @@ export default function Home() {
                 className="relative"
               >
                 <div className="relative aspect-square lg:aspect-auto lg:h-[450px]">
-                  {/* Glowing card effect */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-green-500/20 rounded-3xl blur-2xl" />
+                  {/* Reduced glowing card effect */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-green-500/10 rounded-3xl blur-xl" />
                   
                   {/* Main card with animation */}
                   <motion.div
@@ -407,7 +407,7 @@ export default function Home() {
                     exit={{ opacity: 0, x: -100 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <Card className="relative bg-card backdrop-blur-xl border-primary/20 shadow-2xl shadow-primary/20 h-full">
+                    <Card className="relative bg-card backdrop-blur-xl border-primary/20 shadow-lg h-full">
                       <CardContent className="p-6 h-full flex flex-col justify-between">
                         <div>
                           <div className="flex items-center gap-3 mb-5">
@@ -478,7 +478,7 @@ export default function Home() {
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
                               onClick={prevCard}
-                              className="h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-primary-foreground shadow-lg flex items-center justify-center backdrop-blur-sm transition-all duration-300"
+                              className="h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-primary-foreground flex items-center justify-center backdrop-blur-sm transition-all duration-300"
                             >
                               <ChevronLeft className="h-5 w-5" />
                             </motion.button>
@@ -502,7 +502,7 @@ export default function Home() {
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
                               onClick={nextCard}
-                              className="h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-primary-foreground shadow-lg flex items-center justify-center backdrop-blur-sm transition-all duration-300"
+                              className="h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-primary-foreground flex items-center justify-center backdrop-blur-sm transition-all duration-300"
                             >
                               <ChevronRight className="h-5 w-5" />
                             </motion.button>
@@ -515,7 +515,7 @@ export default function Home() {
               </motion.div>
             </div>
 
-            {/* Stats Grid */}
+            {/* Stats Grid - removed shadow effects */}
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
@@ -606,7 +606,7 @@ export default function Home() {
                     transition: { type: "spring", stiffness: 400 }
                   }}
                 >
-                  <Card className="h-full bg-card backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group shadow-lg shadow-primary/5">
+                  <Card className="h-full bg-card backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     />
@@ -623,7 +623,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Services Section */}
+        {/* Services Section - removed excessive glow */}
         <section className="py-20 relative overflow-hidden bg-background">
           <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background opacity-50" />
           
@@ -671,7 +671,7 @@ export default function Home() {
                     transition: { type: "spring", stiffness: 400 }
                   }}
                 >
-                  <Card className="h-full bg-card backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group shadow-xl shadow-primary/10">
+                  <Card className="h-full bg-card backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                     />
@@ -681,7 +681,7 @@ export default function Home() {
                         transition={{ type: "spring", stiffness: 400, damping: 10 }}
                         className="mb-6"
                       >
-                        <service.icon className="h-16 w-16 mx-auto text-primary drop-shadow-[0_0_15px_rgba(74,222,128,0.5)]" />
+                        <service.icon className="h-16 w-16 mx-auto text-primary" />
                       </motion.div>
                       <h3 className="text-2xl font-bold mb-4 text-card-foreground">{service.title}</h3>
                       <p className="text-sm text-foreground leading-relaxed">{service.description}</p>
