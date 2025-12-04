@@ -6,7 +6,6 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Menu, X, User, Wallet, MapPin, Moon, Sun, Languages, Settings, UserCircle, Star } from "lucide-react"
-import { useSession } from "@/lib/auth-client"
 import { useTheme } from "@/providers/ThemeProvider"
 import { useLanguage } from "@/providers/LanguageProvider"
 import { Button } from "@/components/ui/button"
@@ -21,7 +20,6 @@ import {
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { data: session, isPending } = useSession()
   const { theme, toggleTheme } = useTheme()
   const { language, toggleLanguage, t } = useLanguage()
   const router = useRouter()
@@ -130,14 +128,10 @@ export default function Header() {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    {session?.user?.name || "Guest User"}
+                  <p className="text-sm font-medium leading-none">Guest User</p>
+                  <p className="text-xs text-muted-foreground leading-none">
+                    guest@example.com
                   </p>
-                  {session?.user?.email && (
-                    <p className="text-xs text-muted-foreground leading-none">
-                      {session.user.email}
-                    </p>
-                  )}
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -238,10 +232,8 @@ export default function Header() {
               
               <div className="pt-2 border-t border-border/40">
                 <p className="text-xs text-muted-foreground mb-1">Account</p>
-                <p className="text-sm font-medium">{session?.user?.name || "Guest User"}</p>
-                {session?.user?.email && (
-                  <p className="text-xs text-muted-foreground">{session.user.email}</p>
-                )}
+                <p className="text-sm font-medium">Guest User</p>
+                <p className="text-xs text-muted-foreground">guest@example.com</p>
               </div>
               
               <div className="pt-2 border-t border-border/40">

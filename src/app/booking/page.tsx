@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { MapPin, Calendar, Bus, Users, DollarSign, CheckCircle, Zap, ArrowRight, Sparkles, Wallet, Armchair, Radio, User } from "lucide-react"
 import { VscHome, VscCalendar } from "react-icons/vsc"
-import { useSession } from "@/lib/auth-client"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import Dock from "@/components/Dock"
@@ -17,7 +16,6 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import Script from "next/script"
-import PageLoader from "@/components/PageLoader"
 
 // Indian cities list
 const INDIAN_CITIES = [
@@ -51,7 +49,6 @@ declare global {
 
 export default function BookingPage() {
   const router = useRouter()
-  const { data: session, isPending } = useSession()
   
   // Dock items
   const dockItems = [
@@ -78,23 +75,6 @@ export default function BookingPage() {
   const [dropoffSuggestions, setDropoffSuggestions] = useState<string[]>([])
   const [showPickupSuggestions, setShowPickupSuggestions] = useState(false)
   const [showDropoffSuggestions, setShowDropoffSuggestions] = useState(false)
-
-  // Protect route - redirect to login if not authenticated
-  useEffect(() => {
-    if (!isPending && !session?.user) {
-      router.push("/login?redirect=/booking")
-    }
-  }, [session, isPending, router])
-
-  // Show loading while checking auth
-  if (isPending) {
-    return <PageLoader />
-  }
-
-  // Don't render if not authenticated
-  if (!session?.user) {
-    return null
-  }
 
   // Filter cities based on input
   const filterCities = (input: string) => {
@@ -234,8 +214,8 @@ export default function BookingPage() {
           }
         },
         prefill: {
-          name: session?.user?.name || "",
-          email: session?.user?.email || "",
+          name: "Guest User",
+          email: "guest@example.com",
         },
         theme: {
           color: "#008870",

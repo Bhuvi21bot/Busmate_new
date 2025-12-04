@@ -1,14 +1,20 @@
-import { NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
 
-export async function middleware(request: NextRequest) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  
-  // Always allow access - no authentication required
-  return NextResponse.next();
+export function middleware(request: NextRequest) {
+  // Allow all requests through without authentication
+  return NextResponse.next()
 }
 
 export const config = {
-  matcher: ["/booking", "/driver-dashboard", "/tracking"],
-};
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
+}

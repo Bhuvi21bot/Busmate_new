@@ -1,22 +1,18 @@
 "use client"
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { MapPin, Bus, Ticket, Navigation } from "lucide-react"
 import { VscHome } from "react-icons/vsc"
-import { useSession } from "@/lib/auth-client"
+import { useRouter } from "next/navigation"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import Dock from "@/components/Dock"
 import ClickSpark from "@/components/ClickSpark"
 import BusTracker from "@/components/BusTracker"
 import GoogleMapTracker from "@/components/GoogleMapTracker"
-import PageLoader from "@/components/PageLoader"
 
 export default function TrackingPage() {
   const router = useRouter()
-  const { data: session, isPending } = useSession()
 
   // Dock items
   const dockItems = [
@@ -24,23 +20,6 @@ export default function TrackingPage() {
     { icon: <Ticket size={20} />, label: 'Book Ticket', onClick: () => router.push('/booking') },
     { icon: <Navigation size={20} />, label: 'Vehicle Near By Me', onClick: () => router.push('/vehicles') },
   ]
-
-  // Protect route - redirect to login if not authenticated
-  useEffect(() => {
-    if (!isPending && !session?.user) {
-      router.push("/login?redirect=/tracking")
-    }
-  }, [session, isPending, router])
-
-  // Show loading while checking auth
-  if (isPending) {
-    return <PageLoader />
-  }
-
-  // Don't render if not authenticated
-  if (!session?.user) {
-    return null
-  }
 
   return (
     <ClickSpark

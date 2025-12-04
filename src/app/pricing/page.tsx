@@ -3,7 +3,6 @@
 import { motion } from "framer-motion"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useSession } from "@/lib/auth-client"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { Check, Zap, Shield, Clock, Star } from "lucide-react"
@@ -22,12 +21,11 @@ interface PricingPlan {
 }
 
 export default function PricingPage() {
-  const { data: session, isPending } = useSession()
   const router = useRouter()
   const [activeSubscription, setActiveSubscription] = useState<string | null>(null)
   const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(null)
-  const [loadingSubscription, setLoadingSubscription] = useState(true)
+  const [loadingSubscription, setLoadingSubscription] = useState(false)
 
   const pricingPlans: PricingPlan[] = [
     {
@@ -77,48 +75,7 @@ export default function PricingPage() {
     },
   ]
 
-  // Fetch active subscription
-  useEffect(() => {
-    const fetchActiveSubscription = async () => {
-      if (!session?.user) {
-        setLoadingSubscription(false)
-        return
-      }
-
-      try {
-        const token = localStorage.getItem("bearer_token")
-        const response = await fetch("/api/razorpay/subscriptions", {
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          if (data.subscriptions && data.subscriptions.length > 0) {
-            // Get the most recent active subscription
-            setActiveSubscription(data.subscriptions[0].productId)
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch subscription:", error)
-      } finally {
-        setLoadingSubscription(false)
-      }
-    }
-
-    fetchActiveSubscription()
-  }, [session])
-
   const handleSelectPlan = (plan: PricingPlan) => {
-    // Check authentication
-    if (!session?.user) {
-      if (!isPending) {
-        router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`)
-      }
-      return
-    }
-
     // Free plan - no payment needed
     if (plan.id === "free") {
       toast.info("You're already on the Free plan!")
@@ -137,39 +94,8 @@ export default function PricingPage() {
   }
 
   const handleManageBilling = async () => {
-    if (!session?.user) {
-      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`)
-      return
-    }
-
-    const token = localStorage.getItem("bearer_token")
-    try {
-      const res = await fetch("/api/billing-portal", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          returnUrl: window.location.href,
-        }),
-      })
-      const data = await res.json()
-      if (data?.url) {
-        const isInIframe = window.self !== window.top
-        if (isInIframe) {
-          window.parent?.postMessage({ type: "OPEN_EXTERNAL_URL", data: { url: data.url } }, "*")
-        } else {
-          window.open(data.url, "_blank", "noopener,noreferrer")
-        }
-      } else {
-        toast.info("Manage your subscription from your profile page")
-        router.push("/profile")
-      }
-    } catch (e) {
-      console.error(e)
-      toast.error("Failed to open billing portal")
-    }
+    toast.info("Manage your subscription from your profile page")
+    router.push("/profile")
   }
 
   const features = [
@@ -226,7 +152,7 @@ export default function PricingPage() {
               Flexible pricing for every traveler. Start free, upgrade anytime.
             </motion.p>
 
-            {!loadingSubscription && session && activeSubscription && (
+            {!loadingSubscription && activeSubscription && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
