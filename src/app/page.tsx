@@ -316,14 +316,11 @@ export default function Home() {
       <div className="min-h-screen bg-background">
         <Header />
 
-        {/* Hero Section with Side View Layout */}
+        {/* Hero Section - removed all glow effects */}
         <section className="relative overflow-hidden py-20 md:py-32 bg-background">
-          {/* Animated background - reduced opacity */}
+          {/* Subtle background gradient - no blur */}
           <div className="absolute inset-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background" />
-            <div className="absolute top-0 -left-4 w-72 h-72 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob" />
-            <div className="absolute top-0 -right-4 w-72 h-72 bg-green-500/10 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000" />
-            <div className="absolute -bottom-8 left-20 w-72 h-72 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-4000" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-background" />
           </div>
 
           <div className="container mx-auto px-4 relative z-10">
@@ -339,7 +336,7 @@ export default function Home() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-green-400 to-primary bg-clip-text text-transparent leading-tight">
+                  <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-heading leading-tight">
                     {t("innovativeTravel")}
                   </h1>
                 </motion.div>
@@ -360,7 +357,7 @@ export default function Home() {
                   <Link href="/vehicles">
                     <Button 
                       size="lg" 
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 hover:scale-105 transition-transform duration-300"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8"
                     >
                       <ArrowRight className="h-5 w-5 mr-2" />
                       {t("startJourney")}
@@ -370,7 +367,7 @@ export default function Home() {
                     <Button 
                       size="lg" 
                       variant="outline" 
-                      className="text-lg px-8 hover:scale-105 transition-transform duration-300 border-primary/40 text-foreground hover:bg-primary/10 hover:border-primary/60"
+                      className="text-lg px-8 border-border text-foreground"
                     >
                       <Users className="h-5 w-5 mr-2" />
                       Driver Dashboard
@@ -380,7 +377,7 @@ export default function Home() {
                     <Button 
                       size="lg" 
                       variant="outline" 
-                      className="text-lg px-8 hover:scale-105 transition-transform duration-300 border-primary/40 text-foreground hover:bg-primary/10 hover:border-primary/60"
+                      className="text-lg px-8 border-border text-foreground"
                     >
                       {t("viewPricing")}
                     </Button>
@@ -388,7 +385,7 @@ export default function Home() {
                 </motion.div>
               </motion.div>
 
-              {/* Right side - Visual with Navigation - reduced glow */}
+              {/* Right side - Visual with Navigation - no glow */}
               <motion.div
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -396,9 +393,6 @@ export default function Home() {
                 className="relative"
               >
                 <div className="relative aspect-square lg:aspect-auto lg:h-[450px]">
-                  {/* Reduced glowing card effect */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-green-500/10 rounded-3xl blur-xl" />
-                  
                   {/* Main card with animation */}
                   <motion.div
                     key={currentCard.id}
@@ -407,11 +401,11 @@ export default function Home() {
                     exit={{ opacity: 0, x: -100 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <Card className="relative bg-card backdrop-blur-xl border-primary/20 shadow-lg h-full">
+                    <Card className="relative bg-card border-border">
                       <CardContent className="p-6 h-full flex flex-col justify-between">
                         <div>
                           <div className="flex items-center gap-3 mb-5">
-                            <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
+                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                               <currentCard.icon className="h-5 w-5 text-primary" />
                             </div>
                             <div>
@@ -427,10 +421,10 @@ export default function Home() {
                                 <div className="flex items-center gap-3">
                                   <div className={`h-2.5 w-2.5 rounded-full ${
                                     stop.status === 'current' 
-                                      ? 'bg-primary ring-4 ring-primary/20' 
+                                      ? 'bg-primary' 
                                       : stop.status === 'next'
                                       ? 'border-2 border-primary/50'
-                                      : 'border-2 border-muted/50'
+                                      : 'border-2 border-muted'
                                   }`} />
                                   <div className="flex-1">
                                     <p className="text-sm font-medium text-card-foreground">{stop.location}</p>
@@ -478,7 +472,7 @@ export default function Home() {
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
                               onClick={prevCard}
-                              className="h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-primary-foreground flex items-center justify-center backdrop-blur-sm transition-all duration-300"
+                              className="h-10 w-10 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center"
                             >
                               <ChevronLeft className="h-5 w-5" />
                             </motion.button>
@@ -502,7 +496,7 @@ export default function Home() {
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
                               onClick={nextCard}
-                              className="h-10 w-10 rounded-full bg-primary/90 hover:bg-primary text-primary-foreground flex items-center justify-center backdrop-blur-sm transition-all duration-300"
+                              className="h-10 w-10 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center"
                             >
                               <ChevronRight className="h-5 w-5" />
                             </motion.button>
@@ -515,7 +509,7 @@ export default function Home() {
               </motion.div>
             </div>
 
-            {/* Stats Grid - removed shadow effects */}
+            {/* Stats Grid - clean design */}
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
@@ -534,24 +528,12 @@ export default function Home() {
                     damping: 15 
                   }}
                   whileHover={{ 
-                    scale: 1.08,
+                    scale: 1.05,
                     transition: { type: "spring", stiffness: 400 }
                   }}
-                  className="bg-card backdrop-blur-sm border border-primary/20 rounded-xl p-6 text-center relative overflow-hidden group"
+                  className="bg-card border border-border rounded-xl p-6 text-center"
                 >
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
-                    initial={{ x: "-100%" }}
-                    whileHover={{ x: "100%" }}
-                    transition={{ duration: 0.6 }}
-                  />
-                  
-                  <motion.div
-                    whileHover={{ scale: 1.2 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                  >
-                    <stat.icon className="h-8 w-8 mx-auto mb-3 text-primary" />
-                  </motion.div>
+                  <stat.icon className="h-8 w-8 mx-auto mb-3 text-primary" />
                   <div className="text-3xl font-bold text-foreground mb-1">{stat.value}</div>
                   <div className="text-sm text-muted-foreground">{stat.label}</div>
                 </motion.div>
@@ -560,7 +542,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* About Section */}
+        {/* About Section - clean design */}
         <section id="about" className="py-20 bg-surface border-y border-border">
           <div className="container mx-auto px-4">
             <motion.div
@@ -606,12 +588,8 @@ export default function Home() {
                     transition: { type: "spring", stiffness: 400 }
                   }}
                 >
-                  <Card className="h-full bg-card backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    />
-                    
-                    <CardContent className="p-6 relative z-10">
+                  <Card className="h-full bg-card border-border">
+                    <CardContent className="p-6">
                       <feature.icon className="h-12 w-12 text-primary mb-4" />
                       <h3 className="text-xl font-bold mb-3 text-card-foreground">{feature.title}</h3>
                       <p className="text-muted-foreground">{feature.description}</p>
@@ -623,10 +601,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Services Section - removed excessive glow */}
+        {/* Services Section - clean design */}
         <section className="py-20 relative overflow-hidden bg-background">
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background opacity-50" />
-          
           <div className="container mx-auto px-4 relative z-10">
             <motion.div
               initial={{ opacity: 0 }}
@@ -666,23 +642,14 @@ export default function Home() {
                     stiffness: 100 
                   }}
                   whileHover={{ 
-                    y: -15,
+                    y: -10,
                     scale: 1.02,
                     transition: { type: "spring", stiffness: 400 }
                   }}
                 >
-                  <Card className="h-full bg-card backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                    />
-                    <CardContent className="p-8 text-center relative z-10">
-                      <motion.div
-                        whileHover={{ scale: 1.15, rotate: 5 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                        className="mb-6"
-                      >
-                        <service.icon className="h-16 w-16 mx-auto text-primary" />
-                      </motion.div>
+                  <Card className="h-full bg-card border-border">
+                    <CardContent className="p-8 text-center">
+                      <service.icon className="h-16 w-16 mx-auto text-primary mb-6" />
                       <h3 className="text-2xl font-bold mb-4 text-card-foreground">{service.title}</h3>
                       <p className="text-sm text-foreground leading-relaxed">{service.description}</p>
                     </CardContent>
@@ -738,7 +705,7 @@ export default function Home() {
                     transition: { type: "spring", stiffness: 400 }
                   }}
                 >
-                  <Card className="h-full bg-card backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
+                  <Card className="h-full bg-card border-border">
                     <CardContent className="p-6 relative z-10">
                       <div className="flex items-start gap-4 mb-4">
                         <span className="text-5xl font-bold text-primary/20">{step.number}</span>
@@ -803,7 +770,7 @@ export default function Home() {
                     transition: { type: "spring", stiffness: 400 }
                   }}
                 >
-                  <Card className="h-full bg-card backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
+                  <Card className="h-full bg-card border-border">
                     <CardContent className="p-6 flex flex-col h-full">
                       <div className="flex items-center gap-1 mb-4">
                         {[...Array(testimonial.rating)].map((_, i) => (
@@ -864,7 +831,7 @@ export default function Home() {
             {loadingDrivers ? (
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
                 {[1, 2, 3, 4].map((i) => (
-                  <Card key={i} className="h-full bg-card backdrop-blur-sm border-primary/20 animate-pulse">
+                  <Card key={i} className="h-full bg-card border-border animate-pulse">
                     <CardContent className="p-5">
                       <div className="flex items-start justify-between mb-4">
                         <div className="h-14 w-14 rounded-full bg-muted" />
@@ -900,7 +867,7 @@ export default function Home() {
                       transition: { type: "spring", stiffness: 400 }
                     }}
                   >
-                    <Card className="h-full bg-card backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
+                    <Card className="h-full bg-card border-border">
                       <CardContent className="p-5">
                         <div className="flex items-start justify-between mb-3">
                           <Avatar className="h-14 w-14 border-2 border-primary/20">

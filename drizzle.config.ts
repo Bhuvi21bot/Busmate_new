@@ -1,10 +1,14 @@
-import type { Config } from 'drizzle-kit';
+import { defineConfig } from "drizzle-kit";
 
-export default {
-  schema: './src/db/schema.ts',
-  out: './drizzle',
-  dialect: 'sqlite',
+export default defineConfig({
+  schema: "./src/db/schema.ts",
+  out: "./drizzle",
+  dialect: "mysql",
   dbCredentials: {
-    url: process.env.TURSO_DATABASE_URL || 'file:local.db',
+    host: process.env.MYSQL_HOST || "127.0.0.1",
+    port: parseInt(process.env.MYSQL_PORT || "3306"),
+    user: process.env.MYSQL_USER || "root",
+    password: process.env.MYSQL_PASSWORD || "",
+    database: process.env.MYSQL_DATABASE || "busmate",
   },
-} satisfies Config;
+});
